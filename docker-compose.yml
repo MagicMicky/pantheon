@@ -14,9 +14,6 @@ services:
       - no-new-privileges:true
     cap_drop:
       - ALL
-    tmpfs:
-      - /tmp:size=50M,uid=1001,gid=1001
-      - /var/run:size=50M,uid=1001,gid=1001,mode=755
     volumes:
       - nginx-cache:/var/cache/nginx
     networks:

@@ -1,0 +1,38 @@
+---
+services:
+  pantheon:
+    image: magicmicky/pantheon:latest
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.pantheon.rule=Host(`pantheon.trce.dev`)"
+        - "traefik.http.routers.pantheon.entrypoints=public-secure"
+        - "traefik.http.routers.pantheon.tls.certresolver=letsencrypt"
+        - "traefik.http.routers.pantheon.tls=true"
+        - "traefik.http.services.pantheon.loadbalancer.server.port=8080"
+        - "traefik.http.routers.pantheon.middlewares=all-oauth"
+      placement:
+        constraints:
+          - node.role == worker
+    environment:
+      - TZ=Etc/UTC
+    volumes:
+      - pantheon_cache:/var/cache/nginx
+    networks:
+      - traefik_public
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  pantheon_cache:
+    driver: local
+
+networks:
+  traefik_public:
+    external: true 
