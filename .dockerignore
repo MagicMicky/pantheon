@@ -1,0 +1,34 @@
+# Exclude node modules and dependencies
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Exclude build outputs
+/build
+/dist
+
+# Exclude Git files
+.git
+.gitignore
+
+# Exclude documentation
+README.md
+LICENSE
+*.md
+
+# Exclude environment files
+.env
+.env.*
+
+# Exclude development files
+.vscode
+.idea
+*.log
+logs
+coverage
+
+# Exclude Docker files (to prevent recursive copying)
+Dockerfile
+.dockerignore
+docker-compose.yml 
