@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Game } from "../types";
 import { fetchSteamGames, isGameInCollection, isValidSteamId } from "../utils/steamHelpers";
 import { Card, CardHeader, CardTitle, CardContent } from "./ui/Card";
@@ -7,6 +7,9 @@ import { Input } from "./ui/Inputs";
 import { X, RefreshCw, GripVertical, Edit, EyeOff, RotateCcw } from "lucide-react";
 import { getGenreIcon } from "../utils/helpers";
 import { GENRE_ICON_MAPPING } from "../data/genreIcons";
+
+const STEAM_ID_STORAGE_KEY = 'pantheonSteamId';
+const IGNORED_GAMES_STORAGE_KEY = 'pantheonIgnoredSteamGames';
 
 interface SteamGamesImportProps {
   existingGames: Game[];
@@ -20,11 +23,100 @@ export const SteamGamesImport: React.FC<SteamGamesImportProps> = ({ existingGame
   const [steamGames, setSteamGames] = useState<Partial<Game>[]>([]);
   const [idError, setIdError] = useState<string | null>(null);
   const [showInput, setShowInput] = useState<boolean>(true);
-  const [ignoredGameIds, setIgnoredGameIds] = useState<Set<string>>(new Set());
+  const [ignoredAppIds, setIgnoredAppIds] = useState<Set<string>>(new Set());
+
+  // Helper function to load ignored games from localStorage
+  const loadIgnoredAppIds = useCallback(() => {
+    try {
+      const savedIgnoredGames = localStorage.getItem(IGNORED_GAMES_STORAGE_KEY);
+      if (savedIgnoredGames) {
+        try {
+          const ignoredArray = JSON.parse(savedIgnoredGames);
+          if (Array.isArray(ignoredArray)) {
+            return new Set(ignoredArray);
+          }
+        } catch (parseErr) {
+          console.error("Failed to parse ignored games from localStorage:", parseErr);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load ignored games from localStorage:", err);
+    }
+    return new Set();
+  }, []);
+
+  // Save ignored games to localStorage
+  const saveIgnoredAppIds = useCallback((ignoredIds: Set<string>) => {
+    try {
+      const ignoredArray = Array.from(ignoredIds);
+      localStorage.setItem(IGNORED_GAMES_STORAGE_KEY, JSON.stringify(ignoredArray));
+    } catch (err) {
+      console.error("Failed to save ignored games to localStorage:", err);
+    }
+  }, []);
+
+  // Load saved Steam ID and ignored games from localStorage on component mount
+  useEffect(() => {
+    try {
+      // Load Steam ID
+      const savedSteamId = localStorage.getItem(STEAM_ID_STORAGE_KEY);
+      if (savedSteamId) {
+        setSteamId(savedSteamId);
+        // If there's a saved ID, automatically fetch games
+        if (isValidSteamId(savedSteamId)) {
+          setShowInput(false);
+          fetchGamesWithId(savedSteamId);
+        }
+      }
+
+      // Load ignored games
+      const ignoredGames = loadIgnoredAppIds();
+      setIgnoredAppIds(ignoredGames);
+    } catch (err) {
+      // If localStorage is not available or fails, continue without it
+      console.error("Failed to load data from localStorage:", err);
+    }
+  }, [loadIgnoredAppIds]);
 
   const handleSteamIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSteamId(e.target.value);
     setIdError(null);
+  };
+
+  const saveSteamId = (id: string) => {
+    try {
+      localStorage.setItem(STEAM_ID_STORAGE_KEY, id);
+    } catch (err) {
+      console.error("Failed to save Steam ID to localStorage:", err);
+    }
+  };
+
+  const clearSavedSteamId = () => {
+    try {
+      localStorage.removeItem(STEAM_ID_STORAGE_KEY);
+    } catch (err) {
+      console.error("Failed to remove Steam ID from localStorage:", err);
+    }
+  };
+
+  // Extract the fetch logic to allow reuse with saved ID
+  const fetchGamesWithId = async (id: string) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const games = await fetchSteamGames(id);
+      setSteamGames(games);
+      // Hide the input form after successful fetch
+      setShowInput(false);
+      // Save the ID to localStorage
+      saveSteamId(id);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch Steam games");
+      setSteamGames([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const fetchGames = async () => {
@@ -38,46 +130,57 @@ export const SteamGamesImport: React.FC<SteamGamesImportProps> = ({ existingGame
       return;
     }
 
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const games = await fetchSteamGames(steamId);
-      setSteamGames(games);
-      // Reset ignored games when fetching a new library
-      setIgnoredGameIds(new Set());
-      // Hide the input form after successful fetch
-      setShowInput(false);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch Steam games");
-      setSteamGames([]);
-    } finally {
-      setIsLoading(false);
-    }
+    await fetchGamesWithId(steamId);
   };
 
-  const ignoreGame = (gameId: string) => {
-    setIgnoredGameIds(prev => {
+  const changeProfile = () => {
+    setShowInput(true);
+    // Don't clear the ID from the input, but clear from localStorage
+    // so user can change to a new ID without losing the current one yet
+    clearSavedSteamId();
+  };
+
+  const ignoreGame = (game: Partial<Game>) => {
+    if (!game.steamAppId) {
+      console.error("Cannot ignore game without steamAppId:", game);
+      return;
+    }
+    
+    setIgnoredAppIds(prev => {
       const newSet = new Set(prev);
-      newSet.add(gameId);
+      newSet.add(game.steamAppId!);
+      // Save to localStorage
+      saveIgnoredAppIds(newSet);
       return newSet;
     });
   };
 
   const resetIgnoredGames = () => {
-    setIgnoredGameIds(new Set());
+    const emptySet = new Set<string>();
+    setIgnoredAppIds(emptySet);
+    // Save the empty set to localStorage
+    saveIgnoredAppIds(emptySet);
   };
 
   // Filter out games that are already in the collection or ignored
-  const filteredGames = steamGames.filter(game => 
-    !isGameInCollection(game, existingGames) && 
-    !ignoredGameIds.has(game.id || "")
-  );
+  const filteredGames = steamGames.filter(game => {
+    // Skip if the game is in the collection
+    if (isGameInCollection(game, existingGames)) {
+      return false;
+    }
+    
+    // Skip if the game is ignored (using steamAppId)
+    if (game.steamAppId && ignoredAppIds.has(game.steamAppId)) {
+      return false;
+    }
+    
+    return true;
+  });
 
   // Count of ignored games that aren't in the collection
   const ignoredCount = steamGames.filter(game => 
     !isGameInCollection(game, existingGames) && 
-    ignoredGameIds.has(game.id || "")
+    game.steamAppId && ignoredAppIds.has(game.steamAppId)
   ).length;
 
   return (
@@ -119,7 +222,7 @@ export const SteamGamesImport: React.FC<SteamGamesImportProps> = ({ existingGame
               Steam ID: <span className="text-white">{steamId}</span>
             </div>
             <Button
-              onClick={() => setShowInput(true)}
+              onClick={changeProfile}
               className="bg-slate-700 hover:bg-slate-600 flex items-center gap-1 text-xs px-2 py-1"
             >
               <Edit className="w-3 h-3" /> Change
@@ -183,7 +286,7 @@ export const SteamGamesImport: React.FC<SteamGamesImportProps> = ({ existingGame
                           onClick={(e) => {
                             e.stopPropagation();
                             e.preventDefault();
-                            if (game.id) ignoreGame(game.id);
+                            ignoreGame(game);
                           }}
                           className="opacity-0 group-hover/item:opacity-100 text-gray-500 hover:text-gray-300 transition-opacity duration-200"
                           title="Ignore game"
