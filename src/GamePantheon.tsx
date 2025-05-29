@@ -17,6 +17,7 @@ import { Confirm } from "./components/ui/Confirm";
 import { Tooltip } from "./components/Tooltip";
 import { SteamGamesImport } from "./components/SteamGamesImport";
 import { ShareModal, HistoryModal } from "./components/modals";
+import { SharedViewBanner, HeaderControls, SharedViewCTA } from "./components/shared";
 
 // Import data
 import { CATEGORIES, CATEGORY_COLORS } from "./data/categories";
@@ -654,55 +655,21 @@ export default function GamePantheon() {
         <p className="text-gray-400 text-sm tracking-wide mt-2 italic">Curate your personal collection of gaming greatness</p>
         
         {/* Data management and share buttons */}
-        <div className="absolute right-0 top-0 flex gap-2">
-          {isSharedView ? (
-            <>
-              {/* "Save as Mine" button removed to avoid duplication with banner below */}
-            </>
-          ) : (
-            <>
-              <Tooltip content="Share your collection" position="bottom">
-                <Button onClick={generateShareLink} className="p-2 bg-slate-800 hover:bg-slate-700">
-                  <Share2 className="w-5 h-5" />
-                </Button>
-              </Tooltip>
-              <Tooltip content="Export as JSON file" position="bottom">
-                <Button onClick={exportData} className="p-2 bg-slate-800 hover:bg-slate-700">
-                  <Download className="w-5 h-5" />
-                </Button>
-              </Tooltip>
-              <div className="relative">
-                <input 
-                  type="file" 
-                  id="import-input" 
-                  accept=".json" 
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
-                  onChange={importData}
-                />
-                <Tooltip content="Import from JSON file" position="bottom">
-                  <Button className="p-2 bg-slate-800 hover:bg-slate-700">
-                    <Upload className="w-5 h-5" />
-                  </Button>
-                </Tooltip>
-              </div>
-              <Tooltip content="View version history" position="bottom">
-                <Button onClick={openHistoryModal} className="p-2 bg-slate-800 hover:bg-slate-700">
-                  <History className="w-5 h-5" />
-                </Button>
-              </Tooltip>
-            </>
-          )}
-        </div>
+        <HeaderControls
+          isSharedView={isSharedView}
+          onShare={generateShareLink}
+          onExport={exportData}
+          onImport={importData}
+          onOpenHistory={openHistoryModal}
+        />
         
         {/* Shared view banner */}
         {isSharedView && (
-          <div className="absolute left-0 top-0 flex items-center">
-            <Button onClick={() => {
+          <SharedViewBanner
+            sharedTitle={sharedTitle}
+            onBackToCollection={() => {
               // Remove shared parameters from URL
-              const url = new URL(window.location.href);
-              url.searchParams.delete('shared');
-              url.searchParams.delete('title');
-              window.history.pushState({}, '', url.toString());
+              removeShareParams();
               
               // Exit shared view
               setIsSharedView(false);
@@ -712,31 +679,17 @@ export default function GamePantheon() {
               
               // Reset title
               document.title = "Game Pantheon";
-            }} className="mr-3 bg-slate-800 hover:bg-slate-700 flex items-center gap-1">
-              <ArrowLeft className="w-3 h-3" /> Back to My Collection
-            </Button>
-            <div className="bg-slate-800/80 backdrop-blur-sm text-white py-2 px-4 rounded-md flex items-center text-sm">
-              <span className="text-amber-300 mr-2">👁️</span> 
-              {sharedTitle ? (
-                <>Viewing <span className="font-medium text-amber-200 mx-1">{sharedTitle}</span></>
-              ) : (
-                <>Viewing a shared pantheon</>
-              )}
-            </div>
-          </div>
+            }}
+          />
         )}
       </header>
       
       {/* "Create your own" banner for shared view */}
-      {isSharedView && (
-        <div className="mx-auto max-w-2xl bg-amber-900/30 border border-amber-700/30 backdrop-blur-md p-4 rounded-xl shadow-xl mb-12 text-center">
-          <h3 className="text-amber-200 font-medium mb-2">Want to create your own pantheon?</h3>
-          <div className="flex justify-center gap-4">
-            <Button onClick={createNewFromShared} className="bg-amber-800 hover:bg-amber-700">Start with this collection</Button>
-            <Button onClick={requestStartFresh} className="bg-slate-700 hover:bg-slate-600">Start from scratch</Button>
-          </div>
-        </div>
-      )}
+      <SharedViewCTA
+        isSharedView={isSharedView}
+        onCreateFromShared={createNewFromShared}
+        onStartFresh={requestStartFresh}
+      />
       
       {/* Share Modal */}
       <ShareModal
