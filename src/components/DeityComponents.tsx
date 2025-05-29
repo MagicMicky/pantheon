@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { DeitySelectorProps } from "../types";
 import { MYTHOLOGICAL_FIGURES, getMythologicalFiguresByTier } from "../data/mythologicalFigures";
 import { Tooltip } from "./Tooltip";
@@ -129,35 +130,101 @@ export const DeityPopup = ({
   onToggle,
   selectedDeityId 
 }: DeityPopupProps) => {
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const triggerRef = useRef<HTMLDivElement>(null);
+
   const handleSelect = (deityId: string | undefined) => {
     onSelect(deityId);
     onCancel(); // Close the popup after selection
   };
 
+  const updatePosition = () => {
+    if (!triggerRef.current) return;
+    
+    const rect = triggerRef.current.getBoundingClientRect();
+    const popupWidth = 300; // Approximate popup width
+    const popupHeight = 280; // More accurate popup height estimate
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const margin = 8; // Margin from screen edges
+    
+    // Calculate horizontal position - prefer right-aligned
+    let x = rect.right - popupWidth;
+    if (x < margin) { // If popup would go off left edge
+      x = rect.left; // Align left edge instead
+    }
+    if (x + popupWidth > viewportWidth - margin) { // If popup would go off right edge
+      x = viewportWidth - popupWidth - margin;
+    }
+    
+    // Calculate vertical position - prefer below trigger
+    let y = rect.bottom + 4;
+    if (y + popupHeight > viewportHeight - margin) { // If popup would go off bottom edge
+      y = rect.top - popupHeight - 4; // Position above trigger with small gap
+    }
+    
+    setPosition({ x, y });
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      updatePosition();
+      
+      const handleScroll = () => updatePosition();
+      const handleResize = () => updatePosition();
+      
+      window.addEventListener('scroll', handleScroll, true);
+      window.addEventListener('resize', handleResize);
+      
+      return () => {
+        window.removeEventListener('scroll', handleScroll, true);
+        window.removeEventListener('resize', handleResize);
+      };
+    }
+  }, [isOpen]);
+
   return (
     <>
-      <div onClick={onToggle}>
+      <div ref={triggerRef} onClick={onToggle}>
         {children}
       </div>
-      {isOpen && (
-        <div className="absolute z-10 mt-1" onClick={(e) => e.stopPropagation()}>
-          <div className="bg-slate-800 border border-slate-700 rounded-md p-3 shadow-xl">
-            <DeitySelector
-              tier={tier}
-              selectedDeityId={selectedDeityId}
-              onChange={handleSelect}
-              usedDeityIds={usedDeityIds}
-            />
-            <div className="flex justify-end mt-2">
-              <Button 
-                onClick={onCancel} 
-                className="bg-slate-700 hover:bg-slate-600 text-xs px-2 py-1"
-              >
-                Cancel
-              </Button>
+      
+      {isOpen && createPortal(
+        <>
+          {/* Backdrop to close popup when clicking outside */}
+          <div 
+            className="fixed inset-0 z-10" 
+            onClick={onCancel}
+          />
+          
+          {/* Popup content */}
+          <div 
+            className="fixed z-20 w-[300px]" 
+            style={{
+              left: `${position.x}px`,
+              top: `${position.y}px`,
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="bg-slate-800 border border-slate-700 rounded-md p-3 shadow-xl">
+              <DeitySelector
+                tier={tier}
+                selectedDeityId={selectedDeityId}
+                onChange={handleSelect}
+                usedDeityIds={usedDeityIds}
+              />
+              <div className="flex justify-end mt-2">
+                <Button 
+                  onClick={onCancel} 
+                  className="bg-slate-700 hover:bg-slate-600 text-xs px-2 py-1"
+                >
+                  Cancel
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
+        </>,
+        document.body
       )}
     </>
   );

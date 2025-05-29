@@ -86,7 +86,7 @@ const GameCategory = memo(function GameCategory({
       <CardContent>
         <p className="text-sm text-gray-400 mb-2 italic">{category.blurb}</p>
         {categoryGames.length ? (
-          <ul className="space-y-2 text-sm divide-y divide-gray-800/30">
+          <ul className="space-y-1 text-sm divide-y divide-gray-800/30">
             {categoryGames.map(game => editing === game.id ? (
               <GameEditForm
                 key={game.id}

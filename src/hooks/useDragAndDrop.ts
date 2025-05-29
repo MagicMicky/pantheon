@@ -46,6 +46,10 @@ export function useDragAndDrop(
 
   const onDragEnd = useCallback(() => {
     setDropIndicator(null);
+    // Clean up any remaining highlights when drag ends
+    document.querySelectorAll('.drag-highlight').forEach(el => {
+      removeDragHighlight(el as HTMLElement);
+    });
   }, []);
 
   const allowDrop = useCallback((e: React.DragEvent<HTMLElement>, category: CategoryID) => {
@@ -113,8 +117,10 @@ export function useDragAndDrop(
       }));
     }
     
-    // Remove any highlights
-    document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+    // Remove all drag highlights
+    document.querySelectorAll('.drag-highlight').forEach(el => {
+      removeDragHighlight(el as HTMLElement);
+    });
   }, [games, setGames]);
 
   const onDropOnGame = useCallback(async (
@@ -158,6 +164,11 @@ export function useDragAndDrop(
       } catch (error) {
         console.error("Failed to fetch additional game info:", error);
       }
+      
+      // Remove all drag highlights
+      document.querySelectorAll('.drag-highlight').forEach(el => {
+        removeDragHighlight(el as HTMLElement);
+      });
       return;
     }
 
@@ -174,6 +185,11 @@ export function useDragAndDrop(
       const gamesWithoutDragged = games.filter(g => g.id !== draggedGameId);
       const newGames = insertGameAtPosition(gamesWithoutDragged, updatedGame, targetGameId, position, targetCategory);
       setGames(newGames);
+      
+      // Remove all drag highlights
+      document.querySelectorAll('.drag-highlight').forEach(el => {
+        removeDragHighlight(el as HTMLElement);
+      });
       return;
     }
 
@@ -202,6 +218,11 @@ export function useDragAndDrop(
     
     newCategoryGames.splice(insertIndex, 0, draggedItem);
     setGames([...otherGames, ...newCategoryGames]);
+    
+    // Remove all drag highlights
+    document.querySelectorAll('.drag-highlight').forEach(el => {
+      removeDragHighlight(el as HTMLElement);
+    });
   }, [games, setGames]);
 
   return {
