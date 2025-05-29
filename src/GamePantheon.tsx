@@ -3,9 +3,13 @@ import {
   SunMedium, Star, Music, Sword, Shield, Plus, X, 
   Pen, RefreshCw, Gamepad2, Crosshair, Car, Brain, Trophy, 
   Rocket, Ghost, Users, Building, Dice1, Globe, Map, GripVertical,
-  Mountain, Flame, Sparkles, Share2, Copy, ArrowLeft
+  Mountain, Flame, Sparkles, Share2, Copy, ArrowLeft,
+  Zap, Waves, Skull, Feather, HeartHandshake, 
+  Bird, Sun, Moon, Hammer, Wheat, Wine, Clock, Compass,
+  Workflow, Dumbbell, Footprints, Ship, Tent
 } from "lucide-react";
 import * as LZString from 'lz-string';
+import { createPortal } from 'react-dom';
 
 /**
  * Pantheon v8 ────────────────────────────────────────────────────────────────
@@ -32,13 +36,14 @@ function optimizeGameData(games: Game[]): any[] {
   };
   
   // Convert to an ultra compact format:
-  // [id truncated to 4 chars, title, genre, year, category as single digit]
+  // [id truncated to 4 chars, title, genre, year, category as single digit, mythologicalFigureId]
   return games.map(g => [
     g.id.substring(0, 4),
     g.title,
     g.genre,
     g.year,
-    catMap[g.category]
+    catMap[g.category],
+    g.mythologicalFigureId || null
   ]);
 }
 
@@ -59,7 +64,8 @@ function restoreGameData(data: any[]): Game[] {
     title: item[1],
     genre: item[2],
     year: item[3],
-    category: catMap[item[4]] as CategoryID
+    category: catMap[item[4]] as CategoryID,
+    mythologicalFigureId: item[5] || undefined
   }));
 }
 
@@ -143,9 +149,9 @@ const CATEGORY_COLORS: Record<CategoryID, {bg: string, text: string, border: str
 const Card = ({ children, category = "other", ...p }: any) => {
   const colors = CATEGORY_COLORS[category as CategoryID];
   return (
-    <div {...p} className={`rounded-xl border ${colors.border} ${colors.bg} shadow-lg backdrop-blur-sm backdrop-filter 
+    <div {...p} className={`rounded-xl border border-slate-800/50 bg-slate-900/70 shadow-lg backdrop-blur-sm backdrop-filter 
     hover:shadow-xl transition duration-300 flex flex-col h-full relative overflow-hidden group ${p.className || ""}`}>
-      <div className={`absolute inset-0 bg-gradient-to-br ${colors.gradient} opacity-80 group-hover:opacity-90 transition-opacity duration-300`}></div>
+      <div className={`absolute inset-0 bg-gradient-to-b from-slate-900/80 to-slate-800/60 opacity-80 group-hover:opacity-90 transition-opacity duration-300`}></div>
       <div className="relative z-10 flex flex-col h-full">
         {children}
       </div>
@@ -156,7 +162,7 @@ const Card = ({ children, category = "other", ...p }: any) => {
 const CardHeader = ({ children, category = "other" }: any) => {
   const colors = CATEGORY_COLORS[category as CategoryID];
   return (
-    <div className={`flex items-center gap-3 p-5 pb-3 border-b ${colors.border} bg-black/20`}>
+    <div className={`flex items-center gap-3 p-5 pb-3 border-b ${colors.border} bg-gradient-to-r ${colors.gradient}`}>
       {children}
     </div>
   );
@@ -164,7 +170,7 @@ const CardHeader = ({ children, category = "other" }: any) => {
 
 const CardTitle = ({ children, category = "other" }: any) => {
   const colors = CATEGORY_COLORS[category as CategoryID];
-  return <h2 className={`text-xl font-serif font-bold leading-tight tracking-wide ${colors.text}`}>{children}</h2>;
+  return <h2 className={`text-xl font-serif font-bold leading-tight tracking-wide text-white`}>{children}</h2>;
 };
 
 const CardContent = ({ children, ...p }: any) => <div {...p} className="p-5 pt-4 grow flex flex-col gap-3">{children}</div>;
@@ -178,8 +184,276 @@ const Input = (p: React.InputHTMLAttributes<HTMLInputElement>) => <input {...p} 
 const Select = (p: React.SelectHTMLAttributes<HTMLSelectElement>) => <select {...p} className={`w-full rounded-md border border-slate-700/50 bg-slate-800/70 text-white px-3 py-2 text-sm transition-all duration-200 backdrop-blur-sm ${p.className??""}`} />;
 
 // ────────────────────────────────────────── Types & constants
-interface Game { id:string; title:string; genre:string; year:number; category:CategoryID; }
-type CategoryID="olympian"|"titan"|"demigod"|"muse"|"hero"|"other";
+interface Game { 
+  id: string; 
+  title: string; 
+  genre: string; 
+  year: number; 
+  category: CategoryID; 
+  mythologicalFigureId?: string; 
+}
+
+type CategoryID = "olympian"|"titan"|"demigod"|"muse"|"hero"|"other";
+
+// Define mythological figure interface
+interface MythologicalFigure {
+  id: string;
+  name: string;
+  tier: 'olympian' | 'titan' | 'hero';  // Only specific tiers have named figures
+  icon: React.ElementType;
+  description: string;
+  domain: string;
+  color: string;
+}
+
+// Define mythological figures data
+const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
+  // Olympian Gods (12)
+  zeus: {
+    id: 'zeus',
+    name: 'Zeus',
+    tier: 'olympian',
+    icon: Zap,
+    description: 'King of the gods, ruler of Mount Olympus',
+    domain: 'Sky, Thunder, Lightning, Law, Order, Fate',
+    color: '#5c9eff' // brightened blue
+  },
+  poseidon: {
+    id: 'poseidon',
+    name: 'Poseidon',
+    tier: 'olympian',
+    icon: Waves,
+    description: 'God of the sea, earthquakes, storms, and horses',
+    domain: 'Sea, Storms, Earthquakes, Horses',
+    color: '#4db8ff' // brightened blue-teal
+  },
+  hades: {
+    id: 'hades',
+    name: 'Hades',
+    tier: 'olympian',
+    icon: Skull,
+    description: 'God of the underworld and the dead',
+    domain: 'Underworld, Death, Wealth',
+    color: '#a069df' // brightened purple
+  },
+  athena: {
+    id: 'athena',
+    name: 'Athena',
+    tier: 'olympian',
+    icon: Bird, // Owl
+    description: 'Goddess of wisdom, courage, inspiration, and strategic warfare',
+    domain: 'Wisdom, Courage, Warfare, Strategy',
+    color: '#d6d6d6' // brightened silver
+  },
+  apollo: {
+    id: 'apollo',
+    name: 'Apollo',
+    tier: 'olympian',
+    icon: Sun,
+    description: 'God of music, arts, knowledge, healing, prophecy, and the sun',
+    domain: 'Music, Healing, Light, Knowledge',
+    color: '#ffd966' // brightened gold
+  },
+  artemis: {
+    id: 'artemis',
+    name: 'Artemis',
+    tier: 'olympian',
+    icon: Moon,
+    description: 'Goddess of the hunt, wilderness, animals, and the moon',
+    domain: 'Hunt, Wilderness, Moon, Archery',
+    color: '#c6d8ff' // brightened silver-blue
+  },
+  ares: {
+    id: 'ares',
+    name: 'Ares',
+    tier: 'olympian',
+    icon: Sword,
+    description: 'God of war, bloodshed, and violence',
+    domain: 'War, Violence, Bloodlust',
+    color: '#ff5252' // brightened red
+  },
+  aphrodite: {
+    id: 'aphrodite',
+    name: 'Aphrodite',
+    tier: 'olympian',
+    icon: HeartHandshake,
+    description: 'Goddess of love, beauty, and passion',
+    domain: 'Love, Beauty, Desire, Passion',
+    color: '#ff8ad8' // brightened pink
+  },
+  hermes: {
+    id: 'hermes',
+    name: 'Hermes',
+    tier: 'olympian',
+    icon: Feather,
+    description: 'God of trade, wealth, luck, language, and travel',
+    domain: 'Travel, Commerce, Communication, Trickery',
+    color: '#7dd3ff' // brightened light blue
+  },
+  hephaestus: {
+    id: 'hephaestus',
+    name: 'Hephaestus',
+    tier: 'olympian',
+    icon: Hammer,
+    description: 'God of fire, metalworking, stone masonry, and sculpture',
+    domain: 'Fire, Forge, Craftsmanship, Technology',
+    color: '#ff9e5e' // brightened orange-red
+  },
+  demeter: {
+    id: 'demeter',
+    name: 'Demeter',
+    tier: 'olympian',
+    icon: Wheat,
+    description: 'Goddess of agriculture, fertility, and sacred law',
+    domain: 'Agriculture, Fertility, Harvest, Seasons',
+    color: '#a6e06c' // brightened green-yellow
+  },
+  dionysus: {
+    id: 'dionysus',
+    name: 'Dionysus',
+    tier: 'olympian',
+    icon: Wine,
+    description: 'God of wine, fertility, festivity, and ecstasy',
+    domain: 'Wine, Festivity, Theater, Ecstasy',
+    color: '#c87dff' // brightened purple
+  },
+
+  // Titans (6)
+  cronus: {
+    id: 'cronus',
+    name: 'Cronus',
+    tier: 'titan',
+    icon: Clock,
+    description: 'Titan of time and the ages, father of Zeus',
+    domain: 'Time, Harvest, Fate',
+    color: '#5c88cc' // brightened dark blue
+  },
+  rhea: {
+    id: 'rhea',
+    name: 'Rhea',
+    tier: 'titan',
+    icon: Mountain,
+    description: 'Titaness of fertility, motherhood, and generation',
+    domain: 'Fertility, Motherhood, Earth',
+    color: '#9c7a6e' // brightened brown
+  },
+  oceanus: {
+    id: 'oceanus',
+    name: 'Oceanus',
+    tier: 'titan',
+    icon: Waves,
+    description: 'Titan of the great world-encircling river',
+    domain: 'Water, Rivers, Oceans',
+    color: '#4d94ff' // brightened deep blue
+  },
+  hyperion: {
+    id: 'hyperion',
+    name: 'Hyperion',
+    tier: 'titan',
+    icon: Sun,
+    description: 'Titan of light, father of the sun, moon, and dawn',
+    domain: 'Light, Watchfulness, Wisdom',
+    color: '#ffda58' // brightened bright yellow
+  },
+  theia: {
+    id: 'theia',
+    name: 'Theia',
+    tier: 'titan',
+    icon: Star,
+    description: 'Titaness of sight and the shining light of the clear blue sky',
+    domain: 'Sight, Light, Glory, Treasure',
+    color: '#e0e0e0' // brightened silver
+  },
+  atlas: {
+    id: 'atlas',
+    name: 'Atlas',
+    tier: 'titan',
+    icon: Globe,
+    description: 'Titan condemned to hold up the sky for eternity',
+    domain: 'Endurance, Astronomy, Navigation',
+    color: '#92b6cc' // brightened stone gray
+  },
+
+  // Heroes (8)
+  hercules: {
+    id: 'hercules',
+    name: 'Hercules',
+    tier: 'hero',
+    icon: Dumbbell,
+    description: 'Divine hero known for his strength and numerous far-ranging adventures',
+    domain: 'Strength, Courage, Adventure',
+    color: '#e8a554' // brightened bronze
+  },
+  perseus: {
+    id: 'perseus',
+    name: 'Perseus',
+    tier: 'hero',
+    icon: Sword,
+    description: 'Slayer of Medusa and rescuer of Andromeda',
+    domain: 'Bravery, Cunning, Heroism',
+    color: '#ffe14d' // brightened gold
+  },
+  achilles: {
+    id: 'achilles',
+    name: 'Achilles',
+    tier: 'hero',
+    icon: Shield,
+    description: 'Greatest warrior of the Trojan War, with a fatal weakness',
+    domain: 'Warfare, Excellence, Pride',
+    color: '#e86e5a' // brightened bronze-red
+  },
+  odysseus: {
+    id: 'odysseus',
+    name: 'Odysseus',
+    tier: 'hero',
+    icon: Ship,
+    description: 'King of Ithaca known for his intelligence and cunning',
+    domain: 'Cunning, Strategy, Endurance',
+    color: '#5c9eff' // brightened blue
+  },
+  theseus: {
+    id: 'theseus',
+    name: 'Theseus',
+    tier: 'hero',
+    icon: Tent,
+    description: 'Slayer of the Minotaur and unifier of Attica',
+    domain: 'Leadership, Justice, Civilization',
+    color: '#a3c2d6' // brightened blue-gray
+  },
+  jason: {
+    id: 'jason',
+    name: 'Jason',
+    tier: 'hero',
+    icon: Compass,
+    description: 'Leader of the Argonauts in quest of the Golden Fleece',
+    domain: 'Leadership, Adventure, Quest',
+    color: '#ffde47' // brightened gold-yellow
+  },
+  atalanta: {
+    id: 'atalanta',
+    name: 'Atalanta',
+    tier: 'hero',
+    icon: Footprints,
+    description: 'Female warrior, huntress, and athlete',
+    domain: 'Hunting, Athletics, Independence',
+    color: '#6fd675' // brightened forest green
+  },
+  bellerophon: {
+    id: 'bellerophon',
+    name: 'Bellerophon',
+    tier: 'hero',
+    icon: Workflow,
+    description: 'Tamer of Pegasus and slayer of the Chimera',
+    domain: 'Taming, Aviation, Pride',
+    color: '#f0f0f0' // brightened white/silver
+  }
+};
+
+// Filter mythological figures by tier
+const getMythologicalFiguresByTier = (tier: 'olympian' | 'titan' | 'hero'): MythologicalFigure[] => {
+  return Object.values(MYTHOLOGICAL_FIGURES).filter(figure => figure.tier === tier);
+};
+
 const CATEGORIES:Record<CategoryID,{name:string;icon:any;blurb:string}>={
   olympian:{name:"Olympian Gods",icon:Sparkles,blurb:"Masterpieces reshaping the medium."},
   titan:{name:"Titans",icon:Mountain,blurb:"Genre‑defining giants."},
@@ -188,7 +462,7 @@ const CATEGORIES:Record<CategoryID,{name:string;icon:any;blurb:string}>={
   hero:{name:"Heroes",icon:Flame,blurb:"Beloved favourites."},
   other:{name:"Monsters & Curios",icon:Shield,blurb:"Oddities and experiments."},
 };
-const SAMPLE_GAMES:Game[]=[{id:uid(),title:"The Legend of Zelda: Breath of the Wild",genre:"Action‑Adventure",year:2017,category:"olympian"}];
+const SAMPLE_GAMES:Game[]=[{id:uid(),title:"The Legend of Zelda: Breath of the Wild",genre:"Action‑Adventure",year:2017,category:"olympian", mythologicalFigureId: "zeus"}];
 
 // Genre icons mapping for game list items
 const GENRE_ICON_MAPPING: Array<{keywords: RegExp, icon: any}> = [
@@ -239,11 +513,278 @@ function getGenreIcon(genre: string) {
   return Gamepad2;
 }
 
-// ────────────────────────────────────────── Wikipedia helpers (unchanged gist)
-const GENRE_KEYWORDS:[RegExp,string][]= [[/first‑person shooter/i,"FPS"],[/action‑adventure/i,"Action‑Adventure"],[/role‑?playing/i,"RPG"],[/4x/i,"4X Strategy"],[/real‑time strategy/i,"RTS"],[/turn‑based strategy/i,"TBS"]];
-async function wikiSuggestions(q:string){try{const res=await fetch(`https://en.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(q)}&limit=10&format=json&origin=*`);if(!res.ok)return[];const d=await res.json() as any;return d[1]??[]}catch{return[]}}
-function extractGenreFromInfobox(html:string){try{const doc=new DOMParser().parseFromString(html,"text/html");for(const tr of doc.querySelectorAll("table.infobox tr")){const th=tr.querySelector("th");if(th&&/Genre/i.test(th.textContent||"")){const td=tr.querySelector("td");if(td)return td.textContent?.split(/•|,|\||\//)[0].trim();}}}catch{} }
-async function wikipediaInfo(t:string){try{const [sum,html]=await Promise.all([fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(t)}`),fetch(`https://en.wikipedia.org/api/rest_v1/page/html/${encodeURIComponent(t)}`)]);if(!sum.ok)return{};const extract=(await sum.json()).extract??"";let genre;if(html.ok)genre=extractGenreFromInfobox(await html.text());if(!genre){for(const[r,l]of GENRE_KEYWORDS)if(r.test(extract)){genre=l;break}}const y=extract.match(/(19|20)\d{2}/);return{genre,year:y?+y[0]:undefined};}catch{return{}}}
+// Tooltip component for deity badges in game list
+const Tooltip = ({ children, content }: { children: React.ReactNode, content: React.ReactNode }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const childRef = useRef<HTMLDivElement>(null);
+
+  const updateTooltipPosition = () => {
+    if (childRef.current) {
+      const rect = childRef.current.getBoundingClientRect();
+      setPosition({
+        x: rect.left + rect.width / 2,
+        y: rect.top
+      });
+    }
+  };
+
+  const handleMouseEnter = () => {
+    updateTooltipPosition();
+    setIsVisible(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsVisible(false);
+  };
+
+  useEffect(() => {
+    // Update position on scroll or resize
+    const handleScroll = () => {
+      if (isVisible) {
+        updateTooltipPosition();
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, true);
+    window.addEventListener('resize', handleScroll);
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, [isVisible]);
+
+  return (
+    <>
+      <div 
+        ref={childRef}
+        className="inline-block"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        {children}
+      </div>
+      
+      {isVisible && createPortal(
+        <div 
+          className="fixed z-[9999] w-64 p-3 bg-gray-900/95 text-white rounded-lg shadow-lg 
+                    backdrop-blur-sm border border-gray-700/50 pointer-events-none transition-opacity duration-200"
+          style={{
+            left: `${position.x}px`,
+            top: `${position.y - 10}px`,
+            transform: 'translate(-50%, -100%)'
+          }}
+        >
+          {content}
+          <div 
+            className="absolute w-2 h-2 bg-gray-900/95 rotate-45 border-r border-b border-gray-700/50"
+            style={{
+              bottom: '-4px',
+              left: '50%',
+              transform: 'translateX(-50%)'
+            }}
+          ></div>
+        </div>,
+        document.body
+      )}
+    </>
+  );
+};
+
+// Tooltip component for deity selector (positions differently)
+const SelectorTooltip = ({ children, content }: { children: React.ReactNode, content: React.ReactNode }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const childRef = useRef<HTMLDivElement>(null);
+
+  const updateTooltipPosition = () => {
+    if (childRef.current) {
+      const rect = childRef.current.getBoundingClientRect();
+      setPosition({
+        x: rect.left + rect.width / 2,
+        y: rect.bottom
+      });
+    }
+  };
+
+  const handleMouseEnter = () => {
+    updateTooltipPosition();
+    setIsVisible(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsVisible(false);
+  };
+
+  useEffect(() => {
+    // Update position on scroll or resize
+    const handleScroll = () => {
+      if (isVisible) {
+        updateTooltipPosition();
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, true);
+    window.addEventListener('resize', handleScroll);
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, [isVisible]);
+
+  return (
+    <>
+      <div 
+        ref={childRef}
+        className="inline-block"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        {children}
+      </div>
+      
+      {isVisible && createPortal(
+        <div 
+          className="fixed z-[9999] w-64 p-3 bg-gray-900/95 text-white rounded-lg shadow-lg 
+                   backdrop-blur-sm border border-gray-700/50 pointer-events-none transition-opacity duration-200"
+          style={{
+            left: `${position.x}px`,
+            top: `${position.y + 10}px`,
+            transform: 'translateX(-50%)'
+          }}
+        >
+          {content}
+          <div 
+            className="absolute w-2 h-2 bg-gray-900/95 rotate-45 border-l border-t border-gray-700/50"
+            style={{
+              top: '-4px',
+              left: '50%',
+              transform: 'translateX(-50%)'
+            }}
+          ></div>
+        </div>,
+        document.body
+      )}
+    </>
+  );
+};
+
+// Deity badge component
+const DeityBadge = ({ mythologicalFigureId }: { mythologicalFigureId?: string }) => {
+  if (!mythologicalFigureId || !MYTHOLOGICAL_FIGURES[mythologicalFigureId]) {
+    return null;
+  }
+  
+  const figure = MYTHOLOGICAL_FIGURES[mythologicalFigureId];
+  const Icon = figure.icon;
+  
+  return (
+    <Tooltip 
+      content={
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-3 border-b border-gray-700/50 pb-2">
+            <Icon className="w-5 h-5" style={{ color: figure.color }} strokeWidth={2} />
+            <div className="font-medium text-sm">{figure.name}</div>
+          </div>
+          <div className="text-gray-300 text-xs">{figure.description}</div>
+          <div className="text-gray-400 italic text-xs mt-1">
+            <span className="font-medium text-gray-300">Domain:</span> {figure.domain}
+          </div>
+        </div>
+      }
+    >
+      <div 
+        className="ml-2 flex-shrink-0 text-lg transition-all duration-300 hover:scale-110 hover:-rotate-3"
+        style={{ color: figure.color }}
+      >
+        <Icon className="w-5 h-5" strokeWidth={2} />
+      </div>
+    </Tooltip>
+  );
+};
+
+// Deity Selector component for add/edit forms - use SelectorTooltip here
+const DeitySelector = ({ 
+  tier, 
+  selectedDeityId, 
+  onChange 
+}: { 
+  tier: 'olympian' | 'titan' | 'hero'; 
+  selectedDeityId?: string; 
+  onChange: (id: string | undefined) => void 
+}) => {
+  const deities = getMythologicalFiguresByTier(tier);
+  
+  return (
+    <div className="mt-2 mb-6"> {/* Added bottom margin for spacing */}
+      <label className="block text-sm text-gray-400 mb-2">Associated Deity:</label>
+      <div className="flex flex-wrap gap-4 mb-4 px-2"> {/* Increased gap and added padding */}
+        <button
+          className={`p-2 flex items-center justify-center transition-all duration-200 rounded-md
+                   ${!selectedDeityId ? 'bg-slate-700 text-white' : 'text-gray-400 hover:text-white'}`}
+          onClick={() => onChange(undefined)}
+          title="None"
+        >
+          <X className="w-5 h-5" strokeWidth={2} />
+        </button>
+        
+        {deities.map(deity => {
+          const Icon = deity.icon;
+          const isSelected = selectedDeityId === deity.id;
+          
+          return (
+            <SelectorTooltip
+              key={deity.id}
+              content={
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-3 border-b border-gray-700/50 pb-2">
+                    <Icon className="w-5 h-5" style={{ color: deity.color }} strokeWidth={2} />
+                    <div className="font-medium text-sm">{deity.name}</div>
+                  </div>
+                  <div className="text-gray-300 text-xs">{deity.description}</div>
+                  <div className="text-gray-400 italic text-xs mt-1">
+                    <span className="font-medium text-gray-300">Domain:</span> {deity.domain}
+                  </div>
+                </div>
+              }
+            >
+              <button
+                className={`p-2 text-lg flex items-center justify-center transition-all duration-200 rounded-md
+                          ${isSelected ? 'bg-slate-700' : 'hover:bg-slate-800/60'}`}
+                style={{ 
+                  color: deity.color,
+                }}
+                onClick={() => onChange(deity.id)}
+              >
+                <Icon className="w-6 h-6" strokeWidth={isSelected ? 2.5 : 2} />
+              </button>
+            </SelectorTooltip>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// Helper function to convert hex color to RGB for shadow
+function hexToRgb(hex: string): string {
+  // Remove # if present
+  hex = hex.replace('#', '');
+  
+  // Convert 3-digit hex to 6-digits
+  if (hex.length === 3) {
+    hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+  }
+  
+  // Parse the hex values
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  
+  return `${r}, ${g}, ${b}`;
+}
 
 // ────────────────────────────────────────── Autocomplete with focus / picked guard
 interface ACProps{value:string;onChange:(v:string)=>void;onSelect:(v:string)=>void;inputClass?:string;}
@@ -551,7 +1092,17 @@ export default function GamePantheon(){
             {Object.entries(CATEGORIES).map(([k,v])=><option key={k} value={k}>{v.name}</option>)}
           </Select>
         </div>
-        <div className="flex justify-between">
+        
+        {/* Mythological Figure Selector - only show for olympian, titan, or hero categories */}
+        {(newGame.category === 'olympian' || newGame.category === 'titan' || newGame.category === 'hero') && (
+          <DeitySelector 
+            tier={newGame.category as 'olympian' | 'titan' | 'hero'}
+            selectedDeityId={newGame.mythologicalFigureId}
+            onChange={(id) => setNewGame({...newGame, mythologicalFigureId: id})}
+          />
+        )}
+        
+        <div className="flex justify-between mt-6">
           <Button onClick={autoNew} className="bg-slate-700 hover:bg-slate-600 text-gray-200">Auto‑Fill</Button>
           <Button onClick={add} className="bg-slate-700 hover:bg-slate-600">Add</Button>
         </div>
@@ -581,7 +1132,7 @@ export default function GamePantheon(){
           } : undefined}
         >
           <CardHeader category={categoryID}>
-            <Icon className={`w-5 h-5 ${colors.icon} opacity-90`}/>
+            <Icon className="w-5 h-5 text-white opacity-90"/>
             <CardTitle category={categoryID}>{meta.name}</CardTitle>
           </CardHeader>
           <CardContent>
@@ -601,8 +1152,11 @@ export default function GamePantheon(){
                         strokeWidth: 1.5
                       })}
                     </div>
-                    <div className={!isSharedView ? "cursor-grab" : ""}>
+                    <div className={!isSharedView ? "cursor-grab flex items-center gap-1 flex-wrap" : "flex items-center gap-1 flex-wrap"}>
+                      <div className="flex items-center">
                       <span className="font-medium pr-1 leading-tight text-white">{g.title}</span>
+                        {g.mythologicalFigureId && <DeityBadge mythologicalFigureId={g.mythologicalFigureId} />}
+                      </div>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-400 text-xs">{g.genre} · {g.year}</span>
@@ -631,6 +1185,18 @@ export default function GamePantheon(){
                         <Input type="number" value={draft.year??""} onChange={e=>setDraft({...draft,year:+e.target.value})} className="text-xs" placeholder="Year"/>
                         <Select value={draft.category} onChange={e=>setDraft({...draft,category:e.target.value as CategoryID})} className="text-xs">{Object.entries(CATEGORIES).map(([k,v])=><option key={k} value={k}>{v.name}</option>)}</Select>
                       </div>
+                      
+                      {/* Mythological Figure Selector in Edit Mode */}
+                      {(draft.category === 'olympian' || draft.category === 'titan' || draft.category === 'hero') && (
+                        <div className="mt-1">
+                          <DeitySelector 
+                            tier={draft.category as 'olympian' | 'titan' | 'hero'}
+                            selectedDeityId={draft.mythologicalFigureId}
+                            onChange={(id) => setDraft({...draft, mythologicalFigureId: id})}
+                          />
+                        </div>
+                      )}
+                      
                       <div className="flex justify-end gap-2 items-center">
                         <IconBtn title="Auto‑Fill" onClick={autoEdit}><RefreshCw className="w-3 h-3" strokeWidth={1.5}/></IconBtn>
                         <Button onClick={()=>save(g.id)} className="bg-green-800 hover:bg-green-700 px-2 py-1 text-xs">Save</Button>
@@ -652,3 +1218,9 @@ export default function GamePantheon(){
   </div>
  );
 } 
+
+// ────────────────────────────────────────── Wikipedia helpers (was accidentally removed)
+const GENRE_KEYWORDS:[RegExp,string][]= [[/first‑person shooter/i,"FPS"],[/action‑adventure/i,"Action‑Adventure"],[/role‑?playing/i,"RPG"],[/4x/i,"4X Strategy"],[/real‑time strategy/i,"RTS"],[/turn‑based strategy/i,"TBS"]];
+async function wikiSuggestions(q:string){try{const res=await fetch(`https://en.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(q)}&limit=10&format=json&origin=*`);if(!res.ok)return[];const d=await res.json() as any;return d[1]??[]}catch{return[]}}
+function extractGenreFromInfobox(html:string){try{const doc=new DOMParser().parseFromString(html,"text/html");for(const tr of doc.querySelectorAll("table.infobox tr")){const th=tr.querySelector("th");if(th&&/Genre/i.test(th.textContent||"")){const td=tr.querySelector("td");if(td)return td.textContent?.split(/•|,|\||\//)[0].trim();}}}catch{} }
+async function wikipediaInfo(t:string){try{const [sum,html]=await Promise.all([fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(t)}`),fetch(`https://en.wikipedia.org/api/rest_v1/page/html/${encodeURIComponent(t)}`)]);if(!sum.ok)return{};const extract=(await sum.json()).extract??"";let genre;if(html.ok)genre=extractGenreFromInfobox(await html.text());if(!genre){for(const[r,l]of GENRE_KEYWORDS)if(r.test(extract)){genre=l;break}}const y=extract.match(/(19|20)\d{2}/);return{genre,year:y?+y[0]:undefined};}catch{return{}}} 
