@@ -5,6 +5,7 @@ import {
   Rocket, Ghost, Users, Building, Dice1, Globe, Map, GripVertical,
   Mountain, Flame, Sparkles, Share2, Copy, ArrowLeft
 } from "lucide-react";
+import * as LZString from 'lz-string';
 
 /**
  * Pantheon v8 ────────────────────────────────────────────────────────────────
@@ -18,14 +19,65 @@ import {
 // Helper functions
 function uid(){return Math.random().toString(36).slice(2,10);}
 
-// Base64 encode/decode for URL sharing
+// Optimize data structure before encoding to reduce size
+function optimizeGameData(games: Game[]): any[] {
+  // Map categories to single digits for better compression
+  const catMap: Record<CategoryID, string> = {
+    olympian: '0', 
+    titan: '1', 
+    demigod: '2', 
+    muse: '3', 
+    hero: '4', 
+    other: '5'
+  };
+  
+  // Convert to an ultra compact format:
+  // [id truncated to 4 chars, title, genre, year, category as single digit]
+  return games.map(g => [
+    g.id.substring(0, 4),
+    g.title,
+    g.genre,
+    g.year,
+    catMap[g.category]
+  ]);
+}
+
+function restoreGameData(data: any[]): Game[] {
+  // Map digits back to category names
+  const catMap: Record<string, CategoryID> = {
+    '0': 'olympian',
+    '1': 'titan', 
+    '2': 'demigod', 
+    '3': 'muse', 
+    '4': 'hero', 
+    '5': 'other'
+  };
+  
+  // Convert from compact format back to Game objects
+  return data.map(item => ({
+    id: item[0], // Short ID is fine for display purposes
+    title: item[1],
+    genre: item[2],
+    year: item[3],
+    category: catMap[item[4]] as CategoryID
+  }));
+}
+
+// Compressed Base64 encode/decode for URL sharing
 function encodeGameData(games: Game[]): string {
-  return btoa(encodeURIComponent(JSON.stringify(games)));
+  // Optimize data structure, stringify, compress, then URL-encode for base64
+  const optimized = optimizeGameData(games);
+  const json = JSON.stringify(optimized);
+  return LZString.compressToEncodedURIComponent(json);
 }
 
 function decodeGameData(encodedData: string): Game[] {
   try {
-    return JSON.parse(decodeURIComponent(atob(encodedData)));
+    // Decode from base64, decompress, parse JSON, restore data structure
+    const json = LZString.decompressFromEncodedURIComponent(encodedData);
+    if (!json) return [];
+    const data = JSON.parse(json);
+    return restoreGameData(data);
   } catch (e) {
     console.error("Failed to decode shared data", e);
     return [];
@@ -216,13 +268,18 @@ function Autocomplete({value,onChange,onSelect,inputClass=""}:ACProps){
 
 // ────────────────────────────────────────── Main component
 export default function GamePantheon(){
- const[games,setGames]=useState<Game[]>(SAMPLE_GAMES);
+ // Initialize with empty array instead of SAMPLE_GAMES
+ const[games,setGames]=useState<Game[]>([]);
  const[newGame,setNewGame]=useState<Partial<Game>>({category:"hero"});
  const[editing,setEditing]=useState<string|null>(null);
  const[draft,setDraft]=useState<Partial<Game>>({});
  const[isSharedView,setIsSharedView]=useState<boolean>(false);
  const[shareUrl,setShareUrl]=useState<string>("");
  const[showShareModal,setShowShareModal]=useState<boolean>(false);
+ const[compressionStats,setCompressionStats]=useState<{original: number, compressed: number, ratio: number}>({original: 0, compressed: 0, ratio: 0});
+ 
+ // Add a ref to track if this is first render
+ const isInitialMount = useRef(true);
  
  // Force dark mode
  useEffect(() => {
@@ -234,6 +291,7 @@ export default function GamePantheon(){
    
    if (sharedData) {
      try {
+       console.log("Loading from shared URL");
        const decodedGames = decodeGameData(sharedData);
        setGames(decodedGames);
        setIsSharedView(true);
@@ -243,25 +301,45 @@ export default function GamePantheon(){
    } else {
      // Load games from localStorage only if not a shared view
      const savedGames = localStorage.getItem('pantheonGames');
+     console.log("Loading from localStorage:", savedGames ? "Found data" : "No data found");
+     
      if (savedGames) {
        try {
-         setGames(JSON.parse(savedGames));
+         const parsedGames = JSON.parse(savedGames);
+         console.log(`Loaded ${parsedGames.length} games from localStorage`);
+         setGames(parsedGames);
        } catch (e) {
          console.error("Failed to parse saved games", e);
        }
+     } else {
+       // Only use SAMPLE_GAMES if there's nothing in localStorage
+       console.log("Using sample games");
+       setGames(SAMPLE_GAMES);
      }
    }
  }, []);
 
  // Save games to localStorage whenever they change (only if not in shared view)
  useEffect(() => {
+   // Skip saving on the initial mount - we're either loading from localStorage or setting up initial state
+   if (isInitialMount.current) {
+     isInitialMount.current = false;
+     console.log("Skipping initial localStorage save");
+     return;
+   }
+   
    if (!isSharedView) {
+     console.log(`Saving ${games.length} games to localStorage`);
      localStorage.setItem('pantheonGames', JSON.stringify(games));
    }
  }, [games, isSharedView]);
  
  // Sharing functionality
  const generateShareLink = () => {
+   // Get both compressed and uncompressed sizes for comparison
+   const rawData = JSON.stringify(games);
+   const rawBase64 = btoa(encodeURIComponent(rawData));
+   
    const encodedData = encodeGameData(games);
    const url = new URL(window.location.href);
    // Remove any existing shared parameter
@@ -269,6 +347,15 @@ export default function GamePantheon(){
    // Add the encoded data
    url.searchParams.set('shared', encodedData);
    setShareUrl(url.toString());
+   
+   // Calculate compression stats
+   const compressionRatio = Math.round((1 - (encodedData.length / rawBase64.length)) * 100);
+   setCompressionStats({
+     original: rawBase64.length,
+     compressed: encodedData.length,
+     ratio: compressionRatio
+   });
+   
    setShowShareModal(true);
  };
  
@@ -414,7 +501,7 @@ export default function GamePantheon(){
             <Share2 className="w-5 h-5 text-amber-400" /> Share Your Pantheon
           </h2>
           <p className="text-gray-400 mb-4 text-sm">Share this link with friends to show them your game pantheon:</p>
-          <div className="flex gap-2 mb-6">
+          <div className="flex gap-2 mb-4">
             <input 
               type="text" 
               value={shareUrl} 
@@ -425,6 +512,24 @@ export default function GamePantheon(){
               <Copy className="w-4 h-4" /> Copy
             </Button>
           </div>
+          
+          {/* Compression stats */}
+          <div className="bg-slate-800/50 rounded-md p-3 mb-6 text-sm">
+            <h3 className="text-gray-300 font-medium mb-2 flex items-center gap-2">
+              <span className="text-amber-300">📊</span> Compression Statistics
+            </h3>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+              <div className="text-gray-400">Original data size:</div>
+              <div className="text-gray-300">{compressionStats.original.toLocaleString()} chars</div>
+              
+              <div className="text-gray-400">Compressed size:</div>
+              <div className="text-gray-300">{compressionStats.compressed.toLocaleString()} chars</div>
+              
+              <div className="text-gray-400">Size reduction:</div>
+              <div className="text-amber-300 font-medium">{compressionStats.ratio}%</div>
+            </div>
+          </div>
+          
           <div className="flex justify-end">
             <Button onClick={() => setShowShareModal(false)} className="bg-slate-700 hover:bg-slate-600">Done</Button>
           </div>
