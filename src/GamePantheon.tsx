@@ -60,6 +60,9 @@ export default function GamePantheon() {
   const [historyItems, setHistoryItems] = useState<Array<{timestamp: string, index: number}>>([]);
   const [showOverrideConfirm, setShowOverrideConfirm] = useState<boolean>(false);
   
+  // Add a new state for inline deity editing
+  const [inlineDeityEdit, setInlineDeityEdit] = useState<string | null>(null);
+  
   // Helper function to determine if a category supports deities
   const supportsDieties = (category?: CategoryID): boolean => {
     return category ? ['olympian', 'titan', 'hero'].includes(category) : false;
@@ -288,7 +291,7 @@ export default function GamePantheon() {
     e.dataTransfer.effectAllowed = "move";
   };
   
-  const onDrop = (e: React.DragEvent<HTMLDivElement>, target: CategoryID) => {
+  const onDrop = async (e: React.DragEvent<HTMLDivElement>, target: CategoryID) => {
     e.preventDefault();
     // Get the data from the drag operation
     const data = e.dataTransfer.getData("application/json");
@@ -310,7 +313,35 @@ export default function GamePantheon() {
         // Remove deity if not supported by the target category
         mythologicalFigureId: supportsDieties(target) ? steamGame.mythologicalFigureId : undefined
       };
-      setGames([...games, newGame]);
+      
+      // Add the game first with basic information
+      setGames(prevGames => [...prevGames, newGame]);
+      
+      // Then try to fetch additional details in the background
+      try {
+        if (newGame.title) {
+          const additionalInfo = await wikipediaInfo(newGame.title);
+          
+          // Update the game with the fetched information if available
+          if (additionalInfo) {
+            setGames(prevGames => prevGames.map(g => {
+              if (g.id === newGame.id) {
+                return {
+                  ...g,
+                  // Only update genre if it was "Unknown"
+                  genre: g.genre === "Unknown" && additionalInfo.genre ? additionalInfo.genre : g.genre,
+                  // Only update year if it wasn't set
+                  year: (!g.year || g.year === new Date().getFullYear()) && additionalInfo.year ? additionalInfo.year : g.year
+                };
+              }
+              return g;
+            }));
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch additional game info:", error);
+        // The game is already added with default values, so we don't need additional error handling
+      }
     } else {
       // This is an existing game being moved
       setGames(games.map(g => {
@@ -398,6 +429,20 @@ export default function GamePantheon() {
     e.dataTransfer.effectAllowed = "move";
   };
 
+  // Add a function to handle inline deity updates
+  const updateDeity = (gameId: string, deityId: string | undefined) => {
+    setGames(games.map(g => {
+      if (g.id === gameId) {
+        return {
+          ...g,
+          mythologicalFigureId: deityId
+        };
+      }
+      return g;
+    }));
+    setInlineDeityEdit(null);
+  };
+
   // Return JSX
   return (
     <div className="p-8 bg-gradient-to-br from-slate-950 to-gray-900 min-h-screen select-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] font-sans">
@@ -412,9 +457,7 @@ export default function GamePantheon() {
         <div className="absolute right-0 top-0 flex gap-2">
           {isSharedView ? (
             <>
-              <Button onClick={createNewFromShared} className="flex items-center gap-2 bg-amber-800 hover:bg-amber-700">
-                <ArrowLeft className="w-4 h-4" /> Save as Mine
-              </Button>
+              {/* "Save as Mine" button removed to avoid duplication with banner below */}
             </>
           ) : (
             <>
@@ -454,8 +497,23 @@ export default function GamePantheon() {
         {/* Shared view banner */}
         {isSharedView && (
           <div className="absolute left-0 top-0 flex items-center">
-            <Button onClick={() => window.history.back()} className="mr-3 bg-slate-800 hover:bg-slate-700 flex items-center gap-1">
-              <ArrowLeft className="w-3 h-3" /> Back
+            <Button onClick={() => {
+              // Remove shared parameters from URL
+              const url = new URL(window.location.href);
+              url.searchParams.delete('shared');
+              url.searchParams.delete('title');
+              window.history.pushState({}, '', url.toString());
+              
+              // Exit shared view
+              setIsSharedView(false);
+              
+              // Load user's own games
+              setGames(localStateManager.loadGames());
+              
+              // Reset title
+              document.title = "Game Pantheon";
+            }} className="mr-3 bg-slate-800 hover:bg-slate-700 flex items-center gap-1">
+              <ArrowLeft className="w-3 h-3" /> Back to My Collection
             </Button>
             <div className="bg-slate-800/80 backdrop-blur-sm text-white py-2 px-4 rounded-md flex items-center text-sm">
               <span className="text-amber-300 mr-2">👁️</span> 
@@ -700,7 +758,41 @@ export default function GamePantheon() {
                         <div className={!isSharedView ? "cursor-grab flex items-center gap-1 flex-wrap" : "flex items-center gap-1 flex-wrap"}>
                           <div className="flex items-center">
                             <span className="font-medium pr-1 leading-tight text-white">{g.title}</span>
-                            {g.mythologicalFigureId && <DeityBadge mythologicalFigureId={g.mythologicalFigureId} />}
+                            {g.mythologicalFigureId ? (
+                              <DeityBadge mythologicalFigureId={g.mythologicalFigureId} />
+                            ) : supportsDieties(g.category) && !isSharedView ? (
+                              inlineDeityEdit === g.id ? (
+                                <div className="absolute z-10 mt-1" onClick={(e) => e.stopPropagation()}>
+                                  <div className="bg-slate-800 border border-slate-700 rounded-md p-3 shadow-xl">
+                                    <DeitySelector
+                                      tier={g.category as 'olympian' | 'titan' | 'hero'}
+                                      selectedDeityId={undefined}
+                                      onChange={(id) => updateDeity(g.id, id)}
+                                    />
+                                    <div className="flex justify-end mt-2">
+                                      <Button 
+                                        onClick={() => setInlineDeityEdit(null)} 
+                                        className="bg-slate-700 hover:bg-slate-600 text-xs px-2 py-1"
+                                      >
+                                        Cancel
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
+                              ) : (
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    setInlineDeityEdit(g.id);
+                                  }}
+                                  className="border border-dashed border-gray-500 rounded-full w-5 h-5 flex items-center justify-center text-gray-400 text-xs hover:bg-slate-700 hover:text-white transition-colors"
+                                  title="Add mythological figure"
+                                >
+                                  +
+                                </button>
+                              )
+                            ) : null}
                           </div>
                         </div>
                         <div className="flex justify-between items-center">
