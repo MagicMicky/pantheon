@@ -14,7 +14,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     tier: 'olympian',
     icon: Zap,
     description: 'King of the gods, ruler of Mount Olympus',
-    domain: 'Power fantasy, rulership, divine justice, overcoming limitations, dramatic conflicts',
+    domain: 'Power fantasy, overcoming limitations, dramatic conflicts',
     color: '#5c9eff' // brightened blue
   },
   poseidon: {
@@ -23,7 +23,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     tier: 'olympian',
     icon: Waves,
     description: 'God of the sea, earthquakes, storms, and horses',
-    domain: 'Exploration, unpredictability, naval themes, natural disasters, tempestuous forces',
+    domain: 'Exploration, unpredictability, tempestuous forces',
     color: '#4db8ff' // brightened blue-teal
   },
   hades: {
@@ -32,7 +32,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     tier: 'olympian',
     icon: Skull,
     description: 'God of the underworld and the dead',
-    domain: 'Dark themes, underworld exploration, death mechanics, wealth acquisition, isolation',
+    domain: 'Dark themes, underworld exploration, death mechanics',
     color: '#a069df' // brightened purple
   },
   athena: {
@@ -245,6 +245,42 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     description: 'Tamer of Pegasus and slayer of the Chimera',
     domain: 'Mount/flying mechanics, hybrid creatures, hubris themes, aerial combat',
     color: '#f0f0f0' // brightened white/silver
+  },
+  hippolyta: {
+    id: 'hippolyta',
+    name: 'Hippolyta',
+    tier: 'hero',
+    icon: Shield,
+    description: 'Queen of the Amazons and wielder of a magical girdle',
+    domain: 'Female warriors, leadership, sacred items, tribal communities',
+    color: '#ff7d7d' // brightened red-pink
+  },
+  medea: {
+    id: 'medea',
+    name: 'Medea',
+    tier: 'hero',
+    icon: Feather,
+    description: 'Sorceress princess who helped Jason obtain the Golden Fleece',
+    domain: 'Magic systems, betrayal narratives, resourcefulness, vengeance arcs',
+    color: '#9370db' // brightened medium purple
+  },
+  penthesilea: {
+    id: 'penthesilea',
+    name: 'Penthesilea',
+    tier: 'hero',
+    icon: Sword,
+    description: 'Amazon warrior queen who fought in the Trojan War',
+    domain: 'Battle prowess, last stands, honor codes, tragic confrontations',
+    color: '#cd853f' // brightened peru/bronze
+  },
+  cyrene: {
+    id: 'cyrene',
+    name: 'Cyrene',
+    tier: 'hero',
+    icon: Mountain,
+    description: 'Huntress who wrestled lions and caught Apollo\'s attention',
+    domain: 'Beast taming, wilderness mastery, physical prowess, divine favor',
+    color: '#20b2aa' // brightened light sea green
   }
 };
 
