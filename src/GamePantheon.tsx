@@ -1,43 +1,125 @@
 import React, { useState, useEffect, useRef, KeyboardEvent, FocusEvent } from "react";
 import { 
-  Mountain, SunMedium, Star, Music, Sword, Shield, Plus, X, 
+  SunMedium, Star, Music, Sword, Shield, Plus, X, 
   Pen, RefreshCw, Gamepad2, Crosshair, Car, Brain, Trophy, 
-  Rocket, Ghost, Users, Building, Dice1, Globe, Map, GripVertical, Moon 
+  Rocket, Ghost, Users, Building, Dice1, Globe, Map, GripVertical,
+  Mountain, Flame, Sparkles
 } from "lucide-react";
 
 /**
- * Pantheon v6 ────────────────────────────────────────────────────────────────
- * Fixes & polish
- * • Autocomplete no longer re‑opens right after selecting (tracks last pick &
- *   only fetches while input is focused).
- * • Editing fields behave the same — dropdown only shows while the input has
- *   focus.
- * • Drag‑and‑drop: cards are now proper drop targets (HTML5 text/plain), games
- *   move between tiers smoothly.
+ * Pantheon v8 ────────────────────────────────────────────────────────────────
+ * Sophisticated museum-quality design
+ * • Refined, desaturated color palette with subtle accents
+ * • Elegant typography with proper hierarchy
+ * • Enhanced card design with depth and translucency
+ * • Sophisticated UI elements and interactions
  */
 
 // Helper functions
 function uid(){return Math.random().toString(36).slice(2,10);}
 
+// Import Playfair Display font in index.css or add this to the head:
+// <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+
+// Category color schemes - more sophisticated, desaturated palette
+const CATEGORY_COLORS: Record<CategoryID, {bg: string, text: string, border: string, icon: string, highlight: string, gradient: string}> = {
+  olympian: {
+    bg: "bg-amber-950/60", 
+    text: "text-amber-200", 
+    border: "border-amber-900/30",
+    icon: "text-amber-300/90",
+    highlight: "#78350f", // amber-900
+    gradient: "from-amber-950 to-amber-900/80"
+  },
+  titan: {
+    bg: "bg-orange-950/60", 
+    text: "text-orange-200", 
+    border: "border-orange-900/30",
+    icon: "text-orange-300/90",
+    highlight: "#7c2d12", // orange-900
+    gradient: "from-orange-950 to-orange-900/80"
+  },
+  demigod: {
+    bg: "bg-purple-950/60", 
+    text: "text-purple-200", 
+    border: "border-purple-900/30",
+    icon: "text-purple-300/90",
+    highlight: "#581c87", // purple-900
+    gradient: "from-purple-950 to-purple-900/80"
+  },
+  muse: {
+    bg: "bg-teal-950/60", 
+    text: "text-teal-200", 
+    border: "border-teal-900/30",
+    icon: "text-teal-300/90",
+    highlight: "#134e4a", // teal-900
+    gradient: "from-teal-950 to-teal-900/80"
+  },
+  hero: {
+    bg: "bg-rose-950/60", 
+    text: "text-rose-200", 
+    border: "border-rose-900/30",
+    icon: "text-rose-300/90",
+    highlight: "#881337", // rose-900
+    gradient: "from-rose-950 to-rose-900/80"
+  },
+  other: {
+    bg: "bg-slate-900/60", 
+    text: "text-slate-300", 
+    border: "border-slate-800/30",
+    icon: "text-slate-400/90",
+    highlight: "#1e293b", // slate-800
+    gradient: "from-slate-900 to-slate-800/80"
+  }
+};
+
 // ────────────────────────────────────────── Tiny UI shims
-const Card = ({ children, ...p }: any) => <div {...p} className={`rounded-2xl border bg-white dark:bg-slate-800 dark:border-slate-700 shadow-sm hover:shadow-md transition flex flex-col h-full transition-all duration-200 ${p.className || ""}`} >{children}</div>;
-const CardHeader = ({ children }: any) => <div className="flex items-center gap-2 p-4 pb-1 border-b dark:border-slate-700">{children}</div>;
-const CardTitle = ({ children }: any) => <h2 className="text-lg font-bold leading-tight dark:text-white">{children}</h2>;
-const CardContent = ({ children, ...p }: any) => <div {...p} className="p-3 grow flex flex-col gap-2">{children}</div>;
-const Button = ({ children, onClick, className="" }: any) => <button onClick={onClick} className={`px-3 py-2 text-sm font-medium rounded-md bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-600 transition ${className}`}>{children}</button>;
-const IconBtn = ({ children, onClick, title="" }: any) => <button onClick={onClick} title={title} className="p-1 text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">{children}</button>;
-const Input = (p: React.InputHTMLAttributes<HTMLInputElement>) => <input {...p} className={`w-full rounded-md border dark:border-slate-600 dark:bg-slate-700 dark:text-white px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-indigo-400 ${p.className??""}`} />;
-const Select = (p: React.SelectHTMLAttributes<HTMLSelectElement>) => <select {...p} className={`w-full rounded-md border dark:border-slate-600 dark:bg-slate-700 dark:text-white px-2 py-1 text-sm ${p.className??""}`} />;
+const Card = ({ children, category = "other", ...p }: any) => {
+  const colors = CATEGORY_COLORS[category as CategoryID];
+  return (
+    <div {...p} className={`rounded-xl border ${colors.border} ${colors.bg} shadow-lg backdrop-blur-sm backdrop-filter 
+    hover:shadow-xl transition duration-300 flex flex-col h-full relative overflow-hidden group ${p.className || ""}`}>
+      <div className={`absolute inset-0 bg-gradient-to-br ${colors.gradient} opacity-80 group-hover:opacity-90 transition-opacity duration-300`}></div>
+      <div className="relative z-10 flex flex-col h-full">
+        {children}
+      </div>
+    </div>
+  );
+};
+
+const CardHeader = ({ children, category = "other" }: any) => {
+  const colors = CATEGORY_COLORS[category as CategoryID];
+  return (
+    <div className={`flex items-center gap-3 p-5 pb-3 border-b ${colors.border} bg-black/20`}>
+      {children}
+    </div>
+  );
+};
+
+const CardTitle = ({ children, category = "other" }: any) => {
+  const colors = CATEGORY_COLORS[category as CategoryID];
+  return <h2 className={`text-xl font-serif font-bold leading-tight tracking-wide ${colors.text}`}>{children}</h2>;
+};
+
+const CardContent = ({ children, ...p }: any) => <div {...p} className="p-5 pt-4 grow flex flex-col gap-3">{children}</div>;
+
+const Button = ({ children, onClick, className="" }: any) => <button onClick={onClick} className={`px-4 py-2 text-sm font-medium rounded-md bg-slate-800 text-white hover:bg-slate-700 transition-all duration-200 shadow-sm hover:shadow ${className}`}>{children}</button>;
+
+const IconBtn = ({ children, onClick, title="" }: any) => <button onClick={onClick} title={title} className="p-1.5 text-gray-400 hover:text-white transition-colors duration-200">{children}</button>;
+
+const Input = (p: React.InputHTMLAttributes<HTMLInputElement>) => <input {...p} className={`w-full rounded-md border border-slate-700/50 bg-slate-800/70 text-white px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-slate-500 transition-all duration-200 backdrop-blur-sm ${p.className??""}`} />;
+
+const Select = (p: React.SelectHTMLAttributes<HTMLSelectElement>) => <select {...p} className={`w-full rounded-md border border-slate-700/50 bg-slate-800/70 text-white px-3 py-2 text-sm transition-all duration-200 backdrop-blur-sm ${p.className??""}`} />;
 
 // ────────────────────────────────────────── Types & constants
 interface Game { id:string; title:string; genre:string; year:number; category:CategoryID; }
 type CategoryID="olympian"|"titan"|"demigod"|"muse"|"hero"|"other";
 const CATEGORIES:Record<CategoryID,{name:string;icon:any;blurb:string}>={
-  olympian:{name:"Olympian Gods",icon:SunMedium,blurb:"Masterpieces reshaping the medium."},
+  olympian:{name:"Olympian Gods",icon:Sparkles,blurb:"Masterpieces reshaping the medium."},
   titan:{name:"Titans",icon:Mountain,blurb:"Genre‑defining giants."},
   demigod:{name:"Demi‑Gods",icon:Star,blurb:"Hybrids bridging niche & mainstream."},
   muse:{name:"Muses",icon:Music,blurb:"Inventive, artistic experiences."},
-  hero:{name:"Heroes",icon:Sword,blurb:"Beloved favourites."},
+  hero:{name:"Heroes",icon:Flame,blurb:"Beloved favourites."},
   other:{name:"Monsters & Curios",icon:Shield,blurb:"Oddities and experiments."},
 };
 const SAMPLE_GAMES:Game[]=[{id:uid(),title:"The Legend of Zelda: Breath of the Wild",genre:"Action‑Adventure",year:2017,category:"olympian"}];
@@ -115,7 +197,7 @@ function Autocomplete({value,onChange,onSelect,inputClass=""}:ACProps){
   const outside=(e:MouseEvent)=>{if(ref.current&&!ref.current.contains(e.target as Node))close();};
   useEffect(()=>{window.addEventListener("click",outside);return()=>window.removeEventListener("click",outside);},[]);
 
-  return <div className="relative" ref={ref}><Input value={value} onFocus={()=>setFocused(true)} onBlur={(e:FocusEvent)=>setFocused(false)} onChange={e=>onChange(e.target.value)} onKeyDown={handleKey} className={inputClass} placeholder="Title" />{sugs.length>0&&<ul className="absolute left-0 right-0 bg-white dark:bg-slate-700 border dark:border-slate-600 rounded-md shadow max-h-48 overflow-auto text-sm z-20">{sugs.map((s,i)=><li key={s} className={`px-2 py-1 cursor-pointer ${i===active?"bg-indigo-100 dark:bg-indigo-800":"hover:bg-indigo-50 dark:hover:bg-indigo-900"} dark:text-white`} onMouseEnter={()=>setActive(i)} onMouseLeave={()=>setActive(-1)} onClick={()=>choose(s)}>{s}</li>)}</ul>}</div>;
+  return <div className="relative" ref={ref}><Input value={value} onFocus={()=>setFocused(true)} onBlur={(e:FocusEvent)=>setFocused(false)} onChange={e=>onChange(e.target.value)} onKeyDown={handleKey} className={inputClass} placeholder="Title" />{sugs.length>0&&<ul className="absolute left-0 right-0 bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 rounded-md shadow-lg max-h-48 overflow-auto text-sm z-20">{sugs.map((s,i)=><li key={s} className={`px-3 py-2 cursor-pointer ${i===active?"bg-slate-700":"hover:bg-slate-700/60"} text-white transition-all duration-150`} onMouseEnter={()=>setActive(i)} onMouseLeave={()=>setActive(-1)} onClick={()=>choose(s)}>{s}</li>)}</ul>}</div>;
 }
 
 // ────────────────────────────────────────── Main component
@@ -124,10 +206,12 @@ export default function GamePantheon(){
  const[newGame,setNewGame]=useState<Partial<Game>>({category:"hero"});
  const[editing,setEditing]=useState<string|null>(null);
  const[draft,setDraft]=useState<Partial<Game>>({});
- const[darkMode,setDarkMode]=useState<boolean>(false);
  
- // Load games and theme preference from localStorage on initial render
+ // Force dark mode
  useEffect(() => {
+   document.documentElement.classList.add('dark');
+   
+   // Load games from localStorage
    const savedGames = localStorage.getItem('pantheonGames');
    if (savedGames) {
      try {
@@ -136,148 +220,187 @@ export default function GamePantheon(){
        console.error("Failed to parse saved games", e);
      }
    }
-
-   // Load theme preference
-   const isDark = localStorage.getItem('pantheonDarkMode') === 'true';
-   setDarkMode(isDark);
-   if (isDark) {
-     document.documentElement.classList.add('dark');
-   } else {
-     document.documentElement.classList.remove('dark');
-   }
  }, []);
 
  // Save games to localStorage whenever they change
  useEffect(() => {
    localStorage.setItem('pantheonGames', JSON.stringify(games));
  }, [games]);
-
- // Handle dark mode toggle
- const toggleDarkMode = () => {
-   const newMode = !darkMode;
-   setDarkMode(newMode);
-   localStorage.setItem('pantheonDarkMode', String(newMode));
-   if (newMode) {
-     document.documentElement.classList.add('dark');
-   } else {
-     document.documentElement.classList.remove('dark');
-   }
- };
  
  // CRUD
  const add=()=>{if(!newGame.title||!newGame.genre||!newGame.year)return;setGames([...games,{...(newGame as Game),id:uid()}]);setNewGame({category:"hero"});};
  const del=(id:string)=>setGames(games.filter(g=>g.id!==id));
  const save=(id:string)=>{if(!draft.title||!draft.genre||!draft.year)return;setGames(games.map(g=>g.id===id?{...g,...draft as Game}:g));setEditing(null);};
+ 
  // drag
  const onDragStart=(e:React.DragEvent,id:string)=>{e.dataTransfer.setData("text/plain",id);e.dataTransfer.effectAllowed="move";};
  const onDrop=(e:React.DragEvent,target:CategoryID)=>{e.preventDefault();const id=e.dataTransfer.getData("text/plain");if(!id)return;setGames(gs=>gs.map(g=>g.id===id?{...g,category:target}:g));};
- const allow=(e:React.DragEvent)=>{
+ 
+ // Update drag highlight colors based on category
+ const allow=(e:React.DragEvent, category: CategoryID)=>{
    e.preventDefault();
    e.dataTransfer.dropEffect="move";
-   // Add classes to highlight the drop target
-   if (e.currentTarget.classList.contains('outline-dashed')) return;
-   if (document.documentElement.classList.contains('dark')) {
-     e.currentTarget.classList.add('outline-dashed', 'outline-2', 'outline-indigo-500', 'bg-indigo-900/20');
-   } else {
-     e.currentTarget.classList.add('outline-dashed', 'outline-2', 'outline-indigo-400', 'bg-indigo-50/30');
-   }
+   
+   // Get target element and check if already highlighted
+   const target = e.currentTarget as HTMLElement;
+   
+   // Important: Clear any existing highlights before adding new ones
+   // This ensures only the current target is highlighted
+   document.querySelectorAll('.drag-highlight').forEach(el => {
+     if (el !== target) {
+       el.classList.remove('drag-highlight');
+       (el as HTMLElement).style.outlineStyle = '';
+       (el as HTMLElement).style.outlineWidth = '';
+       (el as HTMLElement).style.outlineColor = '';
+       (el as HTMLElement).style.backgroundColor = '';
+     }
+   });
+   
+   // Skip if already highlighted
+   if (target.classList.contains('drag-highlight')) return;
+   
+   // Add highlight class
+   target.classList.add('drag-highlight');
+   
+   // Get colors for this category
+   const colors = CATEGORY_COLORS[category];
+   
+   // Apply category-specific styles
+   target.style.outlineStyle = 'dashed';
+   target.style.outlineWidth = '2px';
+   target.style.outlineColor = colors.highlight;
+   target.style.backgroundColor = `${colors.highlight}33`; // 33 is ~20% opacity in hex
  };
- // Add a drag leave handler
+ 
  const removeDragHighlight=(e:React.DragEvent)=>{
-   e.currentTarget.classList.remove(
-     'outline-dashed', 'outline-2', 
-     'outline-indigo-400', 'outline-indigo-500',
-     'bg-indigo-50/30', 'bg-indigo-900/20'
-   );
+   const target = e.currentTarget as HTMLElement;
+   target.classList.remove('drag-highlight');
+   
+   // Reset styles
+   target.style.outlineStyle = '';
+   target.style.outlineWidth = '';
+   target.style.outlineColor = '';
+   target.style.backgroundColor = '';
  };
+ 
  // autofill
  const autoNew=async()=>{if(!newGame.title)return;setNewGame({...newGame,...await wikipediaInfo(newGame.title)});};
  const autoEdit=async()=>{if(!draft.title)return;setDraft({...draft,...await wikipediaInfo(draft.title)});};
 
- return <div className="p-6 bg-gradient-to-br from-slate-50 to-indigo-50 dark:from-slate-900 dark:to-indigo-950 min-h-screen select-none">
-  <header className="text-center mb-8 relative">
-    <h1 className="text-4xl font-extrabold dark:text-white">🎮 The Game Pantheon</h1>
-    <div className="absolute right-0 top-2">
-      <IconBtn title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"} onClick={toggleDarkMode}>
-        {darkMode ? <SunMedium className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-      </IconBtn>
+ return (
+  <div className="p-8 bg-gradient-to-br from-slate-950 to-gray-900 min-h-screen select-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] font-sans">
+    <header className="text-center mb-10">
+      <h1 className="text-5xl font-serif font-bold tracking-wider text-white mb-1">
+        <span className="inline-block mr-2 transform translate-y-1">🏛️</span> 
+        The Game Pantheon
+      </h1>
+      <p className="text-gray-400 text-sm tracking-wide mt-2 italic">Curate your personal collection of gaming greatness</p>
+    </header>
+    
+    {/* Add Form */}
+    <div className="mx-auto max-w-2xl bg-slate-900/70 backdrop-blur-md p-6 rounded-xl shadow-xl mb-12 border border-slate-800/50">
+      <h2 className="text-xl font-serif font-bold flex items-center gap-2 text-white mb-4 tracking-wide">
+        <Plus className="w-5 h-5"/> Add Game
+      </h2>
+      <div className="grid sm:grid-cols-2 gap-4 mb-4">
+        <Autocomplete value={newGame.title??""} onChange={v=>setNewGame({...newGame,title:v})} onSelect={async v=>setNewGame({...newGame,title:v,...await wikipediaInfo(v)})}/>
+        <Input placeholder="Genre" value={newGame.genre??""} onChange={e=>setNewGame({...newGame,genre:e.target.value})}/>
+        <Input type="number" placeholder="Year" value={newGame.year??""} onChange={e=>setNewGame({...newGame,year:+e.target.value})}/>
+        <Select value={newGame.category} onChange={e=>setNewGame({...newGame,category:e.target.value as CategoryID})}>
+          {Object.entries(CATEGORIES).map(([k,v])=><option key={k} value={k}>{v.name}</option>)}
+        </Select>
+      </div>
+      <div className="flex justify-between">
+        <Button onClick={autoNew} className="bg-slate-700 hover:bg-slate-600 text-gray-200">Auto‑Fill</Button>
+        <Button onClick={add} className="bg-slate-700 hover:bg-slate-600">Add</Button>
+      </div>
     </div>
-  </header>
-  {/* Add Form */}
-  <div className="mx-auto max-w-2xl bg-white dark:bg-slate-800 p-4 rounded-xl shadow mb-10">
-   <h2 className="text-lg font-semibold flex items-center gap-1 dark:text-white"><Plus className="w-4 h-4"/>Add Game</h2>
-   <div className="grid sm:grid-cols-2 gap-3 mt-2">
-     <Autocomplete value={newGame.title??""} onChange={v=>setNewGame({...newGame,title:v})} onSelect={async v=>setNewGame({...newGame,title:v,...await wikipediaInfo(v)})}/>
-     <Input placeholder="Genre" value={newGame.genre??""} onChange={e=>setNewGame({...newGame,genre:e.target.value})}/>
-     <Input type="number" placeholder="Year" value={newGame.year??""} onChange={e=>setNewGame({...newGame,year:+e.target.value})}/>
-     <Select value={newGame.category} onChange={e=>setNewGame({...newGame,category:e.target.value as CategoryID})}>{Object.entries(CATEGORIES).map(([k,v])=><option key={k} value={k}>{v.name}</option>)}</Select>
-   </div>
-   <div className="flex justify-between pt-2"><Button onClick={autoNew} className="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200">Auto‑Fill</Button><Button onClick={add}>Add</Button></div>
-  </div>
 
-  <div className="grid gap-6" style={{gridTemplateColumns:"repeat(auto-fill,minmax(320px,1fr))"}}>
-   {Object.entries(CATEGORIES).map(([cid,meta])=>{
-     const Icon=meta.icon; const list=games.filter(g=>g.category===cid);
-     return <Card 
-       key={cid} 
-       onDragOver={allow} 
-       onDragLeave={removeDragHighlight}
-       onDrop={(e: React.DragEvent)=>{
-         removeDragHighlight(e);
-         onDrop(e,cid as CategoryID);
-       }}
-     >
-       <CardHeader><Icon className="w-6 h-6 text-indigo-600 dark:text-indigo-400"/><CardTitle>{meta.name}</CardTitle></CardHeader>
-       <CardContent>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{meta.blurb}</p>
-        {list.length?
-         <ul className="space-y-0.5 text-sm">
-          {list.map(g=>editing!==g.id?
-           <li key={g.id} className="flex flex-col gap-1 border-b dark:border-slate-700 last:border-0 py-2 pl-8 relative group" draggable onDragStart={e=>onDragStart(e,g.id)}>
-            <div className="absolute left-1 top-1/2 -translate-y-1/2 w-5 flex justify-center">
-              <div className="absolute opacity-0 group-hover:opacity-100 text-gray-400 dark:text-gray-500 cursor-grab">
-                <GripVertical size={12} />
+    <div className="grid gap-6" style={{gridTemplateColumns:"repeat(auto-fill,minmax(320px,1fr))"}}>
+      {Object.entries(CATEGORIES).map(([cid,meta])=>{
+        const categoryID = cid as CategoryID;
+        const Icon = meta.icon;
+        const list = games.filter(g=>g.category===categoryID);
+        const colors = CATEGORY_COLORS[categoryID];
+        
+        return <Card 
+          key={cid} 
+          category={categoryID}
+          onDragOver={(e: React.DragEvent) => allow(e, categoryID)} 
+          onDragLeave={removeDragHighlight}
+          onDragEnter={(e: React.DragEvent) => {
+            // Prevent event bubbling to avoid multiple highlights
+            e.stopPropagation();
+            allow(e, categoryID);
+          }}
+          onDrop={(e: React.DragEvent)=>{
+            removeDragHighlight(e);
+            onDrop(e,categoryID);
+          }}
+        >
+          <CardHeader category={categoryID}>
+            <Icon className={`w-5 h-5 ${colors.icon} opacity-90`}/>
+            <CardTitle category={categoryID}>{meta.name}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-gray-400 mb-2 italic">{meta.blurb}</p>
+            {list.length?
+              <ul className="space-y-2 text-sm divide-y divide-gray-800/30">
+                {list.map(g=>editing!==g.id?
+                  <li key={g.id} className="flex flex-col gap-1 pt-2 first:pt-0 pl-7 relative group/item" draggable onDragStart={e=>onDragStart(e,g.id)}>
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-5 flex justify-center">
+                      <div className="absolute opacity-0 group-hover/item:opacity-100 text-gray-500 cursor-grab transition-opacity duration-200">
+                        <GripVertical size={14} strokeWidth={1.5} />
+                      </div>
+                      {React.createElement(getGenreIcon(g.genre), {
+                        className: `w-4 h-4 ${colors.text} flex-shrink-0 group-hover/item:opacity-0 transition-opacity duration-200`,
+                        strokeWidth: 1.5
+                      })}
+                    </div>
+                    <div className="cursor-grab">
+                      <span className="font-medium pr-1 leading-tight text-white">{g.title}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400 text-xs">{g.genre} · {g.year}</span>
+                      <div className="flex gap-1 opacity-70 group-hover/item:opacity-100 transition-opacity duration-200">
+                        <IconBtn title="Edit" onClick={()=>{setEditing(g.id);setDraft({...g})}}><Pen className="w-3 h-3" strokeWidth={1.5}/></IconBtn>
+                        <IconBtn title="Delete" onClick={()=>del(g.id)}><X className="w-3 h-3" strokeWidth={1.5}/></IconBtn>
+                      </div>
+                    </div>
+                  </li>
+                  :
+                  <li key={g.id} className="flex flex-col gap-3 pt-2 first:pt-0 pl-7 relative">
+                    <div className="absolute left-0 top-[calc(1rem+8px)] w-5 flex justify-center">
+                      {React.createElement(getGenreIcon(draft.genre || ""), {
+                        className: `w-4 h-4 ${colors.text} flex-shrink-0`,
+                        strokeWidth: 1.5
+                      })}
+                    </div>
+                    <div>
+                      <Autocomplete value={draft.title??""} onChange={v=>setDraft({...draft,title:v})} onSelect={async v=>setDraft({...draft,title:v,...await wikipediaInfo(v)})} inputClass="text-xs"/>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <Input value={draft.genre??""} onChange={e=>setDraft({...draft,genre:e.target.value})} className="text-xs" placeholder="Genre"/>
+                      <Input type="number" value={draft.year??""} onChange={e=>setDraft({...draft,year:+e.target.value})} className="text-xs" placeholder="Year"/>
+                      <Select value={draft.category} onChange={e=>setDraft({...draft,category:e.target.value as CategoryID})} className="text-xs">{Object.entries(CATEGORIES).map(([k,v])=><option key={k} value={k}>{v.name}</option>)}</Select>
+                    </div>
+                    <div className="flex justify-end gap-2 items-center">
+                      <IconBtn title="Auto‑Fill" onClick={autoEdit}><RefreshCw className="w-3 h-3" strokeWidth={1.5}/></IconBtn>
+                      <Button onClick={()=>save(g.id)} className="bg-green-800 hover:bg-green-700 px-2 py-1 text-xs">Save</Button>
+                      <Button onClick={()=>setEditing(null)} className="bg-gray-700 hover:bg-gray-600 px-2 py-1 text-xs">Cancel</Button>
+                    </div>
+                  </li>
+                )}
+              </ul>
+            : 
+              <div className="flex items-center justify-center h-16 text-gray-500 italic text-sm border border-dashed border-gray-700/30 rounded-lg">
+                No games in this category yet
               </div>
-              {React.createElement(getGenreIcon(g.genre), {
-                className: "w-4 h-4 text-indigo-600 dark:text-indigo-400 flex-shrink-0 group-hover:opacity-0"
-              })}
-            </div>
-            <div className="cursor-grab">
-              <span className="font-medium pr-1 leading-tight dark:text-white">{g.title}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-500 dark:text-gray-400 text-xs">{g.genre} · {g.year}</span>
-              <div className="flex gap-1">
-                <IconBtn title="Edit" onClick={()=>{setEditing(g.id);setDraft({...g})}}><Pen className="w-3 h-3"/></IconBtn>
-                <IconBtn title="Delete" onClick={()=>del(g.id)}><X className="w-3 h-3"/></IconBtn>
-              </div>
-            </div>
-           </li>
-           :
-           <li key={g.id} className="flex flex-col gap-2 border-b dark:border-slate-700 last:border-0 py-2 pl-8 relative">
-            <div className="absolute left-1 top-[calc(1rem+4px)] w-5 flex justify-center">
-              {React.createElement(getGenreIcon(draft.genre || ""), {
-                className: "w-4 h-4 text-indigo-600 dark:text-indigo-400 flex-shrink-0"
-              })}
-            </div>
-            <div>
-              <Autocomplete value={draft.title??""} onChange={v=>setDraft({...draft,title:v})} onSelect={async v=>setDraft({...draft,title:v,...await wikipediaInfo(v)})} inputClass="text-xs"/>
-            </div>
-            <div className="grid grid-cols-3 gap-1">
-              <Input value={draft.genre??""} onChange={e=>setDraft({...draft,genre:e.target.value})} className="text-xs" placeholder="Genre"/>
-              <Input type="number" value={draft.year??""} onChange={e=>setDraft({...draft,year:+e.target.value})} className="text-xs" placeholder="Year"/>
-              <Select value={draft.category} onChange={e=>setDraft({...draft,category:e.target.value as CategoryID})} className="text-xs">{Object.entries(CATEGORIES).map(([k,v])=><option key={k} value={k}>{v.name}</option>)}</Select>
-            </div>
-            <div className="flex justify-end gap-2 items-center">
-              <IconBtn title="Auto‑Fill" onClick={autoEdit}><RefreshCw className="w-3 h-3"/></IconBtn>
-              <Button onClick={()=>save(g.id)} className="bg-green-600 dark:bg-green-700 px-2 py-1 text-xs">Save</Button>
-              <Button onClick={()=>setEditing(null)} className="bg-gray-400 dark:bg-gray-600 px-2 py-1 text-xs">Cancel</Button>
-            </div>
-           </li>)}
-         </ul>
-        :<p className="italic text-gray-400 dark:text-gray-500">No games</p>}
-       </CardContent>
-     </Card>})}
+            }
+          </CardContent>
+        </Card>
+      })}
+    </div>
   </div>
- </div>;
+ );
 } 

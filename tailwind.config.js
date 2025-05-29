@@ -4,7 +4,15 @@ module.exports = {
   ],
   darkMode: 'class',
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        'serif': ['Playfair Display', 'serif'],
+        'sans': ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'sans-serif']
+      },
+      backgroundImage: {
+        'noise': "url('https://grainy-gradients.vercel.app/noise.svg')"
+      }
+    },
   },
   plugins: [],
 } 
