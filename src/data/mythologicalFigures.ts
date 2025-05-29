@@ -14,7 +14,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     tier: 'olympian',
     icon: Zap,
     description: 'King of the gods, ruler of Mount Olympus',
-    domain: 'Sky, Thunder, Lightning, Law, Order, Fate',
+    domain: 'Power fantasy, rulership, divine justice, overcoming limitations, dramatic conflicts',
     color: '#5c9eff' // brightened blue
   },
   poseidon: {
@@ -23,7 +23,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     tier: 'olympian',
     icon: Waves,
     description: 'God of the sea, earthquakes, storms, and horses',
-    domain: 'Sea, Storms, Earthquakes, Horses',
+    domain: 'Exploration, unpredictability, naval themes, natural disasters, tempestuous forces',
     color: '#4db8ff' // brightened blue-teal
   },
   hades: {
@@ -32,7 +32,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     tier: 'olympian',
     icon: Skull,
     description: 'God of the underworld and the dead',
-    domain: 'Underworld, Death, Wealth',
+    domain: 'Dark themes, underworld exploration, death mechanics, wealth acquisition, isolation',
     color: '#a069df' // brightened purple
   },
   athena: {
@@ -41,7 +41,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     tier: 'olympian',
     icon: Bird, // Owl
     description: 'Goddess of wisdom, courage, inspiration, and strategic warfare',
-    domain: 'Wisdom, Courage, Warfare, Strategy',
+    domain: 'Strategic planning, intelligent combat, wisdom seeking, defensive tactics, civilization building',
     color: '#d6d6d6' // brightened silver
   },
   apollo: {
@@ -50,7 +50,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     tier: 'olympian',
     icon: Sun,
     description: 'God of music, arts, knowledge, healing, prophecy, and the sun',
-    domain: 'Music, Healing, Light, Knowledge',
+    domain: 'Artistic expression, healing mechanics, prophecy/foresight, illumination, harmony',
     color: '#ffd966' // brightened gold
   },
   artemis: {
@@ -59,7 +59,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     tier: 'olympian',
     icon: Moon,
     description: 'Goddess of the hunt, wilderness, animals, and the moon',
-    domain: 'Hunt, Wilderness, Moon, Archery',
+    domain: 'Hunting gameplay, wilderness survival, animal companions, precision combat, independence',
     color: '#c6d8ff' // brightened silver-blue
   },
   ares: {
@@ -68,7 +68,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     tier: 'olympian',
     icon: Sword,
     description: 'God of war, bloodshed, and violence',
-    domain: 'War, Violence, Bloodlust',
+    domain: 'Intense combat, bloodshed, chaotic battles, berserker rage, conquest',
     color: '#ff5252' // brightened red
   },
   aphrodite: {
@@ -77,7 +77,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     tier: 'olympian',
     icon: HeartHandshake,
     description: 'Goddess of love, beauty, and passion',
-    domain: 'Love, Beauty, Desire, Passion',
+    domain: 'Romance options, persuasion mechanics, beauty aesthetics, desire fulfillment, emotional manipulation',
     color: '#ff8ad8' // brightened pink
   },
   hermes: {
@@ -86,7 +86,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     tier: 'olympian',
     icon: Feather,
     description: 'God of trade, wealth, luck, language, and travel',
-    domain: 'Travel, Commerce, Communication, Trickery',
+    domain: 'Fast-paced movement, commerce systems, luck mechanics, communication themes, traveling',
     color: '#7dd3ff' // brightened light blue
   },
   hephaestus: {
@@ -95,7 +95,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     tier: 'olympian',
     icon: Hammer,
     description: 'God of fire, metalworking, stone masonry, and sculpture',
-    domain: 'Fire, Forge, Craftsmanship, Technology',
+    domain: 'Crafting systems, technological innovation, building mechanics, creation focus, fire manipulation',
     color: '#ff9e5e' // brightened orange-red
   },
   demeter: {
@@ -104,7 +104,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     tier: 'olympian',
     icon: Wheat,
     description: 'Goddess of agriculture, fertility, and sacred law',
-    domain: 'Agriculture, Fertility, Harvest, Seasons',
+    domain: 'Farming mechanics, growth systems, seasonal cycles, nurturing gameplay, abundance',
     color: '#a6e06c' // brightened green-yellow
   },
   dionysus: {
@@ -113,7 +113,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     tier: 'olympian',
     icon: Wine,
     description: 'God of wine, fertility, festivity, and ecstasy',
-    domain: 'Wine, Festivity, Theater, Ecstasy',
+    domain: 'Party atmospheres, altered states, revelry, breaking norms, freedom of expression',
     color: '#c87dff' // brightened purple
   },
 
@@ -124,7 +124,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     tier: 'titan',
     icon: Clock,
     description: 'Titan of time and the ages, father of Zeus',
-    domain: 'Time, Harvest, Fate',
+    domain: 'Time manipulation, generational conflict, inevitable cycles, overthrown authority',
     color: '#5c88cc' // brightened dark blue
   },
   rhea: {
@@ -133,7 +133,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     tier: 'titan',
     icon: Mountain,
     description: 'Titaness of fertility, motherhood, and generation',
-    domain: 'Fertility, Motherhood, Earth',
+    domain: 'Protection themes, motherhood dynamics, earth connection, hidden potential',
     color: '#9c7a6e' // brightened brown
   },
   oceanus: {
@@ -142,7 +142,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     tier: 'titan',
     icon: Waves,
     description: 'Titan of the great world-encircling river',
-    domain: 'Water, Rivers, Oceans',
+    domain: 'Vast water worlds, boundary exploration, primordial forces, cyclical patterns',
     color: '#4d94ff' // brightened deep blue
   },
   hyperion: {
@@ -151,7 +151,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     tier: 'titan',
     icon: Sun,
     description: 'Titan of light, father of the sun, moon, and dawn',
-    domain: 'Light, Watchfulness, Wisdom',
+    domain: 'Illumination mechanics, observation, enlightenment themes, light vs darkness',
     color: '#ffda58' // brightened bright yellow
   },
   theia: {
@@ -160,7 +160,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     tier: 'titan',
     icon: Star,
     description: 'Titaness of sight and the shining light of the clear blue sky',
-    domain: 'Sight, Light, Glory, Treasure',
+    domain: 'Perception mechanics, clarity, treasure hunting, brilliance, divine insight',
     color: '#e0e0e0' // brightened silver
   },
   atlas: {
@@ -169,7 +169,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     tier: 'titan',
     icon: Globe,
     description: 'Titan condemned to hold up the sky for eternity',
-    domain: 'Endurance, Astronomy, Navigation',
+    domain: 'Weight/burden mechanics, map exploration, endurance challenges, duty themes',
     color: '#92b6cc' // brightened stone gray
   },
 
@@ -180,7 +180,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     tier: 'hero',
     icon: Dumbbell,
     description: 'Divine hero known for his strength and numerous far-ranging adventures',
-    domain: 'Strength, Courage, Adventure',
+    domain: 'Feats of strength, laborious quests, progressive challenges, overcoming impossible tasks',
     color: '#e8a554' // brightened bronze
   },
   perseus: {
@@ -189,7 +189,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     tier: 'hero',
     icon: Sword,
     description: 'Slayer of Medusa and rescuer of Andromeda',
-    domain: 'Bravery, Cunning, Heroism',
+    domain: 'Monster hunting, rescue missions, mythical equipment, divine assistance',
     color: '#ffe14d' // brightened gold
   },
   achilles: {
@@ -198,7 +198,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     tier: 'hero',
     icon: Shield,
     description: 'Greatest warrior of the Trojan War, with a fatal weakness',
-    domain: 'Warfare, Excellence, Pride',
+    domain: 'Near-invulnerability, fatal flaws, battlefield excellence, pride and downfall',
     color: '#e86e5a' // brightened bronze-red
   },
   odysseus: {
@@ -207,7 +207,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     tier: 'hero',
     icon: Ship,
     description: 'King of Ithaca known for his intelligence and cunning',
-    domain: 'Cunning, Strategy, Endurance',
+    domain: 'Puzzle solving, resourcefulness, long journeys, clever solutions, deception tactics',
     color: '#5c9eff' // brightened blue
   },
   theseus: {
@@ -216,7 +216,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     tier: 'hero',
     icon: Tent,
     description: 'Slayer of the Minotaur and unifier of Attica',
-    domain: 'Leadership, Justice, Civilization',
+    domain: 'Maze navigation, monster confrontation, civilization building, leadership challenges',
     color: '#a3c2d6' // brightened blue-gray
   },
   jason: {
@@ -225,7 +225,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     tier: 'hero',
     icon: Compass,
     description: 'Leader of the Argonauts in quest of the Golden Fleece',
-    domain: 'Leadership, Adventure, Quest',
+    domain: 'Team leadership, epic quests, treasure seeking, naval expeditions, exotic locations',
     color: '#ffde47' // brightened gold-yellow
   },
   atalanta: {
@@ -234,7 +234,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     tier: 'hero',
     icon: Footprints,
     description: 'Female warrior, huntress, and athlete',
-    domain: 'Hunting, Athletics, Independence',
+    domain: 'Speed mechanics, competitive challenges, wilderness expertise, defying gender norms',
     color: '#6fd675' // brightened forest green
   },
   bellerophon: {
@@ -243,7 +243,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     tier: 'hero',
     icon: Workflow,
     description: 'Tamer of Pegasus and slayer of the Chimera',
-    domain: 'Taming, Aviation, Pride',
+    domain: 'Mount/flying mechanics, hybrid creatures, hubris themes, aerial combat',
     color: '#f0f0f0' // brightened white/silver
   }
 };
