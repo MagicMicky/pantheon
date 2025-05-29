@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import { 
-  Plus, X, Pen, RefreshCw, GripVertical,
   Share2, Copy, ArrowLeft, Download, Upload, History
 } from "lucide-react";
 
@@ -8,27 +7,24 @@ import {
 import { Game, CategoryID } from "./types";
 
 // Import components
-import { Card, CardHeader, CardTitle, CardContent } from "./components/ui/Card";
 import { Button, IconBtn } from "./components/ui/Buttons";
-import { Input, Select } from "./components/ui/Inputs";
-import { Autocomplete } from "./components/Autocomplete";
-import { DeityBadge, DeitySelector, DeityPopup } from "./components/DeityComponents";
 import { Confirm } from "./components/ui/Confirm";
-import { Tooltip } from "./components/Tooltip";
 import { SteamGamesImport } from "./components/SteamGamesImport";
 import { ShareModal, HistoryModal } from "./components/modals";
 import { SharedViewBanner, HeaderControls, SharedViewCTA } from "./components/shared";
+import GameCategory from "./components/GameCategory";
+import GameItem from "./components/GameItem";
+import GameEditForm from "./components/GameEditForm";
+import AddGameForm from "./components/AddGameForm";
 
 // Import data
 import { CATEGORIES, CATEGORY_COLORS } from "./data/categories";
-import { GENRE_ICON_MAPPING } from "./data/genreIcons";
 
 // Import utilities
-import { uid, encodeGameData, decodeGameData, getGenreIcon } from "./utils/helpers";
+import { uid, encodeGameData, decodeGameData } from "./utils/helpers";
 import { wikipediaInfo } from "./utils/wikipediaHelpers";
 import { localStateManager } from "./utils/localStateManager";
 import { removeShareParams, getShareParams } from "./utils/urlHelpers";
-import { calculateDropPosition } from "./utils/dragHelpers";
 import { supportsDieties, getUsedDeityIds } from "./utils/gameHelpers";
 
 // Import hooks
@@ -112,19 +108,6 @@ export default function GamePantheon() {
   // Apply meta tags
   useMetaTags(metaTagsConfig);
   
-  // Helper function to determine if a category supports deities
-  const supportsDieties = (category?: CategoryID): boolean => {
-    return category ? ['olympian', 'titan', 'hero'].includes(category) : false;
-  };
-  
-  // Helper function to get used deity IDs (excluding the current game being edited)
-  const getUsedDeityIds = (excludeGameId?: string): string[] => {
-    return games
-      .filter(game => game.id !== excludeGameId && game.mythologicalFigureId)
-      .map(game => game.mythologicalFigureId!)
-      .filter(Boolean);
-  };
-  
   // Force dark mode and load data
   useEffect(() => {
     document.documentElement.classList.add('dark');
@@ -170,7 +153,8 @@ export default function GamePantheon() {
 
       } catch (e) {
         console.error("Failed to parse shared games", e);
-        // Fallback to default
+        // Fallback to loading user's own games
+        setGames(localStateManager.loadGames());
         setMetaTagsConfig({
           ...defaultConfig,
           title: "Game Pantheon",
@@ -183,6 +167,7 @@ export default function GamePantheon() {
     } else {
       // Load games using the enhanced manager
       setGames(localStateManager.loadGames());
+      setIsSharedView(false);
       // Set default meta tags for non-shared view
       setMetaTagsConfig({
         ...defaultConfig,
@@ -203,24 +188,18 @@ export default function GamePantheon() {
       return;
     }
     
-    if (!isSharedView) {
+    // Only save if we're not in shared view and we have games to save
+    if (!isSharedView && games.length > 0) {
       localStateManager.saveGames(games);
     }
   }, [games, isSharedView]);
   
   const createNewFromShared = () => {
     // Check if there's existing custom data to warn about override
-    // We need to check localStorage directly since loadGames() always returns at least one default game
-    try {
-      const savedGames = localStorage.getItem('pantheonGames');
-      if (savedGames) {
-        // User has saved their own data
-        overrideConfirm.open();
-      } else {
-        confirmCreateFromShared();
-      }
-    } catch (e) {
-      // If there's an error accessing localStorage, just proceed
+    if (localStateManager.hasSavedGames()) {
+      // User has saved their own data
+      overrideConfirm.open();
+    } else {
       confirmCreateFromShared();
     }
   };
@@ -239,6 +218,32 @@ export default function GamePantheon() {
     
     // Close confirmation dialog if open
     overrideConfirm.close();
+  };
+  
+  // Add a function to properly handle returning to user's collection
+  const returnToMyCollection = () => {
+    // Remove shared parameters from URL
+    removeShareParams();
+    
+    // Exit shared view
+    setIsSharedView(false);
+    
+    // Check if user actually has saved games
+    if (localStateManager.hasSavedGames()) {
+      // Load user's saved games
+      const userGames = localStateManager.loadGames();
+      setGames(userGames);
+    } else {
+      // User has no saved games, so they'll start with the default
+      const defaultGames = localStateManager.loadGames();
+      setGames(defaultGames);
+    }
+    
+    // Reset title
+    document.title = "Game Pantheon";
+    
+    // Reset the shared title
+    setSharedTitle("");
   };
   
   // Update startFresh to use confirmation
@@ -358,6 +363,36 @@ export default function GamePantheon() {
     setInlineDeityEdit(null);
   };
 
+  // Callback functions for the new components
+  const handleEdit = (gameId: string) => {
+    const game = games.find(g => g.id === gameId);
+    if (game) {
+      setEditing(gameId);
+      setDraft(game);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditing(null);
+    setDraft({});
+  };
+
+  const handleDraftChange = (updates: Partial<Game>) => {
+    setDraft(updates);
+  };
+
+  const handleSave = (gameId: string) => {
+    save(gameId);
+  };
+
+  const handleToggleDeityEdit = (gameId: string | null) => {
+    setInlineDeityEdit(gameId);
+  };
+
+  const handleNewGameChange = (updates: Partial<Game>) => {
+    setNewGame(updates);
+  };
+
   // Return JSX
   return (
     <div className="p-8 bg-gradient-to-br from-slate-950 to-gray-900 min-h-screen select-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] font-sans">
@@ -381,19 +416,7 @@ export default function GamePantheon() {
         {isSharedView && (
           <SharedViewBanner
             sharedTitle={sharedTitle}
-            onBackToCollection={() => {
-              // Remove shared parameters from URL
-              removeShareParams();
-              
-              // Exit shared view
-              setIsSharedView(false);
-              
-              // Load user's own games
-              setGames(localStateManager.loadGames());
-              
-              // Reset title
-              document.title = "Game Pantheon";
-            }}
+            onBackToCollection={returnToMyCollection}
           />
         )}
       </header>
@@ -429,52 +452,13 @@ export default function GamePantheon() {
       {/* Add Form - only show if not in shared view */}
       {!isSharedView && (
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mx-auto max-w-4xl mb-12">
-          <div className="md:col-span-7 bg-slate-900/70 backdrop-blur-md p-6 rounded-xl shadow-xl border border-slate-800/50">
-            <h2 className="text-xl font-serif font-bold flex items-center gap-2 text-white mb-4 tracking-wide">
-              <Plus className="w-5 h-5"/> Add Game
-            </h2>
-            <div className="grid sm:grid-cols-2 gap-4 mb-4">
-              <Autocomplete 
-                value={newGame.title??""} 
-                onChange={v => setNewGame({...newGame, title: v})} 
-                onSelect={async v => setNewGame({...newGame, title: v, ...await wikipediaInfo(v)})}
-              />
-              <Input 
-                placeholder="Genre" 
-                value={newGame.genre??""} 
-                onChange={e => setNewGame({...newGame, genre: e.target.value})}
-              />
-              <Input 
-                type="number" 
-                placeholder="Year" 
-                value={newGame.year??""} 
-                onChange={e => setNewGame({...newGame, year: +e.target.value})}
-              />
-              <Select 
-                value={newGame.category} 
-                onChange={e => setNewGame({...newGame, category: e.target.value as CategoryID})}
-              >
-                {Object.entries(CATEGORIES).map(([k,v]) => (
-                  <option key={k} value={k}>{v.name}</option>
-                ))}
-              </Select>
-            </div>
-            
-            {/* Mythological Figure Selector - only show for appropriate categories */}
-            {supportsDieties(newGame.category) && (
-              <DeitySelector 
-                tier={newGame.category as 'olympian' | 'titan' | 'hero'}
-                selectedDeityId={newGame.mythologicalFigureId}
-                onChange={(id) => setNewGame({...newGame, mythologicalFigureId: id})}
-                usedDeityIds={getUsedDeityIds()}
-              />
-            )}
-            
-            <div className="flex justify-between mt-6">
-              <Button onClick={autoNew} className="bg-slate-700 hover:bg-slate-600 text-gray-200">Auto‑Fill</Button>
-              <Button onClick={add} className="bg-slate-700 hover:bg-slate-600">Add</Button>
-            </div>
-          </div>
+          <AddGameForm
+            newGame={newGame}
+            games={games}
+            onNewGameChange={handleNewGameChange}
+            onAdd={add}
+            onAutoFill={autoNew}
+          />
           
           {/* Steam Games Import Panel */}
           <div className="md:col-span-5">
@@ -487,227 +471,41 @@ export default function GamePantheon() {
       )}
 
       <div className="grid gap-6" style={{gridTemplateColumns:"repeat(auto-fill,minmax(320px,1fr))"}}>
-        {Object.entries(CATEGORIES).map(([cid, meta]) => {
-          const categoryID = cid as CategoryID;
-          const Icon = meta.icon;
-          const list = games.filter(g => g.category === categoryID);
-          const colors = CATEGORY_COLORS[categoryID];
-          
-          return (
-            <Card 
-              key={cid} 
-              category={categoryID}
-              onDragOver={!isSharedView ? (e: React.DragEvent<HTMLDivElement>) => allowDrop(e, categoryID) : undefined} 
-              onDragLeave={!isSharedView ? removeDragHighlightHandler : undefined}
-              onDragEnter={!isSharedView ? (e: React.DragEvent<HTMLDivElement>) => {
+        {Object.entries(CATEGORIES).map(([categoryId, meta]) => (
+          <GameCategory
+            key={categoryId}
+            categoryId={categoryId as CategoryID}
+            games={games}
+            isSharedView={isSharedView}
+            editing={editing}
+            draft={draft}
+            dropIndicator={dropIndicator}
+            inlineDeityEdit={inlineDeityEdit}
+            onEdit={handleEdit}
+            onDelete={requestRemove}
+            onSave={handleSave}
+            onCancelEdit={handleCancelEdit}
+            onDraftChange={handleDraftChange}
+            onAutoFill={autoEdit}
+            onDragStart={onDragStart}
+            onDragEnd={onDragEnd}
+            onDragOver={allowDrop}
+            onDragLeave={removeDragHighlightHandler}
+            onDragEnter={(e: React.DragEvent<HTMLDivElement>) => {
                 e.stopPropagation();
-                allowDrop(e, categoryID);
-              } : undefined}
-              onDrop={!isSharedView ? (e: React.DragEvent<HTMLDivElement>) => {
-                removeDragHighlightHandler(e);
-                setDropIndicator(null); // Clear any lingering drop indicators
-                onDrop(e, categoryID);
-              } : undefined}
-            >
-              <CardHeader category={categoryID}>
-                <Icon className="w-5 h-5 text-white opacity-90"/>
-                <CardTitle category={categoryID}>{meta.name}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-400 mb-2 italic">{meta.blurb}</p>
-                {list.length ? (
-                  <ul className="space-y-2 text-sm divide-y divide-gray-800/30">
-                    {list.map(g => editing !== g.id ? (
-                      <li 
-                        key={g.id} 
-                        className="flex flex-col gap-1 pt-2 first:pt-0 pl-7 relative group/item" 
-                        draggable={!isSharedView} 
-                        onDragStart={!isSharedView ? e => onDragStart(e, g.id) : undefined}
-                        onDragEnd={!isSharedView ? onDragEnd : undefined}
-                        onDragOver={!isSharedView ? (e) => {
-                          e.preventDefault();
-                          e.dataTransfer.dropEffect = "move";
-                          
-                          // Calculate and set drop indicator
-                          const position = calculateDropPosition(e, e.currentTarget as HTMLElement);
-                          setDropIndicator({gameId: g.id, position});
-                        } : undefined}
-                        onDragLeave={!isSharedView ? (e) => {
-                          // Only clear if we're actually leaving this element and not entering a child
-                          const relatedTarget = e.relatedTarget as HTMLElement;
-                          const currentTarget = e.currentTarget as HTMLElement;
-                          
-                          if (!relatedTarget || !currentTarget.contains(relatedTarget)) {
+              allowDrop(e, categoryId as CategoryID);
+            }}
+            onDrop={(e: React.DragEvent<HTMLDivElement>, target: CategoryID) => {
+              removeDragHighlightHandler(e);
                             setDropIndicator(null);
-                          }
-                        } : undefined}
-                        onDrop={!isSharedView ? (e => {
-                          setDropIndicator(null); // Always clear indicator on drop
-                          onDropOnGame(e, g.id, categoryID);
-                        }) : undefined}
-                      >
-                        {/* Drop indicator before this item */}
-                        {dropIndicator?.gameId === g.id && dropIndicator.position === 'before' && (
-                          <div className={`absolute -top-1 left-0 right-0 h-0.5 rounded-full opacity-80 z-10`} style={{backgroundColor: colors.highlight}} />
-                        )}
-                        
-                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-5 flex justify-center">
-                          {!isSharedView && (
-                            <div className="absolute opacity-0 group-hover/item:opacity-100 text-gray-500 cursor-grab transition-opacity duration-200">
-                              <GripVertical size={14} strokeWidth={1.5} />
-                            </div>
-                          )}
-                          {React.createElement(getGenreIcon(g.genre, GENRE_ICON_MAPPING), {
-                            className: `w-4 h-4 ${colors.text} flex-shrink-0 ${!isSharedView ? "group-hover/item:opacity-0" : ""} transition-opacity duration-200`,
-                            strokeWidth: 1.5
-                          })}
-                        </div>
-                        <div className={!isSharedView ? "cursor-grab flex items-center gap-1 flex-wrap" : "flex items-center gap-1 flex-wrap"}>
-                          <div className="flex items-center">
-                            <span className="font-medium pr-1 leading-tight text-white">{g.title}</span>
-                            {g.mythologicalFigureId ? (
-                              <DeityBadge mythologicalFigureId={g.mythologicalFigureId} />
-                            ) : supportsDieties(g.category) && !isSharedView ? (
-                              <DeityPopup
-                                tier={g.category as 'olympian' | 'titan' | 'hero'}
-                                usedDeityIds={getUsedDeityIds(g.id)}
-                                onSelect={(id) => updateDeity(g.id, id)}
-                                onCancel={() => setInlineDeityEdit(null)}
-                                isOpen={inlineDeityEdit === g.id}
-                                onToggle={() => {
-                                  if (inlineDeityEdit === g.id) {
-                                    setInlineDeityEdit(null);
-                                  } else {
-                                    setInlineDeityEdit(g.id);
-                                  }
-                                }}
-                              >
-                                <button 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                  }}
-                                  className="border border-dashed border-gray-500 rounded-full w-5 h-5 flex items-center justify-center text-gray-400 text-xs hover:bg-slate-700 hover:text-white transition-colors"
-                                  title="Add mythological figure"
-                                >
-                                  +
-                                </button>
-                              </DeityPopup>
-                            ) : null}
-                          </div>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-400 text-xs">{g.genre} · {g.year}</span>
-                          {!isSharedView && (
-                            <div className="flex gap-1 opacity-70 group-hover/item:opacity-100 transition-opacity duration-200">
-                              <IconBtn title="Edit" onClick={() => {setEditing(g.id); setDraft({...g})}}><Pen className="w-3 h-3" strokeWidth={1.5}/></IconBtn>
-                              <IconBtn title="Delete" onClick={() => requestRemove(g.id)}><X className="w-3 h-3" strokeWidth={1.5}/></IconBtn>
-                            </div>
-                          )}
-                        </div>
-                        
-                        {/* Drop indicator after this item */}
-                        {dropIndicator?.gameId === g.id && dropIndicator.position === 'after' && (
-                          <div className={`absolute -bottom-1 left-0 right-0 h-0.5 rounded-full opacity-80 z-10`} style={{backgroundColor: colors.highlight}} />
-                        )}
-                      </li>
-                    ) : (
-                      // Edit form
-                      (!isSharedView && editing === g.id) && (
-                        <li key={g.id} className="flex flex-col gap-3 pt-2 first:pt-0 pl-7 relative">
-                          <div className="absolute left-0 top-[calc(1rem+8px)] w-5 flex justify-center">
-                            {React.createElement(getGenreIcon(draft.genre || "", GENRE_ICON_MAPPING), {
-                              className: `w-4 h-4 ${colors.text} flex-shrink-0`,
-                              strokeWidth: 1.5
-                            })}
-                          </div>
-                          <div>
-                            <Autocomplete 
-                              value={draft.title||""} 
-                              onChange={v => setDraft({...draft, title: v})} 
-                              onSelect={async v => setDraft({...draft, title: v, ...await wikipediaInfo(v)})} 
-                              inputClass="text-xs"
-                            />
-                          </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            <Input 
-                              value={draft.genre||""} 
-                              onChange={e => setDraft({...draft, genre: e.target.value})} 
-                              className="text-xs" 
-                              placeholder="Genre"
-                            />
-                            <Input 
-                              type="number" 
-                              value={draft.year||""} 
-                              onChange={e => setDraft({...draft, year: +e.target.value})} 
-                              className="text-xs" 
-                              placeholder="Year"
-                            />
-                          </div>
-                          
-                          {/* Inline Mythological Figure Selector in Edit Mode */}
-                          {supportsDieties(draft.category) && (
-                            <div className="flex items-center gap-2 mt-2">
-                              <span className="text-xs text-gray-400">Deity:</span>
-                              {draft.mythologicalFigureId ? (
-                                <DeityBadge mythologicalFigureId={draft.mythologicalFigureId} />
-                              ) : (
-                                <DeityPopup
-                                  tier={draft.category as 'olympian' | 'titan' | 'hero'}
-                                  usedDeityIds={getUsedDeityIds(g.id)}
-                                  onSelect={(id) => setDraft({...draft, mythologicalFigureId: id})}
-                                  onCancel={() => setInlineDeityEdit(null)}
-                                  isOpen={inlineDeityEdit === g.id}
-                                  onToggle={() => {
-                                    if (inlineDeityEdit === g.id) {
-                                      setInlineDeityEdit(null);
-                                    } else {
-                                      setInlineDeityEdit(g.id);
-                                    }
-                                  }}
-                                >
-                                  <button 
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      e.preventDefault();
-                                    }}
-                                    className="border border-dashed border-gray-500 rounded-full w-5 h-5 flex items-center justify-center text-gray-400 text-xs hover:bg-slate-700 hover:text-white transition-colors"
-                                    title="Add mythological figure"
-                                  >
-                                    +
-                                  </button>
-                                </DeityPopup>
-                              )}
-                              {draft.mythologicalFigureId && (
-                                <button 
-                                  onClick={() => setDraft({...draft, mythologicalFigureId: undefined})}
-                                  className="text-gray-500 hover:text-red-400 transition-colors"
-                                  title="Remove deity"
-                                >
-                                  <X className="w-3 h-3" strokeWidth={1.5} />
-                                </button>
-                              )}
-                            </div>
-                          )}
-                          
-                          <div className="flex justify-end gap-2 items-center">
-                            <IconBtn title="Auto‑Fill" onClick={autoEdit}><RefreshCw className="w-3 h-3" strokeWidth={1.5}/></IconBtn>
-                            <Button onClick={() => save(g.id)} className="bg-green-800 hover:bg-green-700 px-2 py-1 text-xs">Save</Button>
-                            <Button onClick={() => setEditing(null)} className="bg-gray-700 hover:bg-gray-600 px-2 py-1 text-xs">Cancel</Button>
-                          </div>
-                        </li>
-                      )
-                    ))}
-                  </ul>
-                ) : (
-                  <div className="flex items-center justify-center h-16 text-gray-500 italic text-sm border border-dashed border-gray-700/30 rounded-lg">
-                    No games in this category yet
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          );
-        })}
+              onDrop(e, target);
+            }}
+            onDropOnGame={onDropOnGame}
+            onUpdateDeity={updateDeity}
+            onToggleDeityEdit={handleToggleDeityEdit}
+            setDropIndicator={setDropIndicator}
+          />
+        ))}
       </div>
       
       {/* Confirmation dialogs */}

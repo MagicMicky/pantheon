@@ -90,7 +90,11 @@ export const DeitySelector = ({ tier, selectedDeityId, onChange, usedDeityIds = 
                   color: isUsed ? '#64748b' : deity.color,
                   opacity: isUsed ? 0.5 : 1
                 }}
-                onClick={() => !isUsed && onChange(deity.id)}
+                onClick={() => {
+                  if (!isUsed) {
+                    onChange(deity.id);
+                  }
+                }}
                 disabled={isUsed}
               >
                 <Icon className="w-6 h-6" strokeWidth={isSelected ? 2.5 : 2} />
@@ -112,6 +116,7 @@ interface DeityPopupProps {
   children: React.ReactNode; // The trigger element (+ button)
   isOpen: boolean;
   onToggle: () => void;
+  selectedDeityId?: string;
 }
 
 export const DeityPopup = ({ 
@@ -121,7 +126,8 @@ export const DeityPopup = ({
   onCancel, 
   children, 
   isOpen, 
-  onToggle 
+  onToggle,
+  selectedDeityId 
 }: DeityPopupProps) => {
   const handleSelect = (deityId: string | undefined) => {
     onSelect(deityId);
@@ -138,7 +144,7 @@ export const DeityPopup = ({
           <div className="bg-slate-800 border border-slate-700 rounded-md p-3 shadow-xl">
             <DeitySelector
               tier={tier}
-              selectedDeityId={undefined}
+              selectedDeityId={selectedDeityId}
               onChange={handleSelect}
               usedDeityIds={usedDeityIds}
             />

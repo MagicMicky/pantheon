@@ -128,6 +128,7 @@ const GameItem = memo(function GameItem({
               onSelect={(id) => onUpdateDeity(game.id, id)}
               onCancel={() => onToggleDeityEdit(null)}
               isOpen={inlineDeityEdit === game.id}
+              selectedDeityId={game.mythologicalFigureId}
               onToggle={() => {
                 if (inlineDeityEdit === game.id) {
                   onToggleDeityEdit(null);
@@ -140,6 +141,12 @@ const GameItem = memo(function GameItem({
                 onClick={(e) => {
                   e.stopPropagation();
                   e.preventDefault();
+                  // Directly call toggle since we prevented propagation
+                  if (inlineDeityEdit === game.id) {
+                    onToggleDeityEdit(null);
+                  } else {
+                    onToggleDeityEdit(game.id);
+                  }
                 }}
                 className="border border-dashed border-gray-500 rounded-full w-5 h-5 flex items-center justify-center text-gray-400 text-xs hover:bg-slate-700 hover:text-white transition-colors"
                 title="Add mythological figure"

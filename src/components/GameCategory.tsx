@@ -2,6 +2,7 @@ import React, { memo, useMemo } from 'react';
 import { Game, CategoryID } from '../types';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
 import { CATEGORIES, CATEGORY_COLORS } from '../data/categories';
+import { getUsedDeityIds } from '../utils/gameHelpers';
 import GameItem from './GameItem';
 import GameEditForm from './GameEditForm';
 
@@ -13,7 +14,6 @@ interface GameCategoryProps {
   draft: Partial<Game>;
   dropIndicator: { gameId: string; position: 'before' | 'after' } | null;
   inlineDeityEdit: string | null;
-  usedDeityIds: string[];
   onEdit: (gameId: string) => void;
   onDelete: (gameId: string) => void;
   onSave: (gameId: string) => void;
@@ -40,7 +40,6 @@ const GameCategory = memo(function GameCategory({
   draft,
   dropIndicator,
   inlineDeityEdit,
-  usedDeityIds,
   onEdit,
   onDelete,
   onSave,
@@ -99,7 +98,7 @@ const GameCategory = memo(function GameCategory({
                 onAutoFill={onAutoFill}
                 inlineDeityEdit={inlineDeityEdit}
                 onToggleDeityEdit={onToggleDeityEdit}
-                usedDeityIds={usedDeityIds}
+                usedDeityIds={getUsedDeityIds(games, game.id)}
               />
             ) : (
               <GameItem
@@ -109,7 +108,7 @@ const GameCategory = memo(function GameCategory({
                 isEditing={editing === game.id}
                 dropIndicator={dropIndicator}
                 inlineDeityEdit={inlineDeityEdit}
-                usedDeityIds={usedDeityIds}
+                usedDeityIds={getUsedDeityIds(games, game.id)}
                 onEdit={onEdit}
                 onDelete={onDelete}
                 onDragStart={onDragStart}

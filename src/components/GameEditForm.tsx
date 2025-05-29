@@ -82,6 +82,7 @@ const GameEditForm = memo(function GameEditForm({
               onSelect={(id) => onDraftChange({ ...draft, mythologicalFigureId: id })}
               onCancel={() => onToggleDeityEdit(null)}
               isOpen={inlineDeityEdit === game.id}
+              selectedDeityId={draft.mythologicalFigureId}
               onToggle={() => {
                 if (inlineDeityEdit === game.id) {
                   onToggleDeityEdit(null);
@@ -94,6 +95,11 @@ const GameEditForm = memo(function GameEditForm({
                 onClick={(e) => {
                   e.stopPropagation();
                   e.preventDefault();
+                  if (inlineDeityEdit === game.id) {
+                    onToggleDeityEdit(null);
+                  } else {
+                    onToggleDeityEdit(game.id);
+                  }
                 }}
                 className="border border-dashed border-gray-500 rounded-full w-5 h-5 flex items-center justify-center text-gray-400 text-xs hover:bg-slate-700 hover:text-white transition-colors"
                 title="Add mythological figure"

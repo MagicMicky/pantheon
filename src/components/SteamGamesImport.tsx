@@ -326,7 +326,24 @@ export const SteamGamesImport: React.FC<SteamGamesImportProps> = ({ existingGame
         {/* Show this placeholder when no games are loaded */}
         {!steamGames.length && !error && !isLoading && showInput && (
           <div className="flex items-center justify-center h-[180px] text-gray-500 italic text-sm border border-dashed border-gray-700/30 rounded-lg">
-            Enter your Steam ID to see your games
+            {!steamId.trim() ? (
+              <div className="p-4 text-center max-w-sm">
+                <h4 className="text-sm font-medium text-slate-300 mb-3">📝 How to find your Steam ID:</h4>
+                <ol className="text-xs text-slate-400 space-y-2 list-decimal list-inside text-left mb-3">
+                  <li>Go to your Steam profile page</li>
+                  <li>Right-click and "Copy page URL"</li>
+                  <li>Your Steam ID is the long number in the URL:</li>
+                </ol>
+                <div className="p-2 bg-slate-900/50 rounded text-xs text-slate-300 font-mono mb-3">
+                  steamcommunity.com/profiles/<span className="text-blue-300">76561198012345678</span>
+                </div>
+                <p className="text-xs text-slate-500">
+                  💡 Make sure your Steam profile is set to "Public"
+                </p>
+              </div>
+            ) : (
+              "Enter your Steam ID to see your games"
+            )}
           </div>
         )}
         
