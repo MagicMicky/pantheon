@@ -2,7 +2,8 @@ import { MythologicalFigure } from '../types';
 import {
   Zap, Waves, Skull, Bird, Sun, Moon, Sword, HeartHandshake,
   Feather, Hammer, Wheat, Wine, Clock, Mountain, Star, Globe,
-  Dumbbell, Shield, Compass, Footprints, Ship, Tent, Workflow
+  Dumbbell, Shield, Compass, Footprints, Ship, Tent, Workflow,
+  Trophy, Scroll, Sparkles, Crown, Book, Heart, Weight
 } from 'lucide-react';
 
 // Define mythological figures data
@@ -140,18 +141,18 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     id: 'oceanus',
     name: 'Oceanus',
     tier: 'titan',
-    icon: Waves,
+    icon: Globe,
     description: 'Titan of the great world-encircling river',
-    domain: 'Vast water worlds, boundary exploration, primordial forces, cyclical patterns',
+    domain: 'Vastness, boundaries, depths, cycles',
     color: '#4d94ff' // brightened deep blue
   },
   hyperion: {
     id: 'hyperion',
     name: 'Hyperion',
     tier: 'titan',
-    icon: Sun,
+    icon: Sparkles,
     description: 'Titan of light, father of the sun, moon, and dawn',
-    domain: 'Illumination mechanics, observation, enlightenment themes, light vs darkness',
+    domain: 'Light, observation, awakening, illumination',
     color: '#ffda58' // brightened bright yellow
   },
   theia: {
@@ -167,7 +168,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     id: 'atlas',
     name: 'Atlas',
     tier: 'titan',
-    icon: Globe,
+    icon: Weight,
     description: 'Titan condemned to hold up the sky for eternity',
     domain: 'Weight/burden mechanics, map exploration, endurance challenges, duty themes',
     color: '#92b6cc' // brightened stone gray
@@ -187,9 +188,9 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     id: 'perseus',
     name: 'Perseus',
     tier: 'hero',
-    icon: Sword,
+    icon: Crown,
     description: 'Slayer of Medusa and rescuer of Andromeda',
-    domain: 'Monster hunting, rescue missions, mythical equipment, divine assistance',
+    domain: 'Monster-slaying, rescue, divine-tools, quests',
     color: '#ffe14d' // brightened gold
   },
   achilles: {
@@ -250,7 +251,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     id: 'hippolyta',
     name: 'Hippolyta',
     tier: 'hero',
-    icon: Shield,
+    icon: Trophy,
     description: 'Queen of the Amazons and wielder of a magical girdle',
     domain: 'Female warriors, leadership, sacred items, tribal communities',
     color: '#ff7d7d' // brightened red-pink
@@ -259,7 +260,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     id: 'medea',
     name: 'Medea',
     tier: 'hero',
-    icon: Feather,
+    icon: Scroll,
     description: 'Sorceress princess who helped Jason obtain the Golden Fleece',
     domain: 'Magic systems, betrayal narratives, resourcefulness, vengeance arcs',
     color: '#9370db' // brightened medium purple
@@ -268,7 +269,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     id: 'penthesilea',
     name: 'Penthesilea',
     tier: 'hero',
-    icon: Sword,
+    icon: Heart,
     description: 'Amazon warrior queen who fought in the Trojan War',
     domain: 'Battle prowess, last stands, honor codes, tragic confrontations',
     color: '#cd853f' // brightened peru/bronze
@@ -277,7 +278,7 @@ export const MYTHOLOGICAL_FIGURES: Record<string, MythologicalFigure> = {
     id: 'cyrene',
     name: 'Cyrene',
     tier: 'hero',
-    icon: Mountain,
+    icon: Book,
     description: 'Huntress who wrestled lions and caught Apollo\'s attention',
     domain: 'Beast taming, wilderness mastery, physical prowess, divine favor',
     color: '#20b2aa' // brightened light sea green
