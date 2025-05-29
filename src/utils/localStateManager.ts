@@ -7,6 +7,16 @@ const HISTORY_KEY = 'pantheonGames_history';
 const MAX_HISTORY = 5;
 
 export const localStateManager = {
+  // Check if user has saved games
+  hasSavedGames: (): boolean => {
+    try {
+      const savedGames = localStorage.getItem(PRIMARY_KEY);
+      return savedGames !== null && savedGames !== '';
+    } catch (e) {
+      return false;
+    }
+  },
+
   // Save games to localStorage with versioning
   saveGames: (games: Game[]): void => {
     try {
