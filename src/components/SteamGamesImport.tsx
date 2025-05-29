@@ -4,7 +4,7 @@ import { fetchSteamGames, isGameInCollection, isValidSteamId } from "../utils/st
 import { Card, CardHeader, CardTitle, CardContent } from "./ui/Card";
 import { Button, IconBtn } from "./ui/Buttons";
 import { Input } from "./ui/Inputs";
-import { X, RefreshCw, GripVertical, Edit } from "lucide-react";
+import { X, RefreshCw, GripVertical, Edit, EyeOff, RotateCcw } from "lucide-react";
 import { getGenreIcon } from "../utils/helpers";
 import { GENRE_ICON_MAPPING } from "../data/genreIcons";
 
@@ -20,6 +20,7 @@ export const SteamGamesImport: React.FC<SteamGamesImportProps> = ({ existingGame
   const [steamGames, setSteamGames] = useState<Partial<Game>[]>([]);
   const [idError, setIdError] = useState<string | null>(null);
   const [showInput, setShowInput] = useState<boolean>(true);
+  const [ignoredGameIds, setIgnoredGameIds] = useState<Set<string>>(new Set());
 
   const handleSteamIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSteamId(e.target.value);
@@ -43,6 +44,8 @@ export const SteamGamesImport: React.FC<SteamGamesImportProps> = ({ existingGame
     try {
       const games = await fetchSteamGames(steamId);
       setSteamGames(games);
+      // Reset ignored games when fetching a new library
+      setIgnoredGameIds(new Set());
       // Hide the input form after successful fetch
       setShowInput(false);
     } catch (err) {
@@ -53,10 +56,29 @@ export const SteamGamesImport: React.FC<SteamGamesImportProps> = ({ existingGame
     }
   };
 
-  // Filter out games that are already in the collection
+  const ignoreGame = (gameId: string) => {
+    setIgnoredGameIds(prev => {
+      const newSet = new Set(prev);
+      newSet.add(gameId);
+      return newSet;
+    });
+  };
+
+  const resetIgnoredGames = () => {
+    setIgnoredGameIds(new Set());
+  };
+
+  // Filter out games that are already in the collection or ignored
   const filteredGames = steamGames.filter(game => 
-    !isGameInCollection(game, existingGames)
+    !isGameInCollection(game, existingGames) && 
+    !ignoredGameIds.has(game.id || "")
   );
+
+  // Count of ignored games that aren't in the collection
+  const ignoredCount = steamGames.filter(game => 
+    !isGameInCollection(game, existingGames) && 
+    ignoredGameIds.has(game.id || "")
+  ).length;
 
   return (
     <Card className="bg-slate-900/70 backdrop-blur-md border border-slate-800/50">
@@ -119,6 +141,18 @@ export const SteamGamesImport: React.FC<SteamGamesImportProps> = ({ existingGame
                 <span className="text-gray-400 ml-2 font-normal">
                   ({filteredGames.length} available)
                 </span>
+                {ignoredCount > 0 && (
+                  <span className="text-gray-500 ml-2 font-normal">
+                    · {ignoredCount} ignored
+                    <button 
+                      onClick={resetIgnoredGames}
+                      className="ml-1 text-amber-500 hover:text-amber-400 transition-colors inline-flex items-center"
+                      title="Show ignored games"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                    </button>
+                  </span>
+                )}
               </h3>
             </div>
             
@@ -141,10 +175,21 @@ export const SteamGamesImport: React.FC<SteamGamesImportProps> = ({ existingGame
                           strokeWidth: 1.5
                         })}
                       </div>
-                      <div className="cursor-grab flex items-center gap-1 flex-wrap">
+                      <div className="cursor-grab flex items-center gap-1 flex-wrap justify-between">
                         <span className="font-medium pr-1 leading-tight text-white">
                           {game.title}
                         </span>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            if (game.id) ignoreGame(game.id);
+                          }}
+                          className="opacity-0 group-hover/item:opacity-100 text-gray-500 hover:text-gray-300 transition-opacity duration-200"
+                          title="Ignore game"
+                        >
+                          <EyeOff size={14} strokeWidth={1.5} />
+                        </button>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-gray-400 text-xs">
@@ -157,7 +202,19 @@ export const SteamGamesImport: React.FC<SteamGamesImportProps> = ({ existingGame
               </div>
             ) : (
               <div className="flex items-center justify-center h-[180px] text-gray-500 italic text-sm border border-dashed border-gray-700/30 rounded-lg">
-                All your Steam games are already in your collection
+                {ignoredCount > 0 ? (
+                  <div className="text-center">
+                    <p>All remaining games are ignored</p>
+                    <Button 
+                      onClick={resetIgnoredGames} 
+                      className="mt-2 bg-slate-700 hover:bg-slate-600 text-xs px-2 py-1 flex items-center gap-1"
+                    >
+                      <RotateCcw className="w-3 h-3" /> Show ignored games
+                    </Button>
+                  </div>
+                ) : (
+                  <p>All your Steam games are already in your collection</p>
+                )}
               </div>
             )}
           </div>
