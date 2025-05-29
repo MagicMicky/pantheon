@@ -15,6 +15,7 @@ import { Autocomplete } from "./components/Autocomplete";
 import { DeityBadge, DeitySelector } from "./components/DeityComponents";
 import { Confirm } from "./components/ui/Confirm";
 import { Tooltip } from "./components/Tooltip";
+import { SteamGamesImport } from "./components/SteamGamesImport";
 
 // Import data
 import { CATEGORIES, CATEGORY_COLORS } from "./data/categories";
@@ -279,26 +280,55 @@ export default function GamePantheon() {
   
   // Drag & drop functionality
   const onDragStart = (e: React.DragEvent<HTMLLIElement>, id: string) => {
-    e.dataTransfer.setData("text/plain", id);
+    // Set the data to be the ID
+    e.dataTransfer.setData("application/json", JSON.stringify({ 
+      id,
+      fromSteam: false 
+    }));
     e.dataTransfer.effectAllowed = "move";
   };
   
   const onDrop = (e: React.DragEvent<HTMLDivElement>, target: CategoryID) => {
     e.preventDefault();
-    const id = e.dataTransfer.getData("text/plain");
-    if (!id) return;
-    setGames(gs => gs.map(g => {
-      if (g.id === id) {
-        // Clear mythologicalFigureId if the target category doesn't support deities
-        return {
-          ...g, 
-          category: target,
-          // Remove the mythological figure association if not supported
-          mythologicalFigureId: supportsDieties(target) ? g.mythologicalFigureId : undefined
-        };
-      }
-      return g;
-    }));
+    // Get the data from the drag operation
+    const data = e.dataTransfer.getData("application/json");
+    if (!data) return;
+    
+    const dragData = JSON.parse(data);
+    const id = dragData.id;
+    
+    if (dragData.fromSteam) {
+      // This is a new game from Steam
+      const steamGame = dragData.game;
+      const newGame: Game = {
+        ...steamGame,
+        id: uid(), // Generate a new ID
+        category: target,
+        // Fill in required fields that might be missing
+        genre: steamGame.genre || "Unknown",
+        year: steamGame.year || new Date().getFullYear(),
+        // Remove deity if not supported by the target category
+        mythologicalFigureId: supportsDieties(target) ? steamGame.mythologicalFigureId : undefined
+      };
+      setGames([...games, newGame]);
+    } else {
+      // This is an existing game being moved
+      setGames(games.map(g => {
+        if (g.id === id) {
+          return { 
+            ...g, 
+            category: target,
+            // Remove deity if not supported by the target category
+            mythologicalFigureId: supportsDieties(target) ? g.mythologicalFigureId : undefined
+          };
+        }
+        return g;
+      }));
+    }
+    
+    // Remove any highlights
+    const elements = document.querySelectorAll('.drag-over');
+    elements.forEach(el => el.classList.remove('drag-over'));
   };
   
   // Drag highlight management
@@ -356,6 +386,16 @@ export default function GamePantheon() {
   const autoEdit = async () => {
     if (!draft.title) return;
     setDraft({...draft, ...await wikipediaInfo(draft.title)});
+  };
+
+  // Add function to handle drag start from Steam game
+  const onSteamGameDragStart = (e: React.DragEvent<HTMLLIElement>, game: Partial<Game>) => {
+    e.dataTransfer.setData("application/json", JSON.stringify({
+      id: game.id,
+      fromSteam: true,
+      game
+    }));
+    e.dataTransfer.effectAllowed = "move";
   };
 
   // Return JSX
@@ -552,49 +592,59 @@ export default function GamePantheon() {
       
       {/* Add Form - only show if not in shared view */}
       {!isSharedView && (
-        <div className="mx-auto max-w-2xl bg-slate-900/70 backdrop-blur-md p-6 rounded-xl shadow-xl mb-12 border border-slate-800/50">
-          <h2 className="text-xl font-serif font-bold flex items-center gap-2 text-white mb-4 tracking-wide">
-            <Plus className="w-5 h-5"/> Add Game
-          </h2>
-          <div className="grid sm:grid-cols-2 gap-4 mb-4">
-            <Autocomplete 
-              value={newGame.title??""} 
-              onChange={v => setNewGame({...newGame, title: v})} 
-              onSelect={async v => setNewGame({...newGame, title: v, ...await wikipediaInfo(v)})}
-            />
-            <Input 
-              placeholder="Genre" 
-              value={newGame.genre??""} 
-              onChange={e => setNewGame({...newGame, genre: e.target.value})}
-            />
-            <Input 
-              type="number" 
-              placeholder="Year" 
-              value={newGame.year??""} 
-              onChange={e => setNewGame({...newGame, year: +e.target.value})}
-            />
-            <Select 
-              value={newGame.category} 
-              onChange={e => setNewGame({...newGame, category: e.target.value as CategoryID})}
-            >
-              {Object.entries(CATEGORIES).map(([k,v]) => (
-                <option key={k} value={k}>{v.name}</option>
-              ))}
-            </Select>
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mx-auto max-w-4xl mb-12">
+          <div className="md:col-span-7 bg-slate-900/70 backdrop-blur-md p-6 rounded-xl shadow-xl border border-slate-800/50">
+            <h2 className="text-xl font-serif font-bold flex items-center gap-2 text-white mb-4 tracking-wide">
+              <Plus className="w-5 h-5"/> Add Game
+            </h2>
+            <div className="grid sm:grid-cols-2 gap-4 mb-4">
+              <Autocomplete 
+                value={newGame.title??""} 
+                onChange={v => setNewGame({...newGame, title: v})} 
+                onSelect={async v => setNewGame({...newGame, title: v, ...await wikipediaInfo(v)})}
+              />
+              <Input 
+                placeholder="Genre" 
+                value={newGame.genre??""} 
+                onChange={e => setNewGame({...newGame, genre: e.target.value})}
+              />
+              <Input 
+                type="number" 
+                placeholder="Year" 
+                value={newGame.year??""} 
+                onChange={e => setNewGame({...newGame, year: +e.target.value})}
+              />
+              <Select 
+                value={newGame.category} 
+                onChange={e => setNewGame({...newGame, category: e.target.value as CategoryID})}
+              >
+                {Object.entries(CATEGORIES).map(([k,v]) => (
+                  <option key={k} value={k}>{v.name}</option>
+                ))}
+              </Select>
+            </div>
+            
+            {/* Mythological Figure Selector - only show for appropriate categories */}
+            {supportsDieties(newGame.category) && (
+              <DeitySelector 
+                tier={newGame.category as 'olympian' | 'titan' | 'hero'}
+                selectedDeityId={newGame.mythologicalFigureId}
+                onChange={(id) => setNewGame({...newGame, mythologicalFigureId: id})}
+              />
+            )}
+            
+            <div className="flex justify-between mt-6">
+              <Button onClick={autoNew} className="bg-slate-700 hover:bg-slate-600 text-gray-200">Auto‑Fill</Button>
+              <Button onClick={add} className="bg-slate-700 hover:bg-slate-600">Add</Button>
+            </div>
           </div>
           
-          {/* Mythological Figure Selector - only show for appropriate categories */}
-          {supportsDieties(newGame.category) && (
-            <DeitySelector 
-              tier={newGame.category as 'olympian' | 'titan' | 'hero'}
-              selectedDeityId={newGame.mythologicalFigureId}
-              onChange={(id) => setNewGame({...newGame, mythologicalFigureId: id})}
+          {/* Steam Games Import Panel */}
+          <div className="md:col-span-5">
+            <SteamGamesImport 
+              existingGames={games} 
+              onGameDragStart={onSteamGameDragStart} 
             />
-          )}
-          
-          <div className="flex justify-between mt-6">
-            <Button onClick={autoNew} className="bg-slate-700 hover:bg-slate-600 text-gray-200">Auto‑Fill</Button>
-            <Button onClick={add} className="bg-slate-700 hover:bg-slate-600">Add</Button>
           </div>
         </div>
       )}

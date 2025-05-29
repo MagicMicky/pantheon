@@ -9,6 +9,9 @@ export interface Game {
   category: CategoryID; 
   mythologicalFigureId?: string; 
   sharedTitle?: string;
+  // Steam-related properties
+  steamAppId?: string;
+  steamHoursPlayed?: number;
 }
 
 // Define mythological figure interface
