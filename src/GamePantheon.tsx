@@ -25,23 +25,12 @@ import { GENRE_ICON_MAPPING } from "./data/genreIcons";
 import { uid, encodeGameData, decodeGameData, getGenreIcon } from "./utils/helpers";
 import { wikipediaInfo } from "./utils/wikipediaHelpers";
 import { localStateManager } from "./utils/localStateManager";
+import { removeShareParams, getShareParams } from "./utils/urlHelpers";
 
-// Helper function to set meta tags
-const setMetaTag = (nameOrProperty: string, content: string, isProperty: boolean = false) => {
-  let element = document.querySelector(isProperty ? `meta[property="${nameOrProperty}"]` : `meta[name="${nameOrProperty}"]`);
-  if (element) {
-    element.setAttribute("content", content);
-  } else {
-    element = document.createElement("meta");
-    if (isProperty) {
-      element.setAttribute("property", nameOrProperty);
-    } else {
-      element.setAttribute("name", nameOrProperty);
-    }
-    element.setAttribute("content", content);
-    document.head.appendChild(element);
-  }
-};
+// Import hooks
+import { useShareFeature } from "./hooks/useShareFeature";
+import { useMetaTags, setDefaultMetaTags } from "./hooks/useMetaTags";
+import { useModalState, useConfirmationModal } from "./hooks/useModalState";
 
 /**
  * Pantheon v8 ────────────────────────────────────────────────────────────────
@@ -60,28 +49,53 @@ export default function GamePantheon() {
   const [editing, setEditing] = useState<string|null>(null);
   const [draft, setDraft] = useState<Partial<Game>>({});
   const [isSharedView, setIsSharedView] = useState<boolean>(false);
-  const [shareUrl, setShareUrl] = useState<string>("");
-  const [showShareModal, setShowShareModal] = useState<boolean>(false);
-  const [sharedTitle, setSharedTitle] = useState<string>("");
-  const [compressionStats, setCompressionStats] = useState<{original: number, compressed: number, ratio: number}>({
-    original: 0, 
-    compressed: 0, 
-    ratio: 0
-  });
   
-  // Add states for confirmation dialogs
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
-  const [itemToDelete, setItemToDelete] = useState<string|null>(null);
-  const [showResetConfirm, setShowResetConfirm] = useState<boolean>(false);
-  const [showHistoryModal, setShowHistoryModal] = useState<boolean>(false);
+  // Use share feature hook
+  const {
+    shareUrl,
+    showShareModal,
+    sharedTitle,
+    compressionStats,
+    setSharedTitle,
+    generateShareLink,
+    copyToClipboard,
+    closeShareModal,
+    updateShareUrl
+  } = useShareFeature(games);
+  
+  // Modal states using the hook
+  const deleteConfirm = useConfirmationModal<string>();
+  const resetConfirm = useModalState();
+  const historyModal = useModalState();
+  const overrideConfirm = useModalState();
+  
   const [historyItems, setHistoryItems] = useState<Array<{timestamp: string, index: number}>>([]);
-  const [showOverrideConfirm, setShowOverrideConfirm] = useState<boolean>(false);
   
   // Add a new state for inline deity editing
   const [inlineDeityEdit, setInlineDeityEdit] = useState<string | null>(null);
   
   // Add state for drop position indicators
   const [dropIndicator, setDropIndicator] = useState<{gameId: string, position: 'before' | 'after'} | null>(null);
+  
+  // Add a ref to track if this is first render
+  const isInitialMount = useRef(true);
+  
+  // Prepare meta tags configuration
+  const [metaTagsConfig, setMetaTagsConfig] = useState<{
+    title?: string;
+    description?: string;
+    ogTitle?: string;
+    ogDescription?: string;
+    ogUrl?: string;
+    ogImage?: string;
+    twitterTitle?: string;
+    twitterDescription?: string;
+    twitterImage?: string;
+    twitterImageAlt?: string;
+  }>({});
+  
+  // Apply meta tags
+  useMetaTags(metaTagsConfig);
   
   // Helper function to determine if a category supports deities
   const supportsDieties = (category?: CategoryID): boolean => {
@@ -96,27 +110,22 @@ export default function GamePantheon() {
       .filter(Boolean);
   };
   
-  // Add a ref to track if this is first render
-  const isInitialMount = useRef(true);
-  
   // Force dark mode and load data
   useEffect(() => {
     document.documentElement.classList.add('dark');
+    setDefaultMetaTags(); // Set default og:type and twitter:card
     
-    const url = new URL(window.location.href);
-    const sharedData = url.searchParams.get('shared');
-    const sharedTitleParam = url.searchParams.get('title');
-    const currentUrl = url.href; // Get the full current URL
+    const { sharedData, sharedTitle: sharedTitleParam } = getShareParams();
+    const currentUrl = window.location.href;
 
-    // Default meta tags (can be overwritten by shared view)
-    setMetaTag("description", "Game Pantheon - Organize your favorite games into mythological tiers");
-    setMetaTag("og:type", "website", true);
-    setMetaTag("twitter:card", "summary_large_image");
-    // Placeholder image, replace later
-    setMetaTag("og:image", "https://example.com/default-pantheon-preview.png", true);
-    setMetaTag("twitter:image", "https://example.com/default-pantheon-preview.png");
-    setMetaTag("twitter:image:alt", "Game Pantheon tier list");
-
+    // Default meta tags configuration
+    const defaultConfig = {
+      description: "Game Pantheon - Organize your favorite games into mythological tiers",
+      ogUrl: window.location.origin,
+      ogImage: "https://example.com/default-pantheon-preview.png",
+      twitterImage: "https://example.com/default-pantheon-preview.png",
+      twitterImageAlt: "Game Pantheon tier list"
+    };
 
     if (sharedData) {
       try {
@@ -127,48 +136,49 @@ export default function GamePantheon() {
         let metaDescription = "Check out this Game Pantheon list!";
 
         if (sharedTitleParam) {
-          const decodedTitle = decodeURIComponent(sharedTitleParam);
-          setSharedTitle(decodedTitle);
-          pageTitle = `${decodedTitle} - Game Pantheon`;
-          document.title = pageTitle;
-          metaDescription = `View the '${decodedTitle}' Game Pantheon list.`;
-        } else {
-          document.title = "Shared Game Pantheon";
+          setSharedTitle(sharedTitleParam);
+          pageTitle = `${sharedTitleParam} - Game Pantheon`;
+          metaDescription = `View the '${sharedTitleParam}' Game Pantheon list.`;
         }
         
         // Update meta tags for shared view
-        setMetaTag("og:title", pageTitle, true);
-        setMetaTag("twitter:title", pageTitle);
-        setMetaTag("og:description", metaDescription, true);
-        setMetaTag("twitter:description", metaDescription);
-        setMetaTag("og:url", currentUrl, true);
-        // Placeholder dynamic image URL - replace when image generation service is ready
-        setMetaTag("og:image", "https://example.com/placeholder-dynamic-image.png", true); 
-        setMetaTag("twitter:image", "https://example.com/placeholder-dynamic-image.png");
-        setMetaTag("twitter:image:alt", `Preview of ${pageTitle}`);
+        setMetaTagsConfig({
+          ...defaultConfig,
+          title: pageTitle,
+          ogTitle: pageTitle,
+          twitterTitle: pageTitle,
+          ogDescription: metaDescription,
+          twitterDescription: metaDescription,
+          ogUrl: currentUrl,
+          twitterImageAlt: `Preview of ${pageTitle}`
+        });
 
       } catch (e) {
         console.error("Failed to parse shared games", e);
-        // Fallback to default titles and tags if parsing fails
-        document.title = "Game Pantheon";
-        setMetaTag("og:title", "Game Pantheon", true);
-        setMetaTag("twitter:title", "Game Pantheon");
-        setMetaTag("og:description", "Organize your favorite games into mythological tiers.", true);
-        setMetaTag("twitter:description", "Organize your favorite games into mythological tiers.");
-        setMetaTag("og:url", window.location.origin, true); // Use base URL for default
+        // Fallback to default
+        setMetaTagsConfig({
+          ...defaultConfig,
+          title: "Game Pantheon",
+          ogTitle: "Game Pantheon",
+          twitterTitle: "Game Pantheon",
+          ogDescription: defaultConfig.description,
+          twitterDescription: defaultConfig.description
+        });
       }
     } else {
       // Load games using the enhanced manager
       setGames(localStateManager.loadGames());
-      document.title = "Game Pantheon";
       // Set default meta tags for non-shared view
-      setMetaTag("og:title", "Game Pantheon", true);
-      setMetaTag("twitter:title", "Game Pantheon");
-      setMetaTag("og:description", "Organize your favorite games into mythological tiers.", true);
-      setMetaTag("twitter:description", "Organize your favorite games into mythological tiers.");
-      setMetaTag("og:url", window.location.origin, true); // Use base URL for default
+      setMetaTagsConfig({
+        ...defaultConfig,
+        title: "Game Pantheon",
+        ogTitle: "Game Pantheon",
+        twitterTitle: "Game Pantheon",
+        ogDescription: defaultConfig.description,
+        twitterDescription: defaultConfig.description
+      });
     }
-  }, []);
+  }, [setSharedTitle]);
 
   // Save games to localStorage whenever they change (only if not in shared view)
   useEffect(() => {
@@ -183,40 +193,6 @@ export default function GamePantheon() {
     }
   }, [games, isSharedView]);
   
-  // Sharing functionality
-  const generateShareLink = () => {
-    // Get both compressed and uncompressed sizes for comparison
-    const rawData = JSON.stringify(games);
-    const rawBase64 = btoa(encodeURIComponent(rawData));
-    
-    const encodedData = encodeGameData(games);
-    const url = new URL(window.location.href);
-    // Remove any existing shared parameter
-    url.searchParams.delete('shared');
-    url.searchParams.delete('title');
-    // Add the encoded data
-    url.searchParams.set('shared', encodedData);
-    // Add the shared title if provided
-    if (sharedTitle) {
-      url.searchParams.set('title', encodeURIComponent(sharedTitle));
-    }
-    setShareUrl(url.toString());
-    
-    // Calculate compression stats
-    const compressionRatio = Math.round((1 - (encodedData.length / rawBase64.length)) * 100);
-    setCompressionStats({
-      original: rawBase64.length,
-      compressed: encodedData.length,
-      ratio: compressionRatio
-    });
-    
-    setShowShareModal(true);
-  };
-  
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(shareUrl);
-  };
-  
   const createNewFromShared = () => {
     // Check if there's existing custom data to warn about override
     // We need to check localStorage directly since loadGames() always returns at least one default game
@@ -224,7 +200,7 @@ export default function GamePantheon() {
       const savedGames = localStorage.getItem('pantheonGames');
       if (savedGames) {
         // User has saved their own data
-        setShowOverrideConfirm(true);
+        overrideConfirm.open();
       } else {
         confirmCreateFromShared();
       }
@@ -240,22 +216,19 @@ export default function GamePantheon() {
     setIsSharedView(false);
     
     // Remove shared parameter from URL without refreshing
-    const url = new URL(window.location.href);
-    url.searchParams.delete('shared');
-    url.searchParams.delete('title');
-    window.history.pushState({}, '', url.toString());
+    removeShareParams();
     
     // Reset the shared title and update page title
     setSharedTitle("");
     document.title = "Game Pantheon";
     
     // Close confirmation dialog if open
-    setShowOverrideConfirm(false);
+    overrideConfirm.close();
   };
   
   // Update startFresh to use confirmation
   const requestStartFresh = () => {
-    setShowResetConfirm(true);
+    resetConfirm.open();
   };
   
   const confirmStartFresh = () => {
@@ -270,11 +243,9 @@ export default function GamePantheon() {
     setIsSharedView(false);
     
     // Remove shared parameter from URL without refreshing
-    const url = new URL(window.location.href);
-    url.searchParams.delete('shared');
-    window.history.pushState({}, '', url.toString());
+    removeShareParams();
     
-    setShowResetConfirm(false);
+    resetConfirm.close();
   };
   
   // CRUD operations
@@ -286,16 +257,15 @@ export default function GamePantheon() {
   
   // Update remove to use confirmation
   const requestRemove = (id: string) => {
-    setItemToDelete(id);
-    setShowDeleteConfirm(true);
+    deleteConfirm.openWithData(id);
   };
   
   const confirmRemove = () => {
+    const itemToDelete = deleteConfirm.data;
     if (itemToDelete) {
       setGames(games.filter(g => g.id !== itemToDelete));
-      setItemToDelete(null);
     }
-    setShowDeleteConfirm(false);
+    deleteConfirm.close();
   };
   
   const save = (id: string) => {
@@ -337,14 +307,14 @@ export default function GamePantheon() {
       timestamp: item.timestamp,
       index
     })));
-    setShowHistoryModal(true);
+    historyModal.open();
   };
   
   const restoreFromHistory = (index: number) => {
     const restoredGames = localStateManager.restoreFromHistory(index);
     if (restoredGames) {
       setGames(restoredGames);
-      setShowHistoryModal(false);
+      historyModal.close();
     }
   };
   
@@ -782,14 +752,7 @@ export default function GamePantheon() {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   setSharedTitle(e.target.value);
                   // Regenerate the URL with the new title
-                  const url = new URL(window.location.href);
-                  url.searchParams.delete('shared');
-                  url.searchParams.delete('title');
-                  url.searchParams.set('shared', encodeGameData(games));
-                  if (e.target.value) {
-                    url.searchParams.set('title', encodeURIComponent(e.target.value));
-                  }
-                  setShareUrl(url.toString());
+                  updateShareUrl(games, e.target.value);
                 }}
                 className="w-full bg-slate-800 border border-slate-700 text-white"
               />
@@ -825,14 +788,14 @@ export default function GamePantheon() {
             </div>
             
             <div className="flex justify-end">
-              <Button onClick={() => setShowShareModal(false)} className="bg-slate-700 hover:bg-slate-600">Done</Button>
+              <Button onClick={closeShareModal} className="bg-slate-700 hover:bg-slate-600">Done</Button>
             </div>
           </div>
         </div>
       )}
       
       {/* History Modal */}
-      {showHistoryModal && (
+      {historyModal.isOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow-2xl max-w-md w-full">
             <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
@@ -869,7 +832,7 @@ export default function GamePantheon() {
             )}
             
             <div className="flex justify-end">
-              <Button onClick={() => setShowHistoryModal(false)} className="bg-slate-700 hover:bg-slate-600">
+              <Button onClick={() => historyModal.close()} className="bg-slate-700 hover:bg-slate-600">
                 Close
               </Button>
             </div>
@@ -992,10 +955,10 @@ export default function GamePantheon() {
                             setDropIndicator(null);
                           }
                         } : undefined}
-                        onDrop={!isSharedView ? (e) => {
+                        onDrop={!isSharedView ? (e => {
                           setDropIndicator(null); // Always clear indicator on drop
                           onDropOnGame(e, g.id, categoryID);
-                        } : undefined}
+                        }) : undefined}
                       >
                         {/* Drop indicator before this item */}
                         {dropIndicator?.gameId === g.id && dropIndicator.position === 'before' && (
@@ -1163,27 +1126,27 @@ export default function GamePantheon() {
       
       {/* Confirmation dialogs */}
       <Confirm
-        isOpen={showDeleteConfirm}
+        isOpen={deleteConfirm.isOpen}
         title="Delete Game"
         message="Are you sure you want to delete this game? This action cannot be undone."
         onConfirm={confirmRemove}
-        onCancel={() => setShowDeleteConfirm(false)}
+        onCancel={() => deleteConfirm.close()}
       />
       
       <Confirm
-        isOpen={showResetConfirm}
+        isOpen={resetConfirm.isOpen}
         title="Reset Collection"
         message="Are you sure you want to reset your entire collection? All your current games will be lost."
         onConfirm={confirmStartFresh}
-        onCancel={() => setShowResetConfirm(false)}
+        onCancel={() => resetConfirm.close()}
       />
       
       <Confirm
-        isOpen={showOverrideConfirm}
+        isOpen={overrideConfirm.isOpen}
         title="Override Existing Collection"
         message="You already have games in your collection. Using this shared collection will override your existing data. Continue?"
         onConfirm={confirmCreateFromShared}
-        onCancel={() => setShowOverrideConfirm(false)}
+        onCancel={() => overrideConfirm.close()}
       />
     </div>
   );
