@@ -64,4 +64,5 @@ export interface DeitySelectorProps {
   tier: 'olympian' | 'titan' | 'hero';
   selectedDeityId?: string;
   onChange: (id: string | undefined) => void;
+  usedDeityIds?: string[];
 } 

@@ -218,15 +218,15 @@ export const SteamGamesImport: React.FC<SteamGamesImportProps> = ({ existingGame
           </div>
         ) : (
           <div className="flex justify-between items-center mb-3">
-            <div className="text-sm text-gray-400">
-              Steam ID: <span className="text-white">{steamId}</span>
+            <div className="text-sm text-gray-400 flex items-center gap-2">
+              <span>Steam ID: <span className="text-white">{steamId}</span></span>
+              <Button
+                onClick={changeProfile}
+                className="bg-slate-700 hover:bg-slate-600 flex items-center gap-1 text-xs px-2 py-1"
+              >
+                <Edit className="w-3 h-3" /> Change
+              </Button>
             </div>
-            <Button
-              onClick={changeProfile}
-              className="bg-slate-700 hover:bg-slate-600 flex items-center gap-1 text-xs px-2 py-1"
-            >
-              <Edit className="w-3 h-3" /> Change
-            </Button>
           </div>
         )}
 

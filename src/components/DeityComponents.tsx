@@ -39,7 +39,7 @@ export const DeityBadge = ({ mythologicalFigureId }: { mythologicalFigureId?: st
 };
 
 // Deity Selector component for add/edit forms
-export const DeitySelector = ({ tier, selectedDeityId, onChange }: DeitySelectorProps) => {
+export const DeitySelector = ({ tier, selectedDeityId, onChange, usedDeityIds = [] }: DeitySelectorProps) => {
   const deities = getMythologicalFiguresByTier(tier);
   
   return (
@@ -58,6 +58,7 @@ export const DeitySelector = ({ tier, selectedDeityId, onChange }: DeitySelector
         {deities.map(deity => {
           const Icon = deity.icon;
           const isSelected = selectedDeityId === deity.id;
+          const isUsed = usedDeityIds.includes(deity.id) && !isSelected;
           
           return (
             <Tooltip
@@ -73,16 +74,23 @@ export const DeitySelector = ({ tier, selectedDeityId, onChange }: DeitySelector
                   <div className="text-gray-400 italic text-xs mt-1">
                     <span className="font-medium text-gray-300">Domain:</span> {deity.domain}
                   </div>
+                  {isUsed && (
+                    <div className="text-red-400 text-xs mt-1 border-t border-gray-700/50 pt-1">
+                      Already assigned to another game
+                    </div>
+                  )}
                 </div>
               }
             >
               <button
                 className={`p-2 text-lg flex items-center justify-center transition-all duration-200 rounded-md
-                          ${isSelected ? 'bg-slate-700' : 'hover:bg-slate-800/60'}`}
+                          ${isSelected ? 'bg-slate-700' : isUsed ? 'bg-slate-900/50 cursor-not-allowed' : 'hover:bg-slate-800/60'}`}
                 style={{ 
-                  color: deity.color,
+                  color: isUsed ? '#64748b' : deity.color,
+                  opacity: isUsed ? 0.5 : 1
                 }}
-                onClick={() => onChange(deity.id)}
+                onClick={() => !isUsed && onChange(deity.id)}
+                disabled={isUsed}
               >
                 <Icon className="w-6 h-6" strokeWidth={isSelected ? 2.5 : 2} />
               </button>

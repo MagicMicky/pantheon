@@ -80,9 +80,20 @@ export default function GamePantheon() {
   // Add a new state for inline deity editing
   const [inlineDeityEdit, setInlineDeityEdit] = useState<string | null>(null);
   
+  // Add state for drop position indicators
+  const [dropIndicator, setDropIndicator] = useState<{gameId: string, position: 'before' | 'after'} | null>(null);
+  
   // Helper function to determine if a category supports deities
   const supportsDieties = (category?: CategoryID): boolean => {
     return category ? ['olympian', 'titan', 'hero'].includes(category) : false;
+  };
+  
+  // Helper function to get used deity IDs (excluding the current game being edited)
+  const getUsedDeityIds = (excludeGameId?: string): string[] => {
+    return games
+      .filter(game => game.id !== excludeGameId && game.mythologicalFigureId)
+      .map(game => game.mythologicalFigureId!)
+      .filter(Boolean);
   };
   
   // Add a ref to track if this is first render
@@ -347,8 +358,49 @@ export default function GamePantheon() {
     e.dataTransfer.effectAllowed = "move";
   };
   
+  const onDragEnd = () => {
+    // Always clear drop indicators when drag ends
+    setDropIndicator(null);
+  };
+  
+  // Helper function to calculate drop position
+  const calculateDropPosition = (e: React.DragEvent, targetElement: HTMLElement): 'before' | 'after' => {
+    const rect = targetElement.getBoundingClientRect();
+    const mouseY = e.clientY;
+    const elementMiddle = rect.top + rect.height / 2;
+    return mouseY < elementMiddle ? 'before' : 'after';
+  };
+  
+  // Helper function to insert item at specific position
+  const insertAtPosition = (
+    games: Game[], 
+    newGame: Game, 
+    targetGameId: string, 
+    position: 'before' | 'after',
+    targetCategory: CategoryID
+  ): Game[] => {
+    const categoryGames = games.filter(g => g.category === targetCategory);
+    const otherGames = games.filter(g => g.category !== targetCategory);
+    
+    const targetIndex = categoryGames.findIndex(g => g.id === targetGameId);
+    if (targetIndex === -1) {
+      // If target not found, add at the end
+      return [...otherGames, ...categoryGames, newGame];
+    }
+    
+    const insertIndex = position === 'before' ? targetIndex : targetIndex + 1;
+    const newCategoryGames = [...categoryGames];
+    newCategoryGames.splice(insertIndex, 0, newGame);
+    
+    return [...otherGames, ...newCategoryGames];
+  };
+  
   const onDrop = async (e: React.DragEvent<HTMLDivElement>, target: CategoryID) => {
     e.preventDefault();
+    
+    // Clear any drop indicators
+    setDropIndicator(null);
+    
     // Get the data from the drag operation
     const data = e.dataTransfer.getData("application/json");
     if (!data) return;
@@ -370,7 +422,7 @@ export default function GamePantheon() {
         mythologicalFigureId: supportsDieties(target) ? steamGame.mythologicalFigureId : undefined
       };
       
-      // Add the game first with basic information
+      // Add the game at the end of the category
       setGames(prevGames => [...prevGames, newGame]);
       
       // Then try to fetch additional details in the background
@@ -416,6 +468,127 @@ export default function GamePantheon() {
     // Remove any highlights
     const elements = document.querySelectorAll('.drag-over');
     elements.forEach(el => el.classList.remove('drag-over'));
+  };
+  
+  // New function for handling drops on individual games (for reordering)
+  const onDropOnGame = async (e: React.DragEvent<HTMLLIElement>, targetGameId: string, targetCategory: CategoryID) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Clear drop indicator
+    setDropIndicator(null);
+    
+    const data = e.dataTransfer.getData("application/json");
+    if (!data) return;
+    
+    const dragData = JSON.parse(data);
+    const draggedGameId = dragData.id;
+    
+    // Calculate drop position
+    const position = calculateDropPosition(e, e.currentTarget as HTMLElement);
+    
+    // Handle Steam game drops - add them to the target category at the drop position
+    if (dragData.fromSteam) {
+      const steamGame = dragData.game;
+      const newGame: Game = {
+        ...steamGame,
+        id: uid(), // Generate a new ID
+        category: targetCategory,
+        // Fill in required fields that might be missing
+        genre: steamGame.genre || "Unknown",
+        year: steamGame.year || new Date().getFullYear(),
+        // Remove deity if not supported by the target category
+        mythologicalFigureId: supportsDieties(targetCategory) ? steamGame.mythologicalFigureId : undefined
+      };
+      
+      // Insert at the calculated position
+      const newGames = insertAtPosition(games, newGame, targetGameId, position, targetCategory);
+      setGames(newGames);
+      
+      // Then try to fetch additional details in the background
+      try {
+        if (newGame.title) {
+          const additionalInfo = await wikipediaInfo(newGame.title);
+          
+          // Update the game with the fetched information if available
+          if (additionalInfo) {
+            setGames(prevGames => prevGames.map(g => {
+              if (g.id === newGame.id) {
+                return {
+                  ...g,
+                  // Only update genre if it was "Unknown"
+                  genre: g.genre === "Unknown" && additionalInfo.genre ? additionalInfo.genre : g.genre,
+                  // Only update year if it wasn't set
+                  year: (!g.year || g.year === new Date().getFullYear()) && additionalInfo.year ? additionalInfo.year : g.year
+                };
+              }
+              return g;
+            }));
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch additional game info:", error);
+        // The game is already added with default values, so we don't need additional error handling
+      }
+      return;
+    }
+    
+    // Skip if trying to drop on itself
+    if (draggedGameId === targetGameId) return;
+    
+    const draggedGame = games.find(g => g.id === draggedGameId);
+    const targetGame = games.find(g => g.id === targetGameId);
+    
+    if (!draggedGame || !targetGame) return;
+    
+    // If moving to a different category, move to the calculated position
+    if (draggedGame.category !== targetCategory) {
+      const updatedGame = { 
+        ...draggedGame, 
+        category: targetCategory,
+        // Remove deity if not supported by the target category
+        mythologicalFigureId: supportsDieties(targetCategory) ? draggedGame.mythologicalFigureId : undefined
+      };
+      
+      // Remove from old position and insert at new position
+      const gamesWithoutDragged = games.filter(g => g.id !== draggedGameId);
+      const newGames = insertAtPosition(gamesWithoutDragged, updatedGame, targetGameId, position, targetCategory);
+      setGames(newGames);
+      return;
+    }
+    
+    // Reorder within the same category
+    const categoryGames = games.filter(g => g.category === targetCategory);
+    const otherGames = games.filter(g => g.category !== targetCategory);
+    
+    // Find positions
+    const draggedIndex = categoryGames.findIndex(g => g.id === draggedGameId);
+    const targetIndex = categoryGames.findIndex(g => g.id === targetGameId);
+    
+    if (draggedIndex === -1 || targetIndex === -1) return;
+    
+    // Don't do anything if we're trying to insert in the same position
+    if ((position === 'before' && targetIndex === draggedIndex + 1) || 
+        (position === 'after' && targetIndex === draggedIndex - 1)) {
+      return;
+    }
+    
+    // Create a new array and perform the reordering
+    const newCategoryGames = [...categoryGames];
+    const [draggedItem] = newCategoryGames.splice(draggedIndex, 1);
+    
+    // Calculate the insertion index after removing the dragged item
+    let insertIndex = position === 'before' ? targetIndex : targetIndex + 1;
+    
+    // Adjust for the removed item
+    if (draggedIndex < targetIndex) {
+      insertIndex -= 1;
+    }
+    
+    newCategoryGames.splice(insertIndex, 0, draggedItem);
+    
+    // Combine with other categories
+    setGames([...otherGames, ...newCategoryGames]);
   };
   
   // Drag highlight management
@@ -744,6 +917,7 @@ export default function GamePantheon() {
                 tier={newGame.category as 'olympian' | 'titan' | 'hero'}
                 selectedDeityId={newGame.mythologicalFigureId}
                 onChange={(id) => setNewGame({...newGame, mythologicalFigureId: id})}
+                usedDeityIds={getUsedDeityIds()}
               />
             )}
             
@@ -782,6 +956,7 @@ export default function GamePantheon() {
               } : undefined}
               onDrop={!isSharedView ? (e: React.DragEvent<HTMLDivElement>) => {
                 removeDragHighlight(e);
+                setDropIndicator(null); // Clear any lingering drop indicators
                 onDrop(e, categoryID);
               } : undefined}
             >
@@ -799,7 +974,34 @@ export default function GamePantheon() {
                         className="flex flex-col gap-1 pt-2 first:pt-0 pl-7 relative group/item" 
                         draggable={!isSharedView} 
                         onDragStart={!isSharedView ? e => onDragStart(e, g.id) : undefined}
+                        onDragEnd={!isSharedView ? onDragEnd : undefined}
+                        onDragOver={!isSharedView ? (e) => {
+                          e.preventDefault();
+                          e.dataTransfer.dropEffect = "move";
+                          
+                          // Calculate and set drop indicator
+                          const position = calculateDropPosition(e, e.currentTarget as HTMLElement);
+                          setDropIndicator({gameId: g.id, position});
+                        } : undefined}
+                        onDragLeave={!isSharedView ? (e) => {
+                          // Only clear if we're actually leaving this element and not entering a child
+                          const relatedTarget = e.relatedTarget as HTMLElement;
+                          const currentTarget = e.currentTarget as HTMLElement;
+                          
+                          if (!relatedTarget || !currentTarget.contains(relatedTarget)) {
+                            setDropIndicator(null);
+                          }
+                        } : undefined}
+                        onDrop={!isSharedView ? (e) => {
+                          setDropIndicator(null); // Always clear indicator on drop
+                          onDropOnGame(e, g.id, categoryID);
+                        } : undefined}
                       >
+                        {/* Drop indicator before this item */}
+                        {dropIndicator?.gameId === g.id && dropIndicator.position === 'before' && (
+                          <div className={`absolute -top-1 left-0 right-0 h-0.5 rounded-full opacity-80 z-10`} style={{backgroundColor: colors.highlight}} />
+                        )}
+                        
                         <div className="absolute left-0 top-1/2 -translate-y-1/2 w-5 flex justify-center">
                           {!isSharedView && (
                             <div className="absolute opacity-0 group-hover/item:opacity-100 text-gray-500 cursor-grab transition-opacity duration-200">
@@ -824,6 +1026,7 @@ export default function GamePantheon() {
                                       tier={g.category as 'olympian' | 'titan' | 'hero'}
                                       selectedDeityId={undefined}
                                       onChange={(id) => updateDeity(g.id, id)}
+                                      usedDeityIds={getUsedDeityIds(g.id)}
                                     />
                                     <div className="flex justify-end mt-2">
                                       <Button 
@@ -860,6 +1063,11 @@ export default function GamePantheon() {
                             </div>
                           )}
                         </div>
+                        
+                        {/* Drop indicator after this item */}
+                        {dropIndicator?.gameId === g.id && dropIndicator.position === 'after' && (
+                          <div className={`absolute -bottom-1 left-0 right-0 h-0.5 rounded-full opacity-80 z-10`} style={{backgroundColor: colors.highlight}} />
+                        )}
                       </li>
                     ) : (
                       // Edit form
@@ -879,7 +1087,7 @@ export default function GamePantheon() {
                               inputClass="text-xs"
                             />
                           </div>
-                          <div className="grid grid-cols-3 gap-2">
+                          <div className="grid grid-cols-2 gap-2">
                             <Input 
                               value={draft.genre||""} 
                               onChange={e => setDraft({...draft, genre: e.target.value})} 
@@ -893,25 +1101,57 @@ export default function GamePantheon() {
                               className="text-xs" 
                               placeholder="Year"
                             />
-                            <Select 
-                              value={draft.category} 
-                              onChange={e => setDraft({...draft, category: e.target.value as CategoryID})} 
-                              className="text-xs"
-                            >
-                              {Object.entries(CATEGORIES).map(([k,v]) => (
-                                <option key={k} value={k}>{v.name}</option>
-                              ))}
-                            </Select>
                           </div>
                           
-                          {/* Mythological Figure Selector in Edit Mode */}
+                          {/* Inline Mythological Figure Selector in Edit Mode */}
                           {supportsDieties(draft.category) && (
-                            <div className="mt-1">
-                              <DeitySelector 
-                                tier={draft.category as 'olympian' | 'titan' | 'hero'}
-                                selectedDeityId={draft.mythologicalFigureId}
-                                onChange={(id) => setDraft({...draft, mythologicalFigureId: id})}
-                              />
+                            <div className="flex items-center gap-2 mt-2">
+                              <span className="text-xs text-gray-400">Deity:</span>
+                              {draft.mythologicalFigureId ? (
+                                <DeityBadge mythologicalFigureId={draft.mythologicalFigureId} />
+                              ) : (
+                                inlineDeityEdit === g.id ? (
+                                  <div className="absolute z-10 mt-1" onClick={(e) => e.stopPropagation()}>
+                                    <div className="bg-slate-800 border border-slate-700 rounded-md p-3 shadow-xl">
+                                      <DeitySelector
+                                        tier={draft.category as 'olympian' | 'titan' | 'hero'}
+                                        selectedDeityId={undefined}
+                                        onChange={(id) => setDraft({...draft, mythologicalFigureId: id})}
+                                        usedDeityIds={getUsedDeityIds(g.id)}
+                                      />
+                                      <div className="flex justify-end mt-2">
+                                        <Button 
+                                          onClick={() => setInlineDeityEdit(null)} 
+                                          className="bg-slate-700 hover:bg-slate-600 text-xs px-2 py-1"
+                                        >
+                                          Cancel
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <button 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      e.preventDefault();
+                                      setInlineDeityEdit(g.id);
+                                    }}
+                                    className="border border-dashed border-gray-500 rounded-full w-5 h-5 flex items-center justify-center text-gray-400 text-xs hover:bg-slate-700 hover:text-white transition-colors"
+                                    title="Add mythological figure"
+                                  >
+                                    +
+                                  </button>
+                                )
+                              )}
+                              {draft.mythologicalFigureId && (
+                                <button 
+                                  onClick={() => setDraft({...draft, mythologicalFigureId: undefined})}
+                                  className="text-gray-500 hover:text-red-400 transition-colors"
+                                  title="Remove deity"
+                                >
+                                  <X className="w-3 h-3" strokeWidth={1.5} />
+                                </button>
+                              )}
                             </div>
                           )}
                           
