@@ -12,7 +12,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "./components/ui/Card";
 import { Button, IconBtn } from "./components/ui/Buttons";
 import { Input, Select } from "./components/ui/Inputs";
 import { Autocomplete } from "./components/Autocomplete";
-import { DeityBadge, DeitySelector } from "./components/DeityComponents";
+import { DeityBadge, DeitySelector, DeityPopup } from "./components/DeityComponents";
 import { Confirm } from "./components/ui/Confirm";
 import { Tooltip } from "./components/Tooltip";
 import { SteamGamesImport } from "./components/SteamGamesImport";
@@ -1019,38 +1019,31 @@ export default function GamePantheon() {
                             {g.mythologicalFigureId ? (
                               <DeityBadge mythologicalFigureId={g.mythologicalFigureId} />
                             ) : supportsDieties(g.category) && !isSharedView ? (
-                              inlineDeityEdit === g.id ? (
-                                <div className="absolute z-10 mt-1" onClick={(e) => e.stopPropagation()}>
-                                  <div className="bg-slate-800 border border-slate-700 rounded-md p-3 shadow-xl">
-                                    <DeitySelector
-                                      tier={g.category as 'olympian' | 'titan' | 'hero'}
-                                      selectedDeityId={undefined}
-                                      onChange={(id) => updateDeity(g.id, id)}
-                                      usedDeityIds={getUsedDeityIds(g.id)}
-                                    />
-                                    <div className="flex justify-end mt-2">
-                                      <Button 
-                                        onClick={() => setInlineDeityEdit(null)} 
-                                        className="bg-slate-700 hover:bg-slate-600 text-xs px-2 py-1"
-                                      >
-                                        Cancel
-                                      </Button>
-                                    </div>
-                                  </div>
-                                </div>
-                              ) : (
+                              <DeityPopup
+                                tier={g.category as 'olympian' | 'titan' | 'hero'}
+                                usedDeityIds={getUsedDeityIds(g.id)}
+                                onSelect={(id) => updateDeity(g.id, id)}
+                                onCancel={() => setInlineDeityEdit(null)}
+                                isOpen={inlineDeityEdit === g.id}
+                                onToggle={() => {
+                                  if (inlineDeityEdit === g.id) {
+                                    setInlineDeityEdit(null);
+                                  } else {
+                                    setInlineDeityEdit(g.id);
+                                  }
+                                }}
+                              >
                                 <button 
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     e.preventDefault();
-                                    setInlineDeityEdit(g.id);
                                   }}
                                   className="border border-dashed border-gray-500 rounded-full w-5 h-5 flex items-center justify-center text-gray-400 text-xs hover:bg-slate-700 hover:text-white transition-colors"
                                   title="Add mythological figure"
                                 >
                                   +
                                 </button>
-                              )
+                              </DeityPopup>
                             ) : null}
                           </div>
                         </div>
@@ -1110,38 +1103,31 @@ export default function GamePantheon() {
                               {draft.mythologicalFigureId ? (
                                 <DeityBadge mythologicalFigureId={draft.mythologicalFigureId} />
                               ) : (
-                                inlineDeityEdit === g.id ? (
-                                  <div className="absolute z-10 mt-1" onClick={(e) => e.stopPropagation()}>
-                                    <div className="bg-slate-800 border border-slate-700 rounded-md p-3 shadow-xl">
-                                      <DeitySelector
-                                        tier={draft.category as 'olympian' | 'titan' | 'hero'}
-                                        selectedDeityId={undefined}
-                                        onChange={(id) => setDraft({...draft, mythologicalFigureId: id})}
-                                        usedDeityIds={getUsedDeityIds(g.id)}
-                                      />
-                                      <div className="flex justify-end mt-2">
-                                        <Button 
-                                          onClick={() => setInlineDeityEdit(null)} 
-                                          className="bg-slate-700 hover:bg-slate-600 text-xs px-2 py-1"
-                                        >
-                                          Cancel
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  </div>
-                                ) : (
+                                <DeityPopup
+                                  tier={draft.category as 'olympian' | 'titan' | 'hero'}
+                                  usedDeityIds={getUsedDeityIds(g.id)}
+                                  onSelect={(id) => setDraft({...draft, mythologicalFigureId: id})}
+                                  onCancel={() => setInlineDeityEdit(null)}
+                                  isOpen={inlineDeityEdit === g.id}
+                                  onToggle={() => {
+                                    if (inlineDeityEdit === g.id) {
+                                      setInlineDeityEdit(null);
+                                    } else {
+                                      setInlineDeityEdit(g.id);
+                                    }
+                                  }}
+                                >
                                   <button 
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       e.preventDefault();
-                                      setInlineDeityEdit(g.id);
                                     }}
                                     className="border border-dashed border-gray-500 rounded-full w-5 h-5 flex items-center justify-center text-gray-400 text-xs hover:bg-slate-700 hover:text-white transition-colors"
                                     title="Add mythological figure"
                                   >
                                     +
                                   </button>
-                                )
+                                </DeityPopup>
                               )}
                               {draft.mythologicalFigureId && (
                                 <button 
