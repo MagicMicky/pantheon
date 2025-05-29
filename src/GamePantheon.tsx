@@ -16,6 +16,7 @@ import { DeityBadge, DeitySelector, DeityPopup } from "./components/DeityCompone
 import { Confirm } from "./components/ui/Confirm";
 import { Tooltip } from "./components/Tooltip";
 import { SteamGamesImport } from "./components/SteamGamesImport";
+import { ShareModal, HistoryModal } from "./components/modals";
 
 // Import data
 import { CATEGORIES, CATEGORY_COLORS } from "./data/categories";
@@ -738,107 +739,25 @@ export default function GamePantheon() {
       )}
       
       {/* Share Modal */}
-      {showShareModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow-2xl max-w-md w-full">
-            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-              <Share2 className="w-5 h-5 text-amber-400" /> Share Your Pantheon
-            </h2>
-            <p className="text-gray-400 mb-4 text-sm">Add a title for your shared pantheon (optional):</p>
-            <div className="mb-4">
-              <Input 
-                placeholder="My Favorite Games" 
-                value={sharedTitle} 
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  setSharedTitle(e.target.value);
-                  // Regenerate the URL with the new title
-                  updateShareUrl(games, e.target.value);
-                }}
-                className="w-full bg-slate-800 border border-slate-700 text-white"
-              />
-            </div>
-            <p className="text-gray-400 mb-4 text-sm">Share this link with friends to show them your game pantheon:</p>
-            <div className="flex gap-2 mb-4">
-              <input 
-                type="text" 
-                value={shareUrl} 
-                readOnly 
-                className="flex-grow bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-white text-sm overflow-hidden" 
-              />
-              <Button onClick={copyToClipboard} className="bg-slate-700 hover:bg-slate-600 flex-shrink-0 flex items-center gap-2">
-                <Copy className="w-4 h-4" /> Copy
-              </Button>
-            </div>
-            
-            {/* Compression stats */}
-            <div className="bg-slate-800/50 rounded-md p-3 mb-6 text-sm">
-              <h3 className="text-gray-300 font-medium mb-2 flex items-center gap-2">
-                <span className="text-amber-300">📊</span> Compression Statistics
-              </h3>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-                <div className="text-gray-400">Original data size:</div>
-                <div className="text-gray-300">{compressionStats.original.toLocaleString()} chars</div>
-                
-                <div className="text-gray-400">Compressed size:</div>
-                <div className="text-gray-300">{compressionStats.compressed.toLocaleString()} chars</div>
-                
-                <div className="text-gray-400">Size reduction:</div>
-                <div className="text-amber-300 font-medium">{compressionStats.ratio}%</div>
-              </div>
-            </div>
-            
-            <div className="flex justify-end">
-              <Button onClick={closeShareModal} className="bg-slate-700 hover:bg-slate-600">Done</Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ShareModal
+        isOpen={showShareModal}
+        shareUrl={shareUrl}
+        sharedTitle={sharedTitle}
+        compressionStats={compressionStats}
+        games={games}
+        onClose={closeShareModal}
+        onTitleChange={setSharedTitle}
+        onCopyToClipboard={copyToClipboard}
+        onUpdateShareUrl={updateShareUrl}
+      />
       
       {/* History Modal */}
-      {historyModal.isOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow-2xl max-w-md w-full">
-            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-              <History className="w-5 h-5 text-amber-400" /> Version History
-            </h2>
-            
-            {historyItems.length > 0 ? (
-              <div className="mb-6 max-h-[300px] overflow-y-auto">
-                <ul className="space-y-2">
-                  {historyItems.map((item, i) => (
-                    <li key={i} className="border border-slate-700 rounded p-3">
-                      <div className="flex justify-between mb-2">
-                        <span className="text-gray-300 text-sm">
-                          {new Date(item.timestamp).toLocaleString()}
-                        </span>
-                        <span className="text-amber-300 text-xs">
-                          Version {historyItems.length - i}
-                        </span>
-                      </div>
-                      <Button 
-                        onClick={() => restoreFromHistory(item.index)} 
-                        className="bg-amber-800 hover:bg-amber-700 w-full text-sm"
-                      >
-                        Restore This Version
-                      </Button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : (
-              <div className="mb-6 text-gray-400 text-center p-6 border border-dashed border-gray-700 rounded-md">
-                No history available yet. Changes will appear here after you make edits.
-              </div>
-            )}
-            
-            <div className="flex justify-end">
-              <Button onClick={() => historyModal.close()} className="bg-slate-700 hover:bg-slate-600">
-                Close
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <HistoryModal
+        isOpen={historyModal.isOpen}
+        historyItems={historyItems}
+        onClose={historyModal.close}
+        onRestore={restoreFromHistory}
+      />
       
       {/* Add Form - only show if not in shared view */}
       {!isSharedView && (
