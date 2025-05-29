@@ -8,6 +8,7 @@ export interface Game {
   year: number; 
   category: CategoryID; 
   mythologicalFigureId?: string; 
+  sharedTitle?: string;
 }
 
 // Define mythological figure interface

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { 
   Plus, X, Pen, RefreshCw, GripVertical,
-  Share2, Copy, ArrowLeft
+  Share2, Copy, ArrowLeft, Download, Upload, History
 } from "lucide-react";
 
 // Import types
@@ -13,6 +13,8 @@ import { Button, IconBtn } from "./components/ui/Buttons";
 import { Input, Select } from "./components/ui/Inputs";
 import { Autocomplete } from "./components/Autocomplete";
 import { DeityBadge, DeitySelector } from "./components/DeityComponents";
+import { Confirm } from "./components/ui/Confirm";
+import { Tooltip } from "./components/Tooltip";
 
 // Import data
 import { CATEGORIES, CATEGORY_COLORS } from "./data/categories";
@@ -21,6 +23,7 @@ import { GENRE_ICON_MAPPING } from "./data/genreIcons";
 // Import utilities
 import { uid, encodeGameData, decodeGameData, getGenreIcon } from "./utils/helpers";
 import { wikipediaInfo } from "./utils/wikipediaHelpers";
+import { localStateManager } from "./utils/localStateManager";
 
 /**
  * Pantheon v8 ────────────────────────────────────────────────────────────────
@@ -41,11 +44,20 @@ export default function GamePantheon() {
   const [isSharedView, setIsSharedView] = useState<boolean>(false);
   const [shareUrl, setShareUrl] = useState<string>("");
   const [showShareModal, setShowShareModal] = useState<boolean>(false);
+  const [sharedTitle, setSharedTitle] = useState<string>("");
   const [compressionStats, setCompressionStats] = useState<{original: number, compressed: number, ratio: number}>({
     original: 0, 
     compressed: 0, 
     ratio: 0
   });
+  
+  // Add states for confirmation dialogs
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
+  const [itemToDelete, setItemToDelete] = useState<string|null>(null);
+  const [showResetConfirm, setShowResetConfirm] = useState<boolean>(false);
+  const [showHistoryModal, setShowHistoryModal] = useState<boolean>(false);
+  const [historyItems, setHistoryItems] = useState<Array<{timestamp: string, index: number}>>([]);
+  const [showOverrideConfirm, setShowOverrideConfirm] = useState<boolean>(false);
   
   // Helper function to determine if a category supports deities
   const supportsDieties = (category?: CategoryID): boolean => {
@@ -62,37 +74,28 @@ export default function GamePantheon() {
     // Check for shared data in URL
     const url = new URL(window.location.href);
     const sharedData = url.searchParams.get('shared');
+    const sharedTitleParam = url.searchParams.get('title');
     
     if (sharedData) {
       try {
         const decodedGames = decodeGameData(sharedData);
         setGames(decodedGames);
         setIsSharedView(true);
+        if (sharedTitleParam) {
+          const decodedTitle = decodeURIComponent(sharedTitleParam);
+          setSharedTitle(decodedTitle);
+          // Set page title to include the shared title
+          document.title = `${decodedTitle} - Game Pantheon`;
+        } else {
+          document.title = "Shared Game Pantheon";
+        }
       } catch (e) {
         console.error("Failed to parse shared games", e);
       }
     } else {
-      // Load games from localStorage only if not a shared view
-      const savedGames = localStorage.getItem('pantheonGames');
-      
-      if (savedGames) {
-        try {
-          const parsedGames = JSON.parse(savedGames);
-          setGames(parsedGames);
-        } catch (e) {
-          console.error("Failed to parse saved games", e);
-        }
-      } else {
-        // Default sample game
-        setGames([{
-          id: uid(),
-          title: "The Legend of Zelda: Breath of the Wild",
-          genre: "Action‑Adventure",
-          year: 2017,
-          category: "olympian", 
-          mythologicalFigureId: "zeus"
-        }]);
-      }
+      // Load games using the enhanced manager
+      setGames(localStateManager.loadGames());
+      document.title = "Game Pantheon";
     }
   }, []);
 
@@ -105,7 +108,7 @@ export default function GamePantheon() {
     }
     
     if (!isSharedView) {
-      localStorage.setItem('pantheonGames', JSON.stringify(games));
+      localStateManager.saveGames(games);
     }
   }, [games, isSharedView]);
   
@@ -119,8 +122,13 @@ export default function GamePantheon() {
     const url = new URL(window.location.href);
     // Remove any existing shared parameter
     url.searchParams.delete('shared');
+    url.searchParams.delete('title');
     // Add the encoded data
     url.searchParams.set('shared', encodedData);
+    // Add the shared title if provided
+    if (sharedTitle) {
+      url.searchParams.set('title', encodeURIComponent(sharedTitle));
+    }
     setShareUrl(url.toString());
     
     // Calculate compression stats
@@ -139,17 +147,47 @@ export default function GamePantheon() {
   };
   
   const createNewFromShared = () => {
+    // Check if there's existing custom data to warn about override
+    // We need to check localStorage directly since loadGames() always returns at least one default game
+    try {
+      const savedGames = localStorage.getItem('pantheonGames');
+      if (savedGames) {
+        // User has saved their own data
+        setShowOverrideConfirm(true);
+      } else {
+        confirmCreateFromShared();
+      }
+    } catch (e) {
+      // If there's an error accessing localStorage, just proceed
+      confirmCreateFromShared();
+    }
+  };
+  
+  const confirmCreateFromShared = () => {
     // Save current games to localStorage and exit shared view
-    localStorage.setItem('pantheonGames', JSON.stringify(games));
+    localStateManager.saveGames(games);
     setIsSharedView(false);
     
     // Remove shared parameter from URL without refreshing
     const url = new URL(window.location.href);
     url.searchParams.delete('shared');
+    url.searchParams.delete('title');
     window.history.pushState({}, '', url.toString());
+    
+    // Reset the shared title and update page title
+    setSharedTitle("");
+    document.title = "Game Pantheon";
+    
+    // Close confirmation dialog if open
+    setShowOverrideConfirm(false);
   };
   
-  const startFresh = () => {
+  // Update startFresh to use confirmation
+  const requestStartFresh = () => {
+    setShowResetConfirm(true);
+  };
+  
+  const confirmStartFresh = () => {
     setGames([{
       id: uid(),
       title: "The Legend of Zelda: Breath of the Wild",
@@ -164,6 +202,8 @@ export default function GamePantheon() {
     const url = new URL(window.location.href);
     url.searchParams.delete('shared');
     window.history.pushState({}, '', url.toString());
+    
+    setShowResetConfirm(false);
   };
   
   // CRUD operations
@@ -173,8 +213,19 @@ export default function GamePantheon() {
     setNewGame({category: "hero"});
   };
   
-  const remove = (id: string) => 
-    setGames(games.filter(g => g.id !== id));
+  // Update remove to use confirmation
+  const requestRemove = (id: string) => {
+    setItemToDelete(id);
+    setShowDeleteConfirm(true);
+  };
+  
+  const confirmRemove = () => {
+    if (itemToDelete) {
+      setGames(games.filter(g => g.id !== itemToDelete));
+      setItemToDelete(null);
+    }
+    setShowDeleteConfirm(false);
+  };
   
   const save = (id: string) => {
     if (!draft.title || !draft.genre || !draft.year) return;
@@ -182,13 +233,57 @@ export default function GamePantheon() {
     setEditing(null);
   };
   
+  // New data management functions
+  const exportData = () => {
+    localStateManager.exportData();
+  };
+  
+  const importData = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      try {
+        const importedGames = localStateManager.importData(content);
+        if (importedGames.length > 0) {
+          setGames(importedGames);
+        }
+      } catch (error) {
+        console.error("Failed to import file", error);
+      }
+    };
+    reader.readAsText(file);
+    
+    // Reset the input
+    event.target.value = '';
+  };
+  
+  const openHistoryModal = () => {
+    const history = localStateManager.getHistory();
+    setHistoryItems(history.map((item: any, index: number) => ({
+      timestamp: item.timestamp,
+      index
+    })));
+    setShowHistoryModal(true);
+  };
+  
+  const restoreFromHistory = (index: number) => {
+    const restoredGames = localStateManager.restoreFromHistory(index);
+    if (restoredGames) {
+      setGames(restoredGames);
+      setShowHistoryModal(false);
+    }
+  };
+  
   // Drag & drop functionality
-  const onDragStart = (e: React.DragEvent, id: string) => {
+  const onDragStart = (e: React.DragEvent<HTMLLIElement>, id: string) => {
     e.dataTransfer.setData("text/plain", id);
     e.dataTransfer.effectAllowed = "move";
   };
   
-  const onDrop = (e: React.DragEvent, target: CategoryID) => {
+  const onDrop = (e: React.DragEvent<HTMLDivElement>, target: CategoryID) => {
     e.preventDefault();
     const id = e.dataTransfer.getData("text/plain");
     if (!id) return;
@@ -207,7 +302,7 @@ export default function GamePantheon() {
   };
   
   // Drag highlight management
-  const allowDrop = (e: React.DragEvent, category: CategoryID) => {
+  const allowDrop = (e: React.DragEvent<HTMLElement>, category: CategoryID) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
     
@@ -241,7 +336,7 @@ export default function GamePantheon() {
     target.style.backgroundColor = `${colors.highlight}33`; // 33 is ~20% opacity in hex
   };
   
-  const removeDragHighlight = (e: React.DragEvent) => {
+  const removeDragHighlight = (e: React.DragEvent<HTMLElement>) => {
     const target = e.currentTarget as HTMLElement;
     target.classList.remove('drag-highlight');
     
@@ -263,6 +358,7 @@ export default function GamePantheon() {
     setDraft({...draft, ...await wikipediaInfo(draft.title)});
   };
 
+  // Return JSX
   return (
     <div className="p-8 bg-gradient-to-br from-slate-950 to-gray-900 min-h-screen select-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] font-sans">
       <header className="text-center mb-10 relative">
@@ -272,14 +368,48 @@ export default function GamePantheon() {
         </h1>
         <p className="text-gray-400 text-sm tracking-wide mt-2 italic">Curate your personal collection of gaming greatness</p>
         
-        {/* Share button (only in edit mode) */}
-        {!isSharedView && (
-          <div className="absolute right-0 top-0">
-            <Button onClick={generateShareLink} className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700">
-              <Share2 className="w-4 h-4" /> Share
-            </Button>
-          </div>
-        )}
+        {/* Data management and share buttons */}
+        <div className="absolute right-0 top-0 flex gap-2">
+          {isSharedView ? (
+            <>
+              <Button onClick={createNewFromShared} className="flex items-center gap-2 bg-amber-800 hover:bg-amber-700">
+                <ArrowLeft className="w-4 h-4" /> Save as Mine
+              </Button>
+            </>
+          ) : (
+            <>
+              <Tooltip content="Share your collection" position="bottom">
+                <Button onClick={generateShareLink} className="p-2 bg-slate-800 hover:bg-slate-700">
+                  <Share2 className="w-5 h-5" />
+                </Button>
+              </Tooltip>
+              <Tooltip content="Export as JSON file" position="bottom">
+                <Button onClick={exportData} className="p-2 bg-slate-800 hover:bg-slate-700">
+                  <Download className="w-5 h-5" />
+                </Button>
+              </Tooltip>
+              <div className="relative">
+                <input 
+                  type="file" 
+                  id="import-input" 
+                  accept=".json" 
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+                  onChange={importData}
+                />
+                <Tooltip content="Import from JSON file" position="bottom">
+                  <Button className="p-2 bg-slate-800 hover:bg-slate-700">
+                    <Upload className="w-5 h-5" />
+                  </Button>
+                </Tooltip>
+              </div>
+              <Tooltip content="View version history" position="bottom">
+                <Button onClick={openHistoryModal} className="p-2 bg-slate-800 hover:bg-slate-700">
+                  <History className="w-5 h-5" />
+                </Button>
+              </Tooltip>
+            </>
+          )}
+        </div>
         
         {/* Shared view banner */}
         {isSharedView && (
@@ -288,7 +418,12 @@ export default function GamePantheon() {
               <ArrowLeft className="w-3 h-3" /> Back
             </Button>
             <div className="bg-slate-800/80 backdrop-blur-sm text-white py-2 px-4 rounded-md flex items-center text-sm">
-              <span className="text-amber-300 mr-2">👁️</span> Viewing a shared pantheon
+              <span className="text-amber-300 mr-2">👁️</span> 
+              {sharedTitle ? (
+                <>Viewing <span className="font-medium text-amber-200 mx-1">{sharedTitle}</span></>
+              ) : (
+                <>Viewing a shared pantheon</>
+              )}
             </div>
           </div>
         )}
@@ -300,7 +435,7 @@ export default function GamePantheon() {
           <h3 className="text-amber-200 font-medium mb-2">Want to create your own pantheon?</h3>
           <div className="flex justify-center gap-4">
             <Button onClick={createNewFromShared} className="bg-amber-800 hover:bg-amber-700">Start with this collection</Button>
-            <Button onClick={startFresh} className="bg-slate-700 hover:bg-slate-600">Start from scratch</Button>
+            <Button onClick={requestStartFresh} className="bg-slate-700 hover:bg-slate-600">Start from scratch</Button>
           </div>
         </div>
       )}
@@ -312,6 +447,26 @@ export default function GamePantheon() {
             <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
               <Share2 className="w-5 h-5 text-amber-400" /> Share Your Pantheon
             </h2>
+            <p className="text-gray-400 mb-4 text-sm">Add a title for your shared pantheon (optional):</p>
+            <div className="mb-4">
+              <Input 
+                placeholder="My Favorite Games" 
+                value={sharedTitle} 
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  setSharedTitle(e.target.value);
+                  // Regenerate the URL with the new title
+                  const url = new URL(window.location.href);
+                  url.searchParams.delete('shared');
+                  url.searchParams.delete('title');
+                  url.searchParams.set('shared', encodeGameData(games));
+                  if (e.target.value) {
+                    url.searchParams.set('title', encodeURIComponent(e.target.value));
+                  }
+                  setShareUrl(url.toString());
+                }}
+                className="w-full bg-slate-800 border border-slate-700 text-white"
+              />
+            </div>
             <p className="text-gray-400 mb-4 text-sm">Share this link with friends to show them your game pantheon:</p>
             <div className="flex gap-2 mb-4">
               <input 
@@ -344,6 +499,52 @@ export default function GamePantheon() {
             
             <div className="flex justify-end">
               <Button onClick={() => setShowShareModal(false)} className="bg-slate-700 hover:bg-slate-600">Done</Button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* History Modal */}
+      {showHistoryModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow-2xl max-w-md w-full">
+            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <History className="w-5 h-5 text-amber-400" /> Version History
+            </h2>
+            
+            {historyItems.length > 0 ? (
+              <div className="mb-6 max-h-[300px] overflow-y-auto">
+                <ul className="space-y-2">
+                  {historyItems.map((item, i) => (
+                    <li key={i} className="border border-slate-700 rounded p-3">
+                      <div className="flex justify-between mb-2">
+                        <span className="text-gray-300 text-sm">
+                          {new Date(item.timestamp).toLocaleString()}
+                        </span>
+                        <span className="text-amber-300 text-xs">
+                          Version {historyItems.length - i}
+                        </span>
+                      </div>
+                      <Button 
+                        onClick={() => restoreFromHistory(item.index)} 
+                        className="bg-amber-800 hover:bg-amber-700 w-full text-sm"
+                      >
+                        Restore This Version
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <div className="mb-6 text-gray-400 text-center p-6 border border-dashed border-gray-700 rounded-md">
+                No history available yet. Changes will appear here after you make edits.
+              </div>
+            )}
+            
+            <div className="flex justify-end">
+              <Button onClick={() => setShowHistoryModal(false)} className="bg-slate-700 hover:bg-slate-600">
+                Close
+              </Button>
             </div>
           </div>
         </div>
@@ -409,13 +610,13 @@ export default function GamePantheon() {
             <Card 
               key={cid} 
               category={categoryID}
-              onDragOver={!isSharedView ? (e: React.DragEvent) => allowDrop(e, categoryID) : undefined} 
+              onDragOver={!isSharedView ? (e: React.DragEvent<HTMLDivElement>) => allowDrop(e, categoryID) : undefined} 
               onDragLeave={!isSharedView ? removeDragHighlight : undefined}
-              onDragEnter={!isSharedView ? (e: React.DragEvent) => {
+              onDragEnter={!isSharedView ? (e: React.DragEvent<HTMLDivElement>) => {
                 e.stopPropagation();
                 allowDrop(e, categoryID);
               } : undefined}
-              onDrop={!isSharedView ? (e: React.DragEvent) => {
+              onDrop={!isSharedView ? (e: React.DragEvent<HTMLDivElement>) => {
                 removeDragHighlight(e);
                 onDrop(e, categoryID);
               } : undefined}
@@ -457,7 +658,7 @@ export default function GamePantheon() {
                           {!isSharedView && (
                             <div className="flex gap-1 opacity-70 group-hover/item:opacity-100 transition-opacity duration-200">
                               <IconBtn title="Edit" onClick={() => {setEditing(g.id); setDraft({...g})}}><Pen className="w-3 h-3" strokeWidth={1.5}/></IconBtn>
-                              <IconBtn title="Delete" onClick={() => remove(g.id)}><X className="w-3 h-3" strokeWidth={1.5}/></IconBtn>
+                              <IconBtn title="Delete" onClick={() => requestRemove(g.id)}><X className="w-3 h-3" strokeWidth={1.5}/></IconBtn>
                             </div>
                           )}
                         </div>
@@ -535,6 +736,31 @@ export default function GamePantheon() {
           );
         })}
       </div>
+      
+      {/* Confirmation dialogs */}
+      <Confirm
+        isOpen={showDeleteConfirm}
+        title="Delete Game"
+        message="Are you sure you want to delete this game? This action cannot be undone."
+        onConfirm={confirmRemove}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
+      
+      <Confirm
+        isOpen={showResetConfirm}
+        title="Reset Collection"
+        message="Are you sure you want to reset your entire collection? All your current games will be lost."
+        onConfirm={confirmStartFresh}
+        onCancel={() => setShowResetConfirm(false)}
+      />
+      
+      <Confirm
+        isOpen={showOverrideConfirm}
+        title="Override Existing Collection"
+        message="You already have games in your collection. Using this shared collection will override your existing data. Continue?"
+        onConfirm={confirmCreateFromShared}
+        onCancel={() => setShowOverrideConfirm(false)}
+      />
     </div>
   );
 } 
