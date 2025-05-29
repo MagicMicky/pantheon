@@ -3,7 +3,7 @@ import {
   SunMedium, Star, Music, Sword, Shield, Plus, X, 
   Pen, RefreshCw, Gamepad2, Crosshair, Car, Brain, Trophy, 
   Rocket, Ghost, Users, Building, Dice1, Globe, Map, GripVertical,
-  Mountain, Flame, Sparkles
+  Mountain, Flame, Sparkles, Share2, Copy, ArrowLeft
 } from "lucide-react";
 
 /**
@@ -17,6 +17,20 @@ import {
 
 // Helper functions
 function uid(){return Math.random().toString(36).slice(2,10);}
+
+// Base64 encode/decode for URL sharing
+function encodeGameData(games: Game[]): string {
+  return btoa(encodeURIComponent(JSON.stringify(games)));
+}
+
+function decodeGameData(encodedData: string): Game[] {
+  try {
+    return JSON.parse(decodeURIComponent(atob(encodedData)));
+  } catch (e) {
+    console.error("Failed to decode shared data", e);
+    return [];
+  }
+}
 
 // Import Playfair Display font in index.css or add this to the head:
 // <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
@@ -206,26 +220,89 @@ export default function GamePantheon(){
  const[newGame,setNewGame]=useState<Partial<Game>>({category:"hero"});
  const[editing,setEditing]=useState<string|null>(null);
  const[draft,setDraft]=useState<Partial<Game>>({});
+ const[isSharedView,setIsSharedView]=useState<boolean>(false);
+ const[shareUrl,setShareUrl]=useState<string>("");
+ const[showShareModal,setShowShareModal]=useState<boolean>(false);
  
  // Force dark mode
  useEffect(() => {
    document.documentElement.classList.add('dark');
    
-   // Load games from localStorage
-   const savedGames = localStorage.getItem('pantheonGames');
-   if (savedGames) {
+   // Check for shared data in URL
+   const url = new URL(window.location.href);
+   const sharedData = url.searchParams.get('shared');
+   
+   if (sharedData) {
      try {
-       setGames(JSON.parse(savedGames));
+       const decodedGames = decodeGameData(sharedData);
+       setGames(decodedGames);
+       setIsSharedView(true);
      } catch (e) {
-       console.error("Failed to parse saved games", e);
+       console.error("Failed to parse shared games", e);
+     }
+   } else {
+     // Load games from localStorage only if not a shared view
+     const savedGames = localStorage.getItem('pantheonGames');
+     if (savedGames) {
+       try {
+         setGames(JSON.parse(savedGames));
+       } catch (e) {
+         console.error("Failed to parse saved games", e);
+       }
      }
    }
  }, []);
 
- // Save games to localStorage whenever they change
+ // Save games to localStorage whenever they change (only if not in shared view)
  useEffect(() => {
+   if (!isSharedView) {
+     localStorage.setItem('pantheonGames', JSON.stringify(games));
+   }
+ }, [games, isSharedView]);
+ 
+ // Sharing functionality
+ const generateShareLink = () => {
+   const encodedData = encodeGameData(games);
+   const url = new URL(window.location.href);
+   // Remove any existing shared parameter
+   url.searchParams.delete('shared');
+   // Add the encoded data
+   url.searchParams.set('shared', encodedData);
+   setShareUrl(url.toString());
+   setShowShareModal(true);
+ };
+ 
+ const copyToClipboard = () => {
+   navigator.clipboard.writeText(shareUrl)
+     .then(() => {
+       // Could add a toast/notification here
+       console.log("URL copied to clipboard");
+     })
+     .catch(err => {
+       console.error("Failed to copy URL", err);
+     });
+ };
+ 
+ const createNewFromShared = () => {
+   // Save current games to localStorage and exit shared view
    localStorage.setItem('pantheonGames', JSON.stringify(games));
- }, [games]);
+   setIsSharedView(false);
+   
+   // Remove shared parameter from URL without refreshing
+   const url = new URL(window.location.href);
+   url.searchParams.delete('shared');
+   window.history.pushState({}, '', url.toString());
+ };
+ 
+ const startFresh = () => {
+   setGames(SAMPLE_GAMES);
+   setIsSharedView(false);
+   
+   // Remove shared parameter from URL without refreshing
+   const url = new URL(window.location.href);
+   url.searchParams.delete('shared');
+   window.history.pushState({}, '', url.toString());
+ };
  
  // CRUD
  const add=()=>{if(!newGame.title||!newGame.genre||!newGame.year)return;setGames([...games,{...(newGame as Game),id:uid()}]);setNewGame({category:"hero"});};
@@ -289,32 +366,92 @@ export default function GamePantheon(){
 
  return (
   <div className="p-8 bg-gradient-to-br from-slate-950 to-gray-900 min-h-screen select-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] font-sans">
-    <header className="text-center mb-10">
+    <header className="text-center mb-10 relative">
       <h1 className="text-5xl font-serif font-bold tracking-wider text-white mb-1">
         <span className="inline-block mr-2 transform translate-y-1">🏛️</span> 
         The Game Pantheon
       </h1>
       <p className="text-gray-400 text-sm tracking-wide mt-2 italic">Curate your personal collection of gaming greatness</p>
+      
+      {/* Share button (only in edit mode) */}
+      {!isSharedView && (
+        <div className="absolute right-0 top-0">
+          <Button onClick={generateShareLink} className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700">
+            <Share2 className="w-4 h-4" /> Share
+          </Button>
+        </div>
+      )}
+      
+      {/* Shared view banner */}
+      {isSharedView && (
+        <div className="absolute left-0 top-0 flex items-center">
+          <Button onClick={() => window.history.back()} className="mr-3 bg-slate-800 hover:bg-slate-700 flex items-center gap-1">
+            <ArrowLeft className="w-3 h-3" /> Back
+          </Button>
+          <div className="bg-slate-800/80 backdrop-blur-sm text-white py-2 px-4 rounded-md flex items-center text-sm">
+            <span className="text-amber-300 mr-2">👁️</span> Viewing a shared pantheon
+          </div>
+        </div>
+      )}
     </header>
     
-    {/* Add Form */}
-    <div className="mx-auto max-w-2xl bg-slate-900/70 backdrop-blur-md p-6 rounded-xl shadow-xl mb-12 border border-slate-800/50">
-      <h2 className="text-xl font-serif font-bold flex items-center gap-2 text-white mb-4 tracking-wide">
-        <Plus className="w-5 h-5"/> Add Game
-      </h2>
-      <div className="grid sm:grid-cols-2 gap-4 mb-4">
-        <Autocomplete value={newGame.title??""} onChange={v=>setNewGame({...newGame,title:v})} onSelect={async v=>setNewGame({...newGame,title:v,...await wikipediaInfo(v)})}/>
-        <Input placeholder="Genre" value={newGame.genre??""} onChange={e=>setNewGame({...newGame,genre:e.target.value})}/>
-        <Input type="number" placeholder="Year" value={newGame.year??""} onChange={e=>setNewGame({...newGame,year:+e.target.value})}/>
-        <Select value={newGame.category} onChange={e=>setNewGame({...newGame,category:e.target.value as CategoryID})}>
-          {Object.entries(CATEGORIES).map(([k,v])=><option key={k} value={k}>{v.name}</option>)}
-        </Select>
+    {/* "Create your own" banner for shared view */}
+    {isSharedView && (
+      <div className="mx-auto max-w-2xl bg-amber-900/30 border border-amber-700/30 backdrop-blur-md p-4 rounded-xl shadow-xl mb-12 text-center">
+        <h3 className="text-amber-200 font-medium mb-2">Want to create your own pantheon?</h3>
+        <div className="flex justify-center gap-4">
+          <Button onClick={createNewFromShared} className="bg-amber-800 hover:bg-amber-700">Start with this collection</Button>
+          <Button onClick={startFresh} className="bg-slate-700 hover:bg-slate-600">Start from scratch</Button>
+        </div>
       </div>
-      <div className="flex justify-between">
-        <Button onClick={autoNew} className="bg-slate-700 hover:bg-slate-600 text-gray-200">Auto‑Fill</Button>
-        <Button onClick={add} className="bg-slate-700 hover:bg-slate-600">Add</Button>
+    )}
+    
+    {/* Share Modal */}
+    {showShareModal && (
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow-2xl max-w-md w-full">
+          <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+            <Share2 className="w-5 h-5 text-amber-400" /> Share Your Pantheon
+          </h2>
+          <p className="text-gray-400 mb-4 text-sm">Share this link with friends to show them your game pantheon:</p>
+          <div className="flex gap-2 mb-6">
+            <input 
+              type="text" 
+              value={shareUrl} 
+              readOnly 
+              className="flex-grow bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-white text-sm overflow-hidden" 
+            />
+            <Button onClick={copyToClipboard} className="bg-slate-700 hover:bg-slate-600 flex-shrink-0 flex items-center gap-2">
+              <Copy className="w-4 h-4" /> Copy
+            </Button>
+          </div>
+          <div className="flex justify-end">
+            <Button onClick={() => setShowShareModal(false)} className="bg-slate-700 hover:bg-slate-600">Done</Button>
+          </div>
+        </div>
       </div>
-    </div>
+    )}
+    
+    {/* Add Form - only show if not in shared view */}
+    {!isSharedView && (
+      <div className="mx-auto max-w-2xl bg-slate-900/70 backdrop-blur-md p-6 rounded-xl shadow-xl mb-12 border border-slate-800/50">
+        <h2 className="text-xl font-serif font-bold flex items-center gap-2 text-white mb-4 tracking-wide">
+          <Plus className="w-5 h-5"/> Add Game
+        </h2>
+        <div className="grid sm:grid-cols-2 gap-4 mb-4">
+          <Autocomplete value={newGame.title??""} onChange={v=>setNewGame({...newGame,title:v})} onSelect={async v=>setNewGame({...newGame,title:v,...await wikipediaInfo(v)})}/>
+          <Input placeholder="Genre" value={newGame.genre??""} onChange={e=>setNewGame({...newGame,genre:e.target.value})}/>
+          <Input type="number" placeholder="Year" value={newGame.year??""} onChange={e=>setNewGame({...newGame,year:+e.target.value})}/>
+          <Select value={newGame.category} onChange={e=>setNewGame({...newGame,category:e.target.value as CategoryID})}>
+            {Object.entries(CATEGORIES).map(([k,v])=><option key={k} value={k}>{v.name}</option>)}
+          </Select>
+        </div>
+        <div className="flex justify-between">
+          <Button onClick={autoNew} className="bg-slate-700 hover:bg-slate-600 text-gray-200">Auto‑Fill</Button>
+          <Button onClick={add} className="bg-slate-700 hover:bg-slate-600">Add</Button>
+        </div>
+      </div>
+    )}
 
     <div className="grid gap-6" style={{gridTemplateColumns:"repeat(auto-fill,minmax(320px,1fr))"}}>
       {Object.entries(CATEGORIES).map(([cid,meta])=>{
@@ -326,17 +463,17 @@ export default function GamePantheon(){
         return <Card 
           key={cid} 
           category={categoryID}
-          onDragOver={(e: React.DragEvent) => allow(e, categoryID)} 
-          onDragLeave={removeDragHighlight}
-          onDragEnter={(e: React.DragEvent) => {
+          onDragOver={!isSharedView ? (e: React.DragEvent) => allow(e, categoryID) : undefined} 
+          onDragLeave={!isSharedView ? removeDragHighlight : undefined}
+          onDragEnter={!isSharedView ? (e: React.DragEvent) => {
             // Prevent event bubbling to avoid multiple highlights
             e.stopPropagation();
             allow(e, categoryID);
-          }}
-          onDrop={(e: React.DragEvent)=>{
+          } : undefined}
+          onDrop={!isSharedView ? (e: React.DragEvent)=>{
             removeDragHighlight(e);
             onDrop(e,categoryID);
-          }}
+          } : undefined}
         >
           <CardHeader category={categoryID}>
             <Icon className={`w-5 h-5 ${colors.icon} opacity-90`}/>
@@ -347,49 +484,55 @@ export default function GamePantheon(){
             {list.length?
               <ul className="space-y-2 text-sm divide-y divide-gray-800/30">
                 {list.map(g=>editing!==g.id?
-                  <li key={g.id} className="flex flex-col gap-1 pt-2 first:pt-0 pl-7 relative group/item" draggable onDragStart={e=>onDragStart(e,g.id)}>
+                  <li key={g.id} className="flex flex-col gap-1 pt-2 first:pt-0 pl-7 relative group/item" draggable={!isSharedView} onDragStart={!isSharedView ? e=>onDragStart(e,g.id) : undefined}>
                     <div className="absolute left-0 top-1/2 -translate-y-1/2 w-5 flex justify-center">
-                      <div className="absolute opacity-0 group-hover/item:opacity-100 text-gray-500 cursor-grab transition-opacity duration-200">
-                        <GripVertical size={14} strokeWidth={1.5} />
-                      </div>
+                      {!isSharedView && (
+                        <div className="absolute opacity-0 group-hover/item:opacity-100 text-gray-500 cursor-grab transition-opacity duration-200">
+                          <GripVertical size={14} strokeWidth={1.5} />
+                        </div>
+                      )}
                       {React.createElement(getGenreIcon(g.genre), {
-                        className: `w-4 h-4 ${colors.text} flex-shrink-0 group-hover/item:opacity-0 transition-opacity duration-200`,
+                        className: `w-4 h-4 ${colors.text} flex-shrink-0 ${!isSharedView ? "group-hover/item:opacity-0" : ""} transition-opacity duration-200`,
                         strokeWidth: 1.5
                       })}
                     </div>
-                    <div className="cursor-grab">
+                    <div className={!isSharedView ? "cursor-grab" : ""}>
                       <span className="font-medium pr-1 leading-tight text-white">{g.title}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-400 text-xs">{g.genre} · {g.year}</span>
-                      <div className="flex gap-1 opacity-70 group-hover/item:opacity-100 transition-opacity duration-200">
-                        <IconBtn title="Edit" onClick={()=>{setEditing(g.id);setDraft({...g})}}><Pen className="w-3 h-3" strokeWidth={1.5}/></IconBtn>
-                        <IconBtn title="Delete" onClick={()=>del(g.id)}><X className="w-3 h-3" strokeWidth={1.5}/></IconBtn>
-                      </div>
+                      {!isSharedView && (
+                        <div className="flex gap-1 opacity-70 group-hover/item:opacity-100 transition-opacity duration-200">
+                          <IconBtn title="Edit" onClick={()=>{setEditing(g.id);setDraft({...g})}}><Pen className="w-3 h-3" strokeWidth={1.5}/></IconBtn>
+                          <IconBtn title="Delete" onClick={()=>del(g.id)}><X className="w-3 h-3" strokeWidth={1.5}/></IconBtn>
+                        </div>
+                      )}
                     </div>
                   </li>
                   :
-                  <li key={g.id} className="flex flex-col gap-3 pt-2 first:pt-0 pl-7 relative">
-                    <div className="absolute left-0 top-[calc(1rem+8px)] w-5 flex justify-center">
-                      {React.createElement(getGenreIcon(draft.genre || ""), {
-                        className: `w-4 h-4 ${colors.text} flex-shrink-0`,
-                        strokeWidth: 1.5
-                      })}
-                    </div>
-                    <div>
-                      <Autocomplete value={draft.title??""} onChange={v=>setDraft({...draft,title:v})} onSelect={async v=>setDraft({...draft,title:v,...await wikipediaInfo(v)})} inputClass="text-xs"/>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      <Input value={draft.genre??""} onChange={e=>setDraft({...draft,genre:e.target.value})} className="text-xs" placeholder="Genre"/>
-                      <Input type="number" value={draft.year??""} onChange={e=>setDraft({...draft,year:+e.target.value})} className="text-xs" placeholder="Year"/>
-                      <Select value={draft.category} onChange={e=>setDraft({...draft,category:e.target.value as CategoryID})} className="text-xs">{Object.entries(CATEGORIES).map(([k,v])=><option key={k} value={k}>{v.name}</option>)}</Select>
-                    </div>
-                    <div className="flex justify-end gap-2 items-center">
-                      <IconBtn title="Auto‑Fill" onClick={autoEdit}><RefreshCw className="w-3 h-3" strokeWidth={1.5}/></IconBtn>
-                      <Button onClick={()=>save(g.id)} className="bg-green-800 hover:bg-green-700 px-2 py-1 text-xs">Save</Button>
-                      <Button onClick={()=>setEditing(null)} className="bg-gray-700 hover:bg-gray-600 px-2 py-1 text-xs">Cancel</Button>
-                    </div>
-                  </li>
+                  (!isSharedView && editing===g.id) && (
+                    <li key={g.id} className="flex flex-col gap-3 pt-2 first:pt-0 pl-7 relative">
+                      <div className="absolute left-0 top-[calc(1rem+8px)] w-5 flex justify-center">
+                        {React.createElement(getGenreIcon(draft.genre || ""), {
+                          className: `w-4 h-4 ${colors.text} flex-shrink-0`,
+                          strokeWidth: 1.5
+                        })}
+                      </div>
+                      <div>
+                        <Autocomplete value={draft.title??""} onChange={v=>setDraft({...draft,title:v})} onSelect={async v=>setDraft({...draft,title:v,...await wikipediaInfo(v)})} inputClass="text-xs"/>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        <Input value={draft.genre??""} onChange={e=>setDraft({...draft,genre:e.target.value})} className="text-xs" placeholder="Genre"/>
+                        <Input type="number" value={draft.year??""} onChange={e=>setDraft({...draft,year:+e.target.value})} className="text-xs" placeholder="Year"/>
+                        <Select value={draft.category} onChange={e=>setDraft({...draft,category:e.target.value as CategoryID})} className="text-xs">{Object.entries(CATEGORIES).map(([k,v])=><option key={k} value={k}>{v.name}</option>)}</Select>
+                      </div>
+                      <div className="flex justify-end gap-2 items-center">
+                        <IconBtn title="Auto‑Fill" onClick={autoEdit}><RefreshCw className="w-3 h-3" strokeWidth={1.5}/></IconBtn>
+                        <Button onClick={()=>save(g.id)} className="bg-green-800 hover:bg-green-700 px-2 py-1 text-xs">Save</Button>
+                        <Button onClick={()=>setEditing(null)} className="bg-gray-700 hover:bg-gray-600 px-2 py-1 text-xs">Cancel</Button>
+                      </div>
+                    </li>
+                  )
                 )}
               </ul>
             : 
