@@ -28,11 +28,14 @@ import { uid, encodeGameData, decodeGameData, getGenreIcon } from "./utils/helpe
 import { wikipediaInfo } from "./utils/wikipediaHelpers";
 import { localStateManager } from "./utils/localStateManager";
 import { removeShareParams, getShareParams } from "./utils/urlHelpers";
+import { calculateDropPosition } from "./utils/dragHelpers";
+import { supportsDieties, getUsedDeityIds } from "./utils/gameHelpers";
 
 // Import hooks
 import { useShareFeature } from "./hooks/useShareFeature";
 import { useMetaTags, setDefaultMetaTags } from "./hooks/useMetaTags";
 import { useModalState, useConfirmationModal } from "./hooks/useModalState";
+import { useDragAndDrop } from "./hooks/useDragAndDrop";
 
 /**
  * Pantheon v8 ────────────────────────────────────────────────────────────────
@@ -65,6 +68,19 @@ export default function GamePantheon() {
     updateShareUrl
   } = useShareFeature(games);
   
+  // Use drag and drop hook
+  const {
+    dropIndicator,
+    onDragStart,
+    onDragEnd,
+    onDrop,
+    onDropOnGame,
+    allowDrop,
+    removeDragHighlightHandler,
+    onSteamGameDragStart,
+    setDropIndicator
+  } = useDragAndDrop(games, setGames);
+  
   // Modal states using the hook
   const deleteConfirm = useConfirmationModal<string>();
   const resetConfirm = useModalState();
@@ -75,9 +91,6 @@ export default function GamePantheon() {
   
   // Add a new state for inline deity editing
   const [inlineDeityEdit, setInlineDeityEdit] = useState<string | null>(null);
-  
-  // Add state for drop position indicators
-  const [dropIndicator, setDropIndicator] = useState<{gameId: string, position: 'before' | 'after'} | null>(null);
   
   // Add a ref to track if this is first render
   const isInitialMount = useRef(true);
@@ -320,295 +333,6 @@ export default function GamePantheon() {
     }
   };
   
-  // Drag & drop functionality
-  const onDragStart = (e: React.DragEvent<HTMLLIElement>, id: string) => {
-    // Set the data to be the ID
-    e.dataTransfer.setData("application/json", JSON.stringify({ 
-      id,
-      fromSteam: false 
-    }));
-    e.dataTransfer.effectAllowed = "move";
-  };
-  
-  const onDragEnd = () => {
-    // Always clear drop indicators when drag ends
-    setDropIndicator(null);
-  };
-  
-  // Helper function to calculate drop position
-  const calculateDropPosition = (e: React.DragEvent, targetElement: HTMLElement): 'before' | 'after' => {
-    const rect = targetElement.getBoundingClientRect();
-    const mouseY = e.clientY;
-    const elementMiddle = rect.top + rect.height / 2;
-    return mouseY < elementMiddle ? 'before' : 'after';
-  };
-  
-  // Helper function to insert item at specific position
-  const insertAtPosition = (
-    games: Game[], 
-    newGame: Game, 
-    targetGameId: string, 
-    position: 'before' | 'after',
-    targetCategory: CategoryID
-  ): Game[] => {
-    const categoryGames = games.filter(g => g.category === targetCategory);
-    const otherGames = games.filter(g => g.category !== targetCategory);
-    
-    const targetIndex = categoryGames.findIndex(g => g.id === targetGameId);
-    if (targetIndex === -1) {
-      // If target not found, add at the end
-      return [...otherGames, ...categoryGames, newGame];
-    }
-    
-    const insertIndex = position === 'before' ? targetIndex : targetIndex + 1;
-    const newCategoryGames = [...categoryGames];
-    newCategoryGames.splice(insertIndex, 0, newGame);
-    
-    return [...otherGames, ...newCategoryGames];
-  };
-  
-  const onDrop = async (e: React.DragEvent<HTMLDivElement>, target: CategoryID) => {
-    e.preventDefault();
-    
-    // Clear any drop indicators
-    setDropIndicator(null);
-    
-    // Get the data from the drag operation
-    const data = e.dataTransfer.getData("application/json");
-    if (!data) return;
-    
-    const dragData = JSON.parse(data);
-    const id = dragData.id;
-    
-    if (dragData.fromSteam) {
-      // This is a new game from Steam
-      const steamGame = dragData.game;
-      const newGame: Game = {
-        ...steamGame,
-        id: uid(), // Generate a new ID
-        category: target,
-        // Fill in required fields that might be missing
-        genre: steamGame.genre || "Unknown",
-        year: steamGame.year || new Date().getFullYear(),
-        // Remove deity if not supported by the target category
-        mythologicalFigureId: supportsDieties(target) ? steamGame.mythologicalFigureId : undefined
-      };
-      
-      // Add the game at the end of the category
-      setGames(prevGames => [...prevGames, newGame]);
-      
-      // Then try to fetch additional details in the background
-      try {
-        if (newGame.title) {
-          const additionalInfo = await wikipediaInfo(newGame.title);
-          
-          // Update the game with the fetched information if available
-          if (additionalInfo) {
-            setGames(prevGames => prevGames.map(g => {
-              if (g.id === newGame.id) {
-                return {
-                  ...g,
-                  // Only update genre if it was "Unknown"
-                  genre: g.genre === "Unknown" && additionalInfo.genre ? additionalInfo.genre : g.genre,
-                  // Only update year if it wasn't set
-                  year: (!g.year || g.year === new Date().getFullYear()) && additionalInfo.year ? additionalInfo.year : g.year
-                };
-              }
-              return g;
-            }));
-          }
-        }
-      } catch (error) {
-        console.error("Failed to fetch additional game info:", error);
-        // The game is already added with default values, so we don't need additional error handling
-      }
-    } else {
-      // This is an existing game being moved
-      setGames(games.map(g => {
-        if (g.id === id) {
-          return { 
-            ...g, 
-            category: target,
-            // Remove deity if not supported by the target category
-            mythologicalFigureId: supportsDieties(target) ? g.mythologicalFigureId : undefined
-          };
-        }
-        return g;
-      }));
-    }
-    
-    // Remove any highlights
-    const elements = document.querySelectorAll('.drag-over');
-    elements.forEach(el => el.classList.remove('drag-over'));
-  };
-  
-  // New function for handling drops on individual games (for reordering)
-  const onDropOnGame = async (e: React.DragEvent<HTMLLIElement>, targetGameId: string, targetCategory: CategoryID) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    // Clear drop indicator
-    setDropIndicator(null);
-    
-    const data = e.dataTransfer.getData("application/json");
-    if (!data) return;
-    
-    const dragData = JSON.parse(data);
-    const draggedGameId = dragData.id;
-    
-    // Calculate drop position
-    const position = calculateDropPosition(e, e.currentTarget as HTMLElement);
-    
-    // Handle Steam game drops - add them to the target category at the drop position
-    if (dragData.fromSteam) {
-      const steamGame = dragData.game;
-      const newGame: Game = {
-        ...steamGame,
-        id: uid(), // Generate a new ID
-        category: targetCategory,
-        // Fill in required fields that might be missing
-        genre: steamGame.genre || "Unknown",
-        year: steamGame.year || new Date().getFullYear(),
-        // Remove deity if not supported by the target category
-        mythologicalFigureId: supportsDieties(targetCategory) ? steamGame.mythologicalFigureId : undefined
-      };
-      
-      // Insert at the calculated position
-      const newGames = insertAtPosition(games, newGame, targetGameId, position, targetCategory);
-      setGames(newGames);
-      
-      // Then try to fetch additional details in the background
-      try {
-        if (newGame.title) {
-          const additionalInfo = await wikipediaInfo(newGame.title);
-          
-          // Update the game with the fetched information if available
-          if (additionalInfo) {
-            setGames(prevGames => prevGames.map(g => {
-              if (g.id === newGame.id) {
-                return {
-                  ...g,
-                  // Only update genre if it was "Unknown"
-                  genre: g.genre === "Unknown" && additionalInfo.genre ? additionalInfo.genre : g.genre,
-                  // Only update year if it wasn't set
-                  year: (!g.year || g.year === new Date().getFullYear()) && additionalInfo.year ? additionalInfo.year : g.year
-                };
-              }
-              return g;
-            }));
-          }
-        }
-      } catch (error) {
-        console.error("Failed to fetch additional game info:", error);
-        // The game is already added with default values, so we don't need additional error handling
-      }
-      return;
-    }
-    
-    // Skip if trying to drop on itself
-    if (draggedGameId === targetGameId) return;
-    
-    const draggedGame = games.find(g => g.id === draggedGameId);
-    const targetGame = games.find(g => g.id === targetGameId);
-    
-    if (!draggedGame || !targetGame) return;
-    
-    // If moving to a different category, move to the calculated position
-    if (draggedGame.category !== targetCategory) {
-      const updatedGame = { 
-        ...draggedGame, 
-        category: targetCategory,
-        // Remove deity if not supported by the target category
-        mythologicalFigureId: supportsDieties(targetCategory) ? draggedGame.mythologicalFigureId : undefined
-      };
-      
-      // Remove from old position and insert at new position
-      const gamesWithoutDragged = games.filter(g => g.id !== draggedGameId);
-      const newGames = insertAtPosition(gamesWithoutDragged, updatedGame, targetGameId, position, targetCategory);
-      setGames(newGames);
-      return;
-    }
-    
-    // Reorder within the same category
-    const categoryGames = games.filter(g => g.category === targetCategory);
-    const otherGames = games.filter(g => g.category !== targetCategory);
-    
-    // Find positions
-    const draggedIndex = categoryGames.findIndex(g => g.id === draggedGameId);
-    const targetIndex = categoryGames.findIndex(g => g.id === targetGameId);
-    
-    if (draggedIndex === -1 || targetIndex === -1) return;
-    
-    // Don't do anything if we're trying to insert in the same position
-    if ((position === 'before' && targetIndex === draggedIndex + 1) || 
-        (position === 'after' && targetIndex === draggedIndex - 1)) {
-      return;
-    }
-    
-    // Create a new array and perform the reordering
-    const newCategoryGames = [...categoryGames];
-    const [draggedItem] = newCategoryGames.splice(draggedIndex, 1);
-    
-    // Calculate the insertion index after removing the dragged item
-    let insertIndex = position === 'before' ? targetIndex : targetIndex + 1;
-    
-    // Adjust for the removed item
-    if (draggedIndex < targetIndex) {
-      insertIndex -= 1;
-    }
-    
-    newCategoryGames.splice(insertIndex, 0, draggedItem);
-    
-    // Combine with other categories
-    setGames([...otherGames, ...newCategoryGames]);
-  };
-  
-  // Drag highlight management
-  const allowDrop = (e: React.DragEvent<HTMLElement>, category: CategoryID) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-    
-    // Get target element and check if already highlighted
-    const target = e.currentTarget as HTMLElement;
-    
-    // Clear any existing highlights before adding new ones
-    document.querySelectorAll('.drag-highlight').forEach(el => {
-      if (el !== target) {
-        el.classList.remove('drag-highlight');
-        (el as HTMLElement).style.outlineStyle = '';
-        (el as HTMLElement).style.outlineWidth = '';
-        (el as HTMLElement).style.outlineColor = '';
-        (el as HTMLElement).style.backgroundColor = '';
-      }
-    });
-    
-    // Skip if already highlighted
-    if (target.classList.contains('drag-highlight')) return;
-    
-    // Add highlight class
-    target.classList.add('drag-highlight');
-    
-    // Get colors for this category
-    const colors = CATEGORY_COLORS[category];
-    
-    // Apply category-specific styles
-    target.style.outlineStyle = 'dashed';
-    target.style.outlineWidth = '2px';
-    target.style.outlineColor = colors.highlight;
-    target.style.backgroundColor = `${colors.highlight}33`; // 33 is ~20% opacity in hex
-  };
-  
-  const removeDragHighlight = (e: React.DragEvent<HTMLElement>) => {
-    const target = e.currentTarget as HTMLElement;
-    target.classList.remove('drag-highlight');
-    
-    // Reset styles
-    target.style.outlineStyle = '';
-    target.style.outlineWidth = '';
-    target.style.outlineColor = '';
-    target.style.backgroundColor = '';
-  };
-  
   // Autofill functions
   const autoNew = async () => {
     if (!newGame.title) return;
@@ -618,16 +342,6 @@ export default function GamePantheon() {
   const autoEdit = async () => {
     if (!draft.title) return;
     setDraft({...draft, ...await wikipediaInfo(draft.title)});
-  };
-
-  // Add function to handle drag start from Steam game
-  const onSteamGameDragStart = (e: React.DragEvent<HTMLLIElement>, game: Partial<Game>) => {
-    e.dataTransfer.setData("application/json", JSON.stringify({
-      id: game.id,
-      fromSteam: true,
-      game
-    }));
-    e.dataTransfer.effectAllowed = "move";
   };
 
   // Add a function to handle inline deity updates
@@ -784,13 +498,13 @@ export default function GamePantheon() {
               key={cid} 
               category={categoryID}
               onDragOver={!isSharedView ? (e: React.DragEvent<HTMLDivElement>) => allowDrop(e, categoryID) : undefined} 
-              onDragLeave={!isSharedView ? removeDragHighlight : undefined}
+              onDragLeave={!isSharedView ? removeDragHighlightHandler : undefined}
               onDragEnter={!isSharedView ? (e: React.DragEvent<HTMLDivElement>) => {
                 e.stopPropagation();
                 allowDrop(e, categoryID);
               } : undefined}
               onDrop={!isSharedView ? (e: React.DragEvent<HTMLDivElement>) => {
-                removeDragHighlight(e);
+                removeDragHighlightHandler(e);
                 setDropIndicator(null); // Clear any lingering drop indicators
                 onDrop(e, categoryID);
               } : undefined}
