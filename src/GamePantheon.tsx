@@ -26,6 +26,23 @@ import { uid, encodeGameData, decodeGameData, getGenreIcon } from "./utils/helpe
 import { wikipediaInfo } from "./utils/wikipediaHelpers";
 import { localStateManager } from "./utils/localStateManager";
 
+// Helper function to set meta tags
+const setMetaTag = (nameOrProperty: string, content: string, isProperty: boolean = false) => {
+  let element = document.querySelector(isProperty ? `meta[property="${nameOrProperty}"]` : `meta[name="${nameOrProperty}"]`);
+  if (element) {
+    element.setAttribute("content", content);
+  } else {
+    element = document.createElement("meta");
+    if (isProperty) {
+      element.setAttribute("property", nameOrProperty);
+    } else {
+      element.setAttribute("name", nameOrProperty);
+    }
+    element.setAttribute("content", content);
+    document.head.appendChild(element);
+  }
+};
+
 /**
  * Pantheon v8 ────────────────────────────────────────────────────────────────
  * Sophisticated museum-quality design
@@ -75,31 +92,70 @@ export default function GamePantheon() {
   useEffect(() => {
     document.documentElement.classList.add('dark');
     
-    // Check for shared data in URL
     const url = new URL(window.location.href);
     const sharedData = url.searchParams.get('shared');
     const sharedTitleParam = url.searchParams.get('title');
-    
+    const currentUrl = url.href; // Get the full current URL
+
+    // Default meta tags (can be overwritten by shared view)
+    setMetaTag("description", "Game Pantheon - Organize your favorite games into mythological tiers");
+    setMetaTag("og:type", "website", true);
+    setMetaTag("twitter:card", "summary_large_image");
+    // Placeholder image, replace later
+    setMetaTag("og:image", "https://example.com/default-pantheon-preview.png", true);
+    setMetaTag("twitter:image", "https://example.com/default-pantheon-preview.png");
+    setMetaTag("twitter:image:alt", "Game Pantheon tier list");
+
+
     if (sharedData) {
       try {
         const decodedGames = decodeGameData(sharedData);
         setGames(decodedGames);
         setIsSharedView(true);
+        let pageTitle = "Shared Game Pantheon";
+        let metaDescription = "Check out this Game Pantheon list!";
+
         if (sharedTitleParam) {
           const decodedTitle = decodeURIComponent(sharedTitleParam);
           setSharedTitle(decodedTitle);
-          // Set page title to include the shared title
-          document.title = `${decodedTitle} - Game Pantheon`;
+          pageTitle = `${decodedTitle} - Game Pantheon`;
+          document.title = pageTitle;
+          metaDescription = `View the '${decodedTitle}' Game Pantheon list.`;
         } else {
           document.title = "Shared Game Pantheon";
         }
+        
+        // Update meta tags for shared view
+        setMetaTag("og:title", pageTitle, true);
+        setMetaTag("twitter:title", pageTitle);
+        setMetaTag("og:description", metaDescription, true);
+        setMetaTag("twitter:description", metaDescription);
+        setMetaTag("og:url", currentUrl, true);
+        // Placeholder dynamic image URL - replace when image generation service is ready
+        setMetaTag("og:image", "https://example.com/placeholder-dynamic-image.png", true); 
+        setMetaTag("twitter:image", "https://example.com/placeholder-dynamic-image.png");
+        setMetaTag("twitter:image:alt", `Preview of ${pageTitle}`);
+
       } catch (e) {
         console.error("Failed to parse shared games", e);
+        // Fallback to default titles and tags if parsing fails
+        document.title = "Game Pantheon";
+        setMetaTag("og:title", "Game Pantheon", true);
+        setMetaTag("twitter:title", "Game Pantheon");
+        setMetaTag("og:description", "Organize your favorite games into mythological tiers.", true);
+        setMetaTag("twitter:description", "Organize your favorite games into mythological tiers.");
+        setMetaTag("og:url", window.location.origin, true); // Use base URL for default
       }
     } else {
       // Load games using the enhanced manager
       setGames(localStateManager.loadGames());
       document.title = "Game Pantheon";
+      // Set default meta tags for non-shared view
+      setMetaTag("og:title", "Game Pantheon", true);
+      setMetaTag("twitter:title", "Game Pantheon");
+      setMetaTag("og:description", "Organize your favorite games into mythological tiers.", true);
+      setMetaTag("twitter:description", "Organize your favorite games into mythological tiers.");
+      setMetaTag("og:url", window.location.origin, true); // Use base URL for default
     }
   }, []);
 
