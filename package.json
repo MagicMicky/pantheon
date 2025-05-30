@@ -14,14 +14,30 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "analyze": "npm run build && npx source-map-explorer 'build/static/js/*.js'"
+    "analyze": "npm run build && npx source-map-explorer 'build/static/js/*.js'",
+    "lint": "eslint src/**/*.{ts,tsx} --max-warnings 0",
+    "lint:fix": "eslint src/**/*.{ts,tsx} --fix",
+    "lint:unused": "ts-unused-exports tsconfig.json",
+    "duplication": "jscpd src/",
+    "deps:check": "depcheck",
+    "code:analyze": "npm run lint && npm run duplication && npm run deps:check",
+    "code:fix": "npm run lint:fix"
   },
   "devDependencies": {
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
+    "depcheck": "^1.4.7",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.34.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-unused-imports": "^2.0.0",
+    "jscpd": "^3.5.10",
     "react-scripts": "5.0.1",
     "source-map-explorer": "^2.5.3",
-    "tailwindcss": "^3.3.3"
+    "tailwindcss": "^3.3.3",
+    "ts-unused-exports": "^10.0.1"
   },
   "browserslist": {
     "production": [

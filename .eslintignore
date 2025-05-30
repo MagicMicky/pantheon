@@ -1,0 +1,8 @@
+build/
+node_modules/
+public/
+*.config.js
+*.config.ts
+coverage/
+.eslintrc.js
+jscpd-report/ 
