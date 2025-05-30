@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, ReactNode, useEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useReducer, ReactNode, useEffect, useRef, useState, useMemo } from 'react';
 import { Content, Game, Movie, TVShow, CategoryID, ContentType } from '../types';
 import { uid } from '../utils/helpers';
 import { updateContentCategory } from '../utils/contentHelpers';
@@ -300,7 +300,8 @@ export function PantheonProvider({
     dispatch({ type: 'SET_CONTENT', payload: games, contentType: 'games' });
   };
 
-  const contextValue: PantheonContextType = {
+  // Memoize the context value to prevent unnecessary re-renders
+  const contextValue: PantheonContextType = useMemo(() => ({
     // Current state
     currentContentType: state.currentContentType,
     currentContent: getCurrentContent(),
@@ -333,7 +334,32 @@ export function PantheonProvider({
     reorderGames,
     setGames,
     setSharedView: setIsSharedView
-  };
+  }), [
+    state.currentContentType,
+    state.gamesContent,
+    state.moviesContent,
+    state.tvshowsContent,
+    isSharedView,
+    switchContentType,
+    addContent,
+    updateContent,
+    deleteContent,
+    moveContent,
+    reorderContent,
+    updateDeity,
+    setContent,
+    resetToDefault,
+    getGames,
+    getMovies,
+    getTVShows,
+    addGame,
+    updateGame,
+    deleteGame,
+    moveGame,
+    reorderGames,
+    setGames,
+    setIsSharedView
+  ]);
 
   return (
     <PantheonContext.Provider value={contextValue}>

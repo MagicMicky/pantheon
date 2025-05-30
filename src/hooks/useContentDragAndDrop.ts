@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { Content, CategoryID, ContentType, Game } from '../types';
 import { 
   calculateDropPosition, 
@@ -45,6 +45,14 @@ export function useContentDragAndDrop(
   setContent: (content: Content[] | ((prevContent: Content[]) => Content[])) => void
 ): UseContentDragAndDropReturn {
   const [dropIndicator, setDropIndicator] = useState<DropIndicator | null>(null);
+  const dragHighlightsRef = useRef<Set<HTMLElement>>(new Set());
+
+  const cleanupDragHighlights = useCallback(() => {
+    dragHighlightsRef.current.forEach(el => {
+      removeDragHighlight(el);
+    });
+    dragHighlightsRef.current.clear();
+  }, []);
 
   const onDragStart = useCallback((e: React.DragEvent<HTMLLIElement>, id: string) => {
     e.dataTransfer.setData("application/json", createContentDragData(id));
@@ -53,27 +61,29 @@ export function useContentDragAndDrop(
 
   const onDragEnd = useCallback(() => {
     setDropIndicator(null);
-    // Clean up any remaining highlights when drag ends
-    document.querySelectorAll('.drag-highlight').forEach(el => {
-      removeDragHighlight(el as HTMLElement);
-    });
-  }, []);
+    cleanupDragHighlights();
+  }, [cleanupDragHighlights]);
 
   const allowDrop = useCallback((e: React.DragEvent<HTMLElement>, category: CategoryID) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
     
     const target = e.currentTarget as HTMLElement;
-    clearOtherDragHighlights(target);
     
-    if (!target.classList.contains('drag-highlight')) {
+    // More efficient highlight management
+    if (!dragHighlightsRef.current.has(target)) {
+      clearOtherDragHighlights(target);
       applyDragHighlight(target, category);
+      dragHighlightsRef.current.add(target);
     }
   }, []);
 
   const removeDragHighlightHandler = useCallback((e: React.DragEvent<HTMLElement>) => {
     const target = e.currentTarget as HTMLElement;
-    removeDragHighlight(target);
+    if (dragHighlightsRef.current.has(target)) {
+      removeDragHighlight(target);
+      dragHighlightsRef.current.delete(target);
+    }
   }, []);
 
   const onDrop = useCallback(async (e: React.DragEvent<HTMLDivElement>, target: CategoryID) => {
@@ -137,11 +147,9 @@ export function useContentDragAndDrop(
       });
     }
     
-    // Remove all drag highlights
-    document.querySelectorAll('.drag-highlight').forEach(el => {
-      removeDragHighlight(el as HTMLElement);
-    });
-  }, [setContent]);
+    // Cleanup highlights efficiently
+    cleanupDragHighlights();
+  }, [setContent, cleanupDragHighlights]);
 
   const onDropOnContent = useCallback(async (
     e: React.DragEvent<HTMLLIElement>, 
