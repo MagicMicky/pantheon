@@ -1,42 +1,86 @@
-import { Game, CategoryID } from './index';
+import { Game, Movie, TVShow, Content, CategoryID, ContentType } from './index';
 
-// Enhanced game validation types
+// Enhanced content validation types
 export interface ValidatedGame extends Game {
   readonly id: string;
   readonly title: string;
   readonly genre: string;
   readonly year: number;
   readonly category: CategoryID;
+  readonly contentType: 'games';
 }
 
-// Form state types
-export interface GameFormData {
+export interface ValidatedMovie extends Movie {
+  readonly id: string;
+  readonly title: string;
+  readonly genre: string[];
+  readonly year: number;
+  readonly category: CategoryID;
+  readonly contentType: 'movies';
+}
+
+export interface ValidatedTVShow extends TVShow {
+  readonly id: string;
+  readonly title: string;
+  readonly genre: string[];
+  readonly year: number;
+  readonly category: CategoryID;
+  readonly contentType: 'tvshows';
+}
+
+export type ValidatedContent = ValidatedGame | ValidatedMovie | ValidatedTVShow;
+
+// Form state types - generalized
+export interface ContentFormData {
   title: string;
-  genre: string;
   year: number;
   category: CategoryID;
+  contentType: ContentType;
   mythologicalFigureId?: string;
+  // Game-specific
+  genre?: string;
+  steamAppId?: string;
+  steamHoursPlayed?: number;
+  // Movie-specific
+  movieGenres?: string[];
+  director?: string;
+  runtime?: number;
+  imdbId?: string;
+  // TV Show-specific
+  tvGenres?: string[];
+  seasons?: number;
+  episodes?: number;
+  status?: 'ongoing' | 'ended' | 'cancelled';
+  tmdbId?: string;
 }
 
-export interface GameFormErrors {
+export interface ContentFormErrors {
   title?: string;
   genre?: string;
+  movieGenres?: string;
+  tvGenres?: string;
   year?: string;
   category?: string;
   mythologicalFigureId?: string;
+  director?: string;
+  runtime?: string;
+  seasons?: string;
+  episodes?: string;
+  status?: string;
 }
 
-// Drag and drop types
-export type DragDataType = 'existing-game' | 'steam-game';
+// Drag and drop types - updated for content
+export type DragDataType = 'existing-content' | 'steam-game';
 
 export interface BaseDragData {
   type: DragDataType;
   id: string;
 }
 
-export interface ExistingGameDragData extends BaseDragData {
-  type: 'existing-game';
-  gameId: string;
+export interface ExistingContentDragData extends BaseDragData {
+  type: 'existing-content';
+  contentId: string;
+  contentType: ContentType;
 }
 
 export interface SteamGameDragData extends BaseDragData {
@@ -44,80 +88,87 @@ export interface SteamGameDragData extends BaseDragData {
   game: Partial<Game>;
 }
 
-export type DragData = ExistingGameDragData | SteamGameDragData;
+export type DragData = ExistingContentDragData | SteamGameDragData;
 
 // Drop position types
 export type DropPosition = 'before' | 'after';
 
 export interface DropIndicator {
-  gameId: string;
+  contentId: string;
   position: DropPosition;
 }
 
-// State management types
-export interface GameState {
-  games: ValidatedGame[];
+// State management types - generalized
+export interface PantheonState {
+  content: ValidatedContent[];
+  currentContentType: ContentType;
   isSharedView: boolean;
   isLoading: boolean;
   error: string | null;
 }
 
 // Action types with discriminated unions
-export type GameActionType = 
-  | 'SET_GAMES'
-  | 'ADD_GAME'
-  | 'UPDATE_GAME'
-  | 'DELETE_GAME'
-  | 'MOVE_GAME'
-  | 'REORDER_GAMES'
+export type PantheonActionType = 
+  | 'SET_CONTENT'
+  | 'ADD_CONTENT'
+  | 'UPDATE_CONTENT'
+  | 'DELETE_CONTENT'
+  | 'MOVE_CONTENT'
+  | 'REORDER_CONTENT'
   | 'UPDATE_DEITY'
+  | 'SWITCH_CONTENT_TYPE'
   | 'RESET_TO_DEFAULT'
   | 'SET_LOADING'
   | 'SET_ERROR'
   | 'CLEAR_ERROR';
 
-export interface SetGamesAction {
-  type: 'SET_GAMES';
-  payload: ValidatedGame[];
+export interface SetContentAction {
+  type: 'SET_CONTENT';
+  payload: ValidatedContent[];
 }
 
-export interface AddGameAction {
-  type: 'ADD_GAME';
-  payload: Omit<ValidatedGame, 'id'>;
+export interface AddContentAction {
+  type: 'ADD_CONTENT';
+  payload: Omit<ValidatedContent, 'id'>;
 }
 
-export interface UpdateGameAction {
-  type: 'UPDATE_GAME';
+export interface UpdateContentAction {
+  type: 'UPDATE_CONTENT';
   payload: {
     id: string;
-    updates: Partial<Game>;
+    updates: Partial<Content>;
   };
 }
 
-export interface DeleteGameAction {
-  type: 'DELETE_GAME';
+export interface DeleteContentAction {
+  type: 'DELETE_CONTENT';
   payload: string;
 }
 
-export interface MoveGameAction {
-  type: 'MOVE_GAME';
+export interface MoveContentAction {
+  type: 'MOVE_CONTENT';
   payload: {
     id: string;
     newCategory: CategoryID;
   };
 }
 
-export interface ReorderGamesAction {
-  type: 'REORDER_GAMES';
-  payload: ValidatedGame[];
+export interface ReorderContentAction {
+  type: 'REORDER_CONTENT';
+  payload: ValidatedContent[];
 }
 
 export interface UpdateDeityAction {
   type: 'UPDATE_DEITY';
   payload: {
-    gameId: string;
+    contentId: string;
     deityId?: string;
   };
+}
+
+export interface SwitchContentTypeAction {
+  type: 'SWITCH_CONTENT_TYPE';
+  payload: ContentType;
 }
 
 export interface ResetToDefaultAction {
@@ -138,14 +189,15 @@ export interface ClearErrorAction {
   type: 'CLEAR_ERROR';
 }
 
-export type GameAction = 
-  | SetGamesAction
-  | AddGameAction
-  | UpdateGameAction
-  | DeleteGameAction
-  | MoveGameAction
-  | ReorderGamesAction
+export type PantheonAction = 
+  | SetContentAction
+  | AddContentAction
+  | UpdateContentAction
+  | DeleteContentAction
+  | MoveContentAction
+  | ReorderContentAction
   | UpdateDeityAction
+  | SwitchContentTypeAction
   | ResetToDefaultAction
   | SetLoadingAction
   | SetErrorAction
@@ -205,15 +257,11 @@ export const isValidGame = (game: Partial<Game>): game is ValidatedGame => {
   );
 };
 
-export const validateGameForm = (data: Partial<GameFormData>): GameFormErrors => {
-  const errors: GameFormErrors = {};
+export const validateGameForm = (data: Partial<ContentFormData>): ContentFormErrors => {
+  const errors: ContentFormErrors = {};
 
   if (!data.title?.trim()) {
     errors.title = 'Title is required';
-  }
-
-  if (!data.genre?.trim()) {
-    errors.genre = 'Genre is required';
   }
 
   if (!data.year || data.year <= 0) {
@@ -228,8 +276,8 @@ export const validateGameForm = (data: Partial<GameFormData>): GameFormErrors =>
 };
 
 // Type guards
-export const isExistingGameDragData = (data: DragData): data is ExistingGameDragData => {
-  return data.type === 'existing-game';
+export const isExistingContentDragData = (data: DragData): data is ExistingContentDragData => {
+  return data.type === 'existing-content';
 };
 
 export const isSteamGameDragData = (data: DragData): data is SteamGameDragData => {

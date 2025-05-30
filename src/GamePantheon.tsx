@@ -4,7 +4,7 @@ import {
 } from "lucide-react";
 
 // Import types
-import { Game, CategoryID } from "./types";
+import { Game, Content, Movie, TVShow, CategoryID, ContentType } from "./types";
 
 // Import components
 import { Button, IconBtn } from "./components/ui/Buttons";
@@ -12,26 +12,30 @@ import { Confirm } from "./components/ui/Confirm";
 import { SteamGamesImport } from "./components/SteamGamesImport";
 import { ShareModal, HistoryModal } from "./components/modals";
 import { SharedViewBanner, HeaderControls, SharedViewCTA } from "./components/shared";
+import { ContentTypeSelector } from "./components/ContentTypeSelector";
 import GameCategory from "./components/GameCategory";
 import GameItem from "./components/GameItem";
 import GameEditForm from "./components/GameEditForm";
-import AddGameForm from "./components/AddGameForm";
+import AddContentForm from "./components/AddContentForm";
 
 // Import data
 import { CATEGORIES, CATEGORY_COLORS } from "./data/categories";
 
 // Import utilities
-import { uid, encodeGameData, decodeGameData } from "./utils/helpers";
+import { uid, encodeGameData, decodeGameData, decodeContentData } from "./utils/helpers";
 import { wikipediaInfo } from "./utils/wikipediaHelpers";
 import { localStateManager } from "./utils/localStateManager";
 import { removeShareParams, getShareParams } from "./utils/urlHelpers";
-import { supportsDieties, getUsedDeityIds } from "./utils/gameHelpers";
+import { supportsDieties, getUsedDeityIds } from "./utils/contentHelpers";
 
 // Import hooks
 import { useShareFeature } from "./hooks/useShareFeature";
 import { useMetaTags, setDefaultMetaTags } from "./hooks/useMetaTags";
 import { useModalState, useConfirmationModal } from "./hooks/useModalState";
-import { useDragAndDrop } from "./hooks/useDragAndDrop";
+import { useContentDragAndDrop } from "./hooks/useContentDragAndDrop";
+
+// Import context
+import { usePantheonContext } from "./contexts/PantheonContext";
 
 /**
  * Pantheon v8 ────────────────────────────────────────────────────────────────
@@ -44,14 +48,34 @@ import { useDragAndDrop } from "./hooks/useDragAndDrop";
 
 // ────────────────────────────────────────── Main component
 export default function GamePantheon() {
-  // Initialize with empty array instead of SAMPLE_GAMES
-  const [games, setGames] = useState<Game[]>([]);
-  const [newGame, setNewGame] = useState<Partial<Game>>({category: "hero"});
-  const [editing, setEditing] = useState<string|null>(null);
-  const [draft, setDraft] = useState<Partial<Game>>({});
-  const [isSharedView, setIsSharedView] = useState<boolean>(false);
+  // Use PantheonContext for content management
+  const {
+    currentContentType,
+    currentContent,
+    switchContentType,
+    addContent,
+    updateContent,
+    deleteContent,
+    moveContent,
+    reorderContent,
+    updateDeity: updateContentDeity,
+    setContent,
+    resetToDefault,
+    // Legacy compatibility for games
+    games,
+    setGames
+  } = usePantheonContext();
   
-  // Use share feature hook
+  const [newContent, setNewContent] = useState<Partial<Content>>({category: "hero", contentType: currentContentType});
+  const [editing, setEditing] = useState<string|null>(null);
+  const [draft, setDraft] = useState<Partial<Content>>({});
+  const [isSharedView, setIsSharedView] = useState<boolean>(false);
+  const [sharedContent, setSharedContent] = useState<Content[]>([]);
+  
+  // Determine what content to display - shared content in shared view, otherwise current content
+  const displayContent = isSharedView ? sharedContent : currentContent;
+  
+  // Use share feature hook with current content
   const {
     shareUrl,
     showShareModal,
@@ -62,20 +86,38 @@ export default function GamePantheon() {
     copyToClipboard,
     closeShareModal,
     updateShareUrl
-  } = useShareFeature(games);
+  } = useShareFeature(displayContent, currentContentType);
   
-  // Use drag and drop hook
+  // Use generalized drag and drop hook for all content types
   const {
     dropIndicator,
     onDragStart,
     onDragEnd,
     onDrop,
-    onDropOnGame,
+    onDropOnContent,
     allowDrop,
     removeDragHighlightHandler,
-    onSteamGameDragStart,
     setDropIndicator
-  } = useDragAndDrop(games, setGames);
+  } = useContentDragAndDrop(
+    displayContent,
+    (newContent) => {
+      if (currentContentType === 'games') {
+        // Legacy compatibility for games
+        if (typeof newContent === 'function') {
+          setGames(newContent(displayContent as Game[]) as Game[]);
+        } else {
+          setGames(newContent as Game[]);
+        }
+      } else {
+        // For movies and TV shows, update through context
+        if (typeof newContent === 'function') {
+          setContent(newContent(displayContent));
+        } else {
+          setContent(newContent);
+        }
+      }
+    }
+  );
   
   // Modal states using the hook
   const deleteConfirm = useConfirmationModal<string>();
@@ -107,28 +149,87 @@ export default function GamePantheon() {
   
   // Apply meta tags
   useMetaTags(metaTagsConfig);
+
+  // Get content type display names
+  const getContentTypeDisplayName = (contentType: ContentType): string => {
+    switch (contentType) {
+      case 'games': return 'Game';
+      case 'movies': return 'Movie';
+      case 'tvshows': return 'TV Show';
+      default: return 'Content';
+    }
+  };
   
   // Force dark mode and load data
   useEffect(() => {
     document.documentElement.classList.add('dark');
     setDefaultMetaTags(); // Set default og:type and twitter:card
     
-    const { sharedData, sharedTitle: sharedTitleParam } = getShareParams();
+    const { sharedData, sharedTitle: sharedTitleParam, contentType: sharedContentType } = getShareParams();
     const currentUrl = window.location.href;
 
     // Default meta tags configuration
     const defaultConfig = {
-      description: "Game Pantheon - Organize your favorite games into mythological tiers",
+      description: "Multi-Content Pantheon - Organize your favorite games, movies, and TV shows into mythological tiers",
       ogUrl: window.location.origin,
       ogImage: "https://example.com/default-pantheon-preview.png",
       twitterImage: "https://example.com/default-pantheon-preview.png",
-      twitterImageAlt: "Game Pantheon tier list"
+      twitterImageAlt: "Multi-Content Pantheon tier list"
     };
 
-    if (sharedData) {
+    if (sharedData && sharedContentType) {
+      try {
+        // Decode content based on the shared content type
+        const decodedContent = decodeContentData(sharedData, sharedContentType);
+        
+        // Switch to the shared content type
+        switchContentType(sharedContentType);
+        
+        // Set shared content for display only (don't overwrite user data)
+        setSharedContent(decodedContent);
+        setIsSharedView(true);
+        
+        const contentTypeName = getContentTypeDisplayName(sharedContentType);
+        let pageTitle = `Shared ${contentTypeName} Pantheon`;
+        let metaDescription = `Check out this ${contentTypeName} Pantheon list!`;
+
+        if (sharedTitleParam) {
+          setSharedTitle(sharedTitleParam);
+          pageTitle = `${sharedTitleParam} - ${contentTypeName} Pantheon`;
+          metaDescription = `View the '${sharedTitleParam}' ${contentTypeName} Pantheon list.`;
+        }
+        
+        // Update meta tags for shared view
+        setMetaTagsConfig({
+          ...defaultConfig,
+          title: pageTitle,
+          ogTitle: pageTitle,
+          twitterTitle: pageTitle,
+          ogDescription: metaDescription,
+          twitterDescription: metaDescription,
+          ogUrl: currentUrl,
+          twitterImageAlt: `Preview of ${pageTitle}`
+        });
+
+      } catch (e) {
+        console.error("Failed to parse shared content", e);
+        // Fallback to loading user's own content
+        setIsSharedView(false);
+        setMetaTagsConfig({
+          ...defaultConfig,
+          title: "Multi-Content Pantheon",
+          ogTitle: "Multi-Content Pantheon",
+          twitterTitle: "Multi-Content Pantheon",
+          ogDescription: defaultConfig.description,
+          twitterDescription: defaultConfig.description
+        });
+      }
+    } else if (sharedData) {
+      // Legacy games-only sharing support
       try {
         const decodedGames = decodeGameData(sharedData);
-        setGames(decodedGames);
+        switchContentType('games');
+        setSharedContent(decodedGames);
         setIsSharedView(true);
         let pageTitle = "Shared Game Pantheon";
         let metaDescription = "Check out this Game Pantheon list!";
@@ -153,50 +254,26 @@ export default function GamePantheon() {
 
       } catch (e) {
         console.error("Failed to parse shared games", e);
-        // Fallback to loading user's own games
-        setGames(localStateManager.loadGames());
-        setMetaTagsConfig({
-          ...defaultConfig,
-          title: "Game Pantheon",
-          ogTitle: "Game Pantheon",
-          twitterTitle: "Game Pantheon",
-          ogDescription: defaultConfig.description,
-          twitterDescription: defaultConfig.description
-        });
+        setIsSharedView(false);
       }
     } else {
-      // Load games using the enhanced manager
-      setGames(localStateManager.loadGames());
+      // No shared data - normal mode
       setIsSharedView(false);
       // Set default meta tags for non-shared view
       setMetaTagsConfig({
         ...defaultConfig,
-        title: "Game Pantheon",
-        ogTitle: "Game Pantheon",
-        twitterTitle: "Game Pantheon",
+        title: "Multi-Content Pantheon",
+        ogTitle: "Multi-Content Pantheon",
+        twitterTitle: "Multi-Content Pantheon",
         ogDescription: defaultConfig.description,
         twitterDescription: defaultConfig.description
       });
     }
-  }, [setSharedTitle]);
+  }, [setSharedTitle, switchContentType, setContent, setGames]);
 
-  // Save games to localStorage whenever they change (only if not in shared view)
-  useEffect(() => {
-    // Skip saving on the initial mount
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-    
-    // Only save if we're not in shared view and we have games to save
-    if (!isSharedView && games.length > 0) {
-      localStateManager.saveGames(games);
-    }
-  }, [games, isSharedView]);
-  
   const createNewFromShared = () => {
     // Check if there's existing custom data to warn about override
-    if (localStateManager.hasSavedGames()) {
+    if (localStateManager.hasSavedContent(currentContentType)) {
       // User has saved their own data
       overrideConfirm.open();
     } else {
@@ -205,8 +282,16 @@ export default function GamePantheon() {
   };
   
   const confirmCreateFromShared = () => {
-    // Save current games to localStorage and exit shared view
-    localStateManager.saveGames(games);
+    // Save the shared content to localStorage for the correct content type
+    localStateManager.saveContent(sharedContent, currentContentType);
+    
+    // Load the shared content into the user's actual collection
+    if (currentContentType === 'games') {
+      setGames(sharedContent as Game[]);
+    } else {
+      setContent(sharedContent);
+    }
+    
     setIsSharedView(false);
     
     // Remove shared parameter from URL without refreshing
@@ -214,7 +299,7 @@ export default function GamePantheon() {
     
     // Reset the shared title and update page title
     setSharedTitle("");
-    document.title = "Game Pantheon";
+    document.title = "Multi-Content Pantheon";
     
     // Close confirmation dialog if open
     overrideConfirm.close();
@@ -228,19 +313,24 @@ export default function GamePantheon() {
     // Exit shared view
     setIsSharedView(false);
     
-    // Check if user actually has saved games
-    if (localStateManager.hasSavedGames()) {
-      // Load user's saved games
-      const userGames = localStateManager.loadGames();
-      setGames(userGames);
+    // Check if user actually has saved content for current type
+    if (localStateManager.hasSavedContent(currentContentType)) {
+      // Load user's saved content
+      if (currentContentType === 'games') {
+        const userGames = localStateManager.loadGames();
+        setGames(userGames);
+      } else {
+        const userContent = localStateManager.loadContent(currentContentType);
+        setContent(userContent);
+      }
     } else {
-      // User has no saved games, so they'll start with the default
-      const defaultGames = localStateManager.loadGames();
-      setGames(defaultGames);
+      // User has no saved content, so they'll start with the default
+      const defaultContent = localStateManager.loadContent(currentContentType);
+      setContent(defaultContent);
     }
     
     // Reset title
-    document.title = "Game Pantheon";
+    document.title = "Multi-Content Pantheon";
     
     // Reset the shared title
     setSharedTitle("");
@@ -252,14 +342,8 @@ export default function GamePantheon() {
   };
   
   const confirmStartFresh = () => {
-    setGames([{
-      id: uid(),
-      title: "The Legend of Zelda: Breath of the Wild",
-      genre: "Action‑Adventure",
-      year: 2017,
-      category: "olympian", 
-      mythologicalFigureId: "zeus"
-    }]);
+    // Reset to default content for current type
+    resetToDefault();
     setIsSharedView(false);
     
     // Remove shared parameter from URL without refreshing
@@ -268,14 +352,28 @@ export default function GamePantheon() {
     resetConfirm.close();
   };
   
-  // CRUD operations
+  // CRUD operations - Updated to use content management system
   const add = () => {
-    if (!newGame.title || !newGame.genre || !newGame.year) return;
-    setGames([...games, {...(newGame as Game), id: uid()}]);
-    setNewGame({category: "hero"});
+    if (!newContent.title || !newContent.year) return;
+    
+    // Validate required fields based on content type
+    if (currentContentType === 'games') {
+      const gameContent = newContent as Partial<Game>;
+      if (!gameContent.genre) return;
+    } else if (currentContentType === 'movies') {
+      const movieContent = newContent as Partial<Movie>;
+      if (!movieContent.genre || movieContent.genre.length === 0) return;
+    } else if (currentContentType === 'tvshows') {
+      const tvContent = newContent as Partial<TVShow>;
+      if (!tvContent.genre || tvContent.genre.length === 0) return;
+    }
+    
+    // Add content using the context method
+    addContent({...newContent, contentType: currentContentType} as Omit<Content, 'id'>);
+    setNewContent({category: "hero", contentType: currentContentType});
   };
   
-  // Update remove to use confirmation
+  // Update remove to use confirmation and context
   const requestRemove = (id: string) => {
     deleteConfirm.openWithData(id);
   };
@@ -283,20 +381,24 @@ export default function GamePantheon() {
   const confirmRemove = () => {
     const itemToDelete = deleteConfirm.data;
     if (itemToDelete) {
-      setGames(games.filter(g => g.id !== itemToDelete));
+      deleteContent(itemToDelete);
     }
     deleteConfirm.close();
   };
   
   const save = (id: string) => {
-    if (!draft.title || !draft.genre || !draft.year) return;
-    setGames(games.map(g => g.id === id ? {...g, ...draft as Game} : g));
+    if (!draft.title || !draft.year) return;
+    
+    // Basic genre validation
+    if (currentContentType === 'games' && !draft.genre) return;
+    
+    updateContent(id, draft);
     setEditing(null);
   };
   
   // New data management functions
   const exportData = () => {
-    localStateManager.exportData();
+    localStateManager.exportContent(currentContentType);
   };
   
   const importData = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -307,9 +409,13 @@ export default function GamePantheon() {
     reader.onload = (e) => {
       const content = e.target?.result as string;
       try {
-        const importedGames = localStateManager.importData(content);
-        if (importedGames.length > 0) {
-          setGames(importedGames);
+        const importedContent = localStateManager.importContent(content, currentContentType);
+        if (importedContent.length > 0) {
+          if (currentContentType === 'games') {
+            setGames(importedContent as Game[]);
+          } else {
+            setContent(importedContent);
+          }
         }
       } catch (error) {
         console.error("Failed to import file", error);
@@ -322,7 +428,7 @@ export default function GamePantheon() {
   };
   
   const openHistoryModal = () => {
-    const history = localStateManager.getHistory();
+    const history = localStateManager.getHistory(currentContentType);
     setHistoryItems(history.map((item: any, index: number) => ({
       timestamp: item.timestamp,
       index
@@ -331,44 +437,56 @@ export default function GamePantheon() {
   };
   
   const restoreFromHistory = (index: number) => {
-    const restoredGames = localStateManager.restoreFromHistory(index);
-    if (restoredGames) {
-      setGames(restoredGames);
+    const restoredContent = localStateManager.restoreFromHistory(index, currentContentType);
+    if (restoredContent) {
+      if (currentContentType === 'games') {
+        setGames(restoredContent as Game[]);
+      } else {
+        setContent(restoredContent);
+      }
       historyModal.close();
     }
   };
   
   // Autofill functions
   const autoNew = async () => {
-    if (!newGame.title) return;
-    setNewGame({...newGame, ...await wikipediaInfo(newGame.title)});
+    if (!newContent.title) return;
+    const info = await wikipediaInfo(newContent.title);
+    // Handle genre compatibility for current content type
+    const processedInfo: any = { ...info };
+    if (currentContentType === 'games' && Array.isArray(info.genre)) {
+      processedInfo.genre = info.genre[0]; // Games expect string
+    } else if ((currentContentType === 'movies' || currentContentType === 'tvshows') && typeof info.genre === 'string') {
+      processedInfo.genre = [info.genre]; // Movies/TV shows expect array
+    }
+    setNewContent({...newContent, ...processedInfo} as Partial<Content>);
   };
   
   const autoEdit = async () => {
     if (!draft.title) return;
-    setDraft({...draft, ...await wikipediaInfo(draft.title)});
+    const info = await wikipediaInfo(draft.title);
+    // Handle genre compatibility for current content type
+    const processedInfo: any = { ...info };
+    if (currentContentType === 'games' && Array.isArray(info.genre)) {
+      processedInfo.genre = info.genre[0]; // Games expect string
+    } else if ((currentContentType === 'movies' || currentContentType === 'tvshows') && typeof info.genre === 'string') {
+      processedInfo.genre = [info.genre]; // Movies/TV shows expect array
+    }
+    setDraft({...draft, ...processedInfo} as Partial<Content>);
   };
 
-  // Add a function to handle inline deity updates
-  const updateDeity = (gameId: string, deityId: string | undefined) => {
-    setGames(games.map(g => {
-      if (g.id === gameId) {
-        return {
-          ...g,
-          mythologicalFigureId: deityId
-        };
-      }
-      return g;
-    }));
+  // Add a function to handle inline deity updates - now content-agnostic
+  const updateDeity = (contentId: string, deityId: string | undefined) => {
+    updateContentDeity(contentId, deityId);
     setInlineDeityEdit(null);
   };
 
   // Callback functions for the new components
   const handleEdit = (gameId: string) => {
-    const game = games.find(g => g.id === gameId);
+    const game = displayContent.find(g => g.id === gameId);
     if (game) {
       setEditing(gameId);
-      setDraft(game);
+      setDraft(game as Content);
     }
   };
 
@@ -377,7 +495,7 @@ export default function GamePantheon() {
     setDraft({});
   };
 
-  const handleDraftChange = (updates: Partial<Game>) => {
+  const handleDraftChange = (updates: Partial<Content>) => {
     setDraft(updates);
   };
 
@@ -389,19 +507,69 @@ export default function GamePantheon() {
     setInlineDeityEdit(gameId);
   };
 
-  const handleNewGameChange = (updates: Partial<Game>) => {
-    setNewGame(updates);
+  const handleNewContentChange = (updates: Partial<Content>) => {
+    setNewContent(updates);
   };
+
+  // Wrapper for Steam game drag start to match interface
+  const handleSteamGameDragStart = (e: React.DragEvent<HTMLLIElement>, game: Partial<Game>) => {
+    // Use the proper Steam game drag data format
+    e.dataTransfer.setData("application/json", JSON.stringify({
+      fromSteam: true,
+      game: game
+    }));
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  // Convert dropIndicator for legacy compatibility
+  const legacyDropIndicator = dropIndicator ? {
+    gameId: dropIndicator.contentId,
+    position: dropIndicator.position
+  } : null;
+
+  // Convert setDropIndicator for legacy compatibility
+  const setLegacyDropIndicator = (indicator: { gameId: string; position: 'before' | 'after' } | null) => {
+    setDropIndicator(indicator ? {
+      contentId: indicator.gameId,
+      position: indicator.position
+    } : null);
+  };
+
+  // Update newContent when currentContentType changes
+  useEffect(() => {
+    setNewContent({category: "hero", contentType: currentContentType});
+  }, [currentContentType]);
 
   // Return JSX
   return (
     <div className="p-8 bg-gradient-to-br from-slate-950 to-gray-900 min-h-screen select-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] font-sans">
       <header className="text-center mb-10 relative">
-        <h1 className="text-5xl font-serif font-bold tracking-wider text-white mb-1">
-          <span className="inline-block mr-2 transform translate-y-1">🏛️</span> 
-          The Game Pantheon
-        </h1>
-        <p className="text-gray-400 text-sm tracking-wide mt-2 italic">Curate your personal collection of gaming greatness</p>
+        <div className="flex items-center justify-center gap-4 mb-1">
+          <h1 className="text-5xl font-serif font-bold tracking-wider text-white">
+            <span className="inline-block mr-2 transform translate-y-1">🏛️</span> 
+            The 
+          </h1>
+          {!isSharedView ? (
+            <ContentTypeSelector 
+              currentContentType={currentContentType}
+              onContentTypeChange={switchContentType}
+            />
+          ) : (
+            <span className="text-5xl font-serif font-bold tracking-wider text-white transform translate-y-1">
+              {currentContentType === 'games' && 'Game'}
+              {currentContentType === 'movies' && 'Movie'}
+              {currentContentType === 'tvshows' && 'TV Show'}
+            </span>
+          )}
+          <h1 className="text-5xl font-serif font-bold tracking-wider text-white">
+            Pantheon
+          </h1>
+        </div>
+        <p className="text-gray-400 text-sm tracking-wide mt-2 italic">
+          {currentContentType === 'games' && "Curate your personal collection of gaming greatness"}
+          {currentContentType === 'movies' && "Curate your personal collection of cinematic masterpieces"}
+          {currentContentType === 'tvshows' && "Curate your personal collection of television excellence"}
+        </p>
         
         {/* Data management and share buttons */}
         <HeaderControls
@@ -434,7 +602,8 @@ export default function GamePantheon() {
         shareUrl={shareUrl}
         sharedTitle={sharedTitle}
         compressionStats={compressionStats}
-        games={games}
+        content={displayContent}
+        contentType={currentContentType}
         onClose={closeShareModal}
         onTitleChange={setSharedTitle}
         onCopyToClipboard={copyToClipboard}
@@ -452,21 +621,24 @@ export default function GamePantheon() {
       {/* Add Form - only show if not in shared view */}
       {!isSharedView && (
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mx-auto max-w-4xl mb-12">
-          <AddGameForm
-            newGame={newGame}
-            games={games}
-            onNewGameChange={handleNewGameChange}
+          <AddContentForm
+            newContent={newContent}
+            content={displayContent}
+            contentType={currentContentType}
+            onNewContentChange={handleNewContentChange}
             onAdd={add}
             onAutoFill={autoNew}
           />
           
-          {/* Steam Games Import Panel */}
-          <div className="md:col-span-5">
-            <SteamGamesImport 
-              existingGames={games} 
-              onGameDragStart={onSteamGameDragStart} 
-            />
-          </div>
+          {/* Steam Games Import Panel - only show for games */}
+          {currentContentType === 'games' && (
+            <div className="md:col-span-5">
+              <SteamGamesImport 
+                existingGames={displayContent as Game[]} 
+                onGameDragStart={handleSteamGameDragStart} 
+              />
+            </div>
+          )}
         </div>
       )}
 
@@ -475,11 +647,11 @@ export default function GamePantheon() {
           <GameCategory
             key={categoryId}
             categoryId={categoryId as CategoryID}
-            games={games}
+            games={displayContent as Game[]}
             isSharedView={isSharedView}
             editing={editing}
             draft={draft}
-            dropIndicator={dropIndicator}
+            dropIndicator={legacyDropIndicator}
             inlineDeityEdit={inlineDeityEdit}
             onEdit={handleEdit}
             onDelete={requestRemove}
@@ -497,13 +669,13 @@ export default function GamePantheon() {
             }}
             onDrop={(e: React.DragEvent<HTMLDivElement>, target: CategoryID) => {
               removeDragHighlightHandler(e);
-                            setDropIndicator(null);
+                            setLegacyDropIndicator(null);
               onDrop(e, target);
             }}
-            onDropOnGame={onDropOnGame}
+            onDropOnGame={onDropOnContent}
             onUpdateDeity={updateDeity}
             onToggleDeityEdit={handleToggleDeityEdit}
-            setDropIndicator={setDropIndicator}
+            setDropIndicator={setLegacyDropIndicator}
           />
         ))}
       </div>
@@ -511,8 +683,8 @@ export default function GamePantheon() {
       {/* Confirmation dialogs */}
       <Confirm
         isOpen={deleteConfirm.isOpen}
-        title="Delete Game"
-        message="Are you sure you want to delete this game? This action cannot be undone."
+        title="Delete Content"
+        message="Are you sure you want to delete this item? This action cannot be undone."
         onConfirm={confirmRemove}
         onCancel={() => deleteConfirm.close()}
       />
@@ -520,7 +692,7 @@ export default function GamePantheon() {
       <Confirm
         isOpen={resetConfirm.isOpen}
         title="Reset Collection"
-        message="Are you sure you want to reset your entire collection? All your current games will be lost."
+        message="Are you sure you want to reset your entire collection? All your current items will be lost."
         onConfirm={confirmStartFresh}
         onCancel={() => resetConfirm.close()}
       />
@@ -528,7 +700,7 @@ export default function GamePantheon() {
       <Confirm
         isOpen={overrideConfirm.isOpen}
         title="Override Existing Collection"
-        message="You already have games in your collection. Using this shared collection will override your existing data. Continue?"
+        message="You already have content in your collection. Using this shared collection will override your existing data. Continue?"
         onConfirm={confirmCreateFromShared}
         onCancel={() => overrideConfirm.close()}
       />

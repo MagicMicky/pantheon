@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useReducer, ReactNode, useEffect, useRef } from 'react';
 import { Game, CategoryID } from '../types';
 import { uid } from '../utils/helpers';
-import { updateGameCategory } from '../utils/gameHelpers';
+import { updateGameCategory } from '../utils/contentHelpers';
 import { localStateManager } from '../utils/localStateManager';
 
 // Action types
@@ -43,6 +43,7 @@ const DEFAULT_GAME: Game = {
   genre: "Action‑Adventure",
   year: 2017,
   category: "olympian", 
+  contentType: 'games',
   mythologicalFigureId: "zeus"
 };
 

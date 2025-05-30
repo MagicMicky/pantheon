@@ -2,7 +2,7 @@ import React from 'react';
 import { Share2, Copy } from 'lucide-react';
 import { Button } from '../ui/Buttons';
 import { Input } from '../ui/Inputs';
-import { Game } from '../../types';
+import { Content, ContentType } from '../../types';
 import { ModalWrapper } from './ModalWrapper';
 
 interface ShareModalProps {
@@ -14,43 +14,80 @@ interface ShareModalProps {
     compressed: number;
     ratio: number;
   };
-  games: Game[];
+  content: Content[];
+  contentType: ContentType;
   onClose: () => void;
   onTitleChange: (title: string) => void;
   onCopyToClipboard: () => void;
-  onUpdateShareUrl: (games: Game[], title: string) => void;
+  onUpdateShareUrl: (content: Content[], contentType: ContentType, title: string) => void;
 }
+
+const getContentTypeConfig = (contentType: ContentType) => {
+  switch (contentType) {
+    case 'games':
+      return {
+        title: 'Share Your Game Pantheon',
+        description: 'Add a title for your shared game pantheon (optional):',
+        placeholder: 'My Favorite Games',
+        shareText: 'Share this link with friends to show them your game pantheon:'
+      };
+    case 'movies':
+      return {
+        title: 'Share Your Movie Pantheon',
+        description: 'Add a title for your shared movie pantheon (optional):',
+        placeholder: 'My Favorite Movies',
+        shareText: 'Share this link with friends to show them your movie pantheon:'
+      };
+    case 'tvshows':
+      return {
+        title: 'Share Your TV Show Pantheon',
+        description: 'Add a title for your shared TV show pantheon (optional):',
+        placeholder: 'My Favorite TV Shows',
+        shareText: 'Share this link with friends to show them your TV show pantheon:'
+      };
+    default:
+      return {
+        title: 'Share Your Pantheon',
+        description: 'Add a title for your shared pantheon (optional):',
+        placeholder: 'My Favorites',
+        shareText: 'Share this link with friends to show them your pantheon:'
+      };
+  }
+};
 
 export function ShareModal({
   isOpen,
   shareUrl,
   sharedTitle,
   compressionStats,
-  games,
+  content,
+  contentType,
   onClose,
   onTitleChange,
   onCopyToClipboard,
   onUpdateShareUrl
 }: ShareModalProps) {
+  const config = getContentTypeConfig(contentType);
+  
   return (
     <ModalWrapper isOpen={isOpen}>
       <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-        <Share2 className="w-5 h-5 text-amber-400" /> Share Your Pantheon
+        <Share2 className="w-5 h-5 text-amber-400" /> {config.title}
       </h2>
-      <p className="text-gray-400 mb-4 text-sm">Add a title for your shared pantheon (optional):</p>
+      <p className="text-gray-400 mb-4 text-sm">{config.description}</p>
       <div className="mb-4">
         <Input 
-          placeholder="My Favorite Games" 
+          placeholder={config.placeholder}
           value={sharedTitle} 
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             onTitleChange(e.target.value);
             // Regenerate the URL with the new title
-            onUpdateShareUrl(games, e.target.value);
+            onUpdateShareUrl(content, contentType, e.target.value);
           }}
           className="w-full bg-slate-800 border border-slate-700 text-white"
         />
       </div>
-      <p className="text-gray-400 mb-4 text-sm">Share this link with friends to show them your game pantheon:</p>
+      <p className="text-gray-400 mb-4 text-sm">{config.shareText}</p>
       <div className="flex gap-2 mb-4">
         <input 
           type="text" 

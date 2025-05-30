@@ -6,7 +6,7 @@ import { Autocomplete } from './Autocomplete';
 import { Input, Select } from './ui/Inputs';
 import { Button } from './ui/Buttons';
 import { DeitySelector } from './DeityComponents';
-import { supportsDieties, getUsedDeityIds } from '../utils/gameHelpers';
+import { supportsDieties, getUsedDeityIds } from '../utils/contentHelpers';
 
 interface AddGameFormProps {
   newGame: Partial<Game>;
@@ -34,7 +34,13 @@ const AddGameForm = memo(function AddGameForm({
           onChange={v => onNewGameChange({...newGame, title: v})} 
           onSelect={async v => {
             const { wikipediaInfo } = await import('../utils/wikipediaHelpers');
-            onNewGameChange({...newGame, title: v, ...await wikipediaInfo(v)});
+            const info = await wikipediaInfo(v);
+            // For games, ensure genre is a string (not array)
+            const gameInfo = {
+              ...info,
+              genre: Array.isArray(info.genre) ? info.genre[0] : info.genre
+            };
+            onNewGameChange({...newGame, title: v, ...gameInfo});
           }}
         />
         <Input 

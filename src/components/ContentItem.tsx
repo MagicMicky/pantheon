@@ -1,35 +1,35 @@
 import React, { memo } from 'react';
-import { Game, CategoryID } from '../types';
+import { Content, Game, Movie, TVShow, CategoryID } from '../types';
 import { GripVertical, Pen, X } from 'lucide-react';
 import { getGenreIcon } from '../utils/helpers';
 import { GENRE_ICON_MAPPING } from '../data/genreIcons';
 import { CATEGORY_COLORS } from '../data/categories';
 import { DeityBadge, DeityPopup } from './DeityComponents';
 import { IconBtn } from './ui/Buttons';
-import { supportsDieties } from '../utils/contentHelpers';
+import { supportsDieties, getContentDisplayText } from '../utils/contentHelpers';
 import { calculateDropPosition } from '../utils/dragHelpers';
 
-interface GameItemProps {
-  game: Game;
+interface ContentItemProps {
+  content: Content;
   isSharedView: boolean;
   isEditing: boolean;
-  dropIndicator: { gameId: string; position: 'before' | 'after' } | null;
+  dropIndicator: { contentId: string; position: 'before' | 'after' } | null;
   inlineDeityEdit: string | null;
   usedDeityIds: string[];
-  onEdit: (gameId: string) => void;
-  onDelete: (gameId: string) => void;
+  onEdit: (contentId: string) => void;
+  onDelete: (contentId: string) => void;
   onDragStart: (e: React.DragEvent<HTMLLIElement>, id: string) => void;
   onDragEnd: () => void;
   onDragOver: (e: React.DragEvent<HTMLLIElement>) => void;
   onDragLeave: (e: React.DragEvent<HTMLLIElement>) => void;
-  onDrop: (e: React.DragEvent<HTMLLIElement>, targetGameId: string, targetCategory: CategoryID) => void;
-  onUpdateDeity: (gameId: string, deityId?: string) => void;
-  onToggleDeityEdit: (gameId: string | null) => void;
-  setDropIndicator: (indicator: { gameId: string; position: 'before' | 'after' } | null) => void;
+  onDrop: (e: React.DragEvent<HTMLLIElement>, targetContentId: string, targetCategory: CategoryID) => void;
+  onUpdateDeity: (contentId: string, deityId?: string) => void;
+  onToggleDeityEdit: (contentId: string | null) => void;
+  setDropIndicator: (indicator: { contentId: string; position: 'before' | 'after' } | null) => void;
 }
 
-const GameItem = memo(function GameItem({
-  game,
+const ContentItem = memo(function ContentItem({
+  content,
   isSharedView,
   isEditing,
   dropIndicator,
@@ -45,8 +45,24 @@ const GameItem = memo(function GameItem({
   onUpdateDeity,
   onToggleDeityEdit,
   setDropIndicator
-}: GameItemProps) {
-  const colors = CATEGORY_COLORS[game.category];
+}: ContentItemProps) {
+  const colors = CATEGORY_COLORS[content.category];
+
+  // Get the primary genre for icon display
+  const getPrimaryGenre = (content: Content): string => {
+    switch (content.contentType) {
+      case 'games':
+        return (content as Game).genre;
+      case 'movies':
+        const movieGenres = (content as Movie).genre;
+        return Array.isArray(movieGenres) ? movieGenres[0] || 'Unknown' : 'Unknown';
+      case 'tvshows':
+        const tvGenres = (content as TVShow).genre;
+        return Array.isArray(tvGenres) ? tvGenres[0] || 'Unknown' : 'Unknown';
+      default:
+        return 'Unknown';
+    }
+  };
 
   const handleDragOver = (e: React.DragEvent<HTMLLIElement>) => {
     if (isSharedView) return;
@@ -56,7 +72,7 @@ const GameItem = memo(function GameItem({
     
     // Calculate and set drop indicator
     const position = calculateDropPosition(e, e.currentTarget as HTMLElement);
-    setDropIndicator({ gameId: game.id, position });
+    setDropIndicator({ contentId: content.id, position });
     
     onDragOver(e);
   };
@@ -79,7 +95,7 @@ const GameItem = memo(function GameItem({
     if (isSharedView) return;
     
     setDropIndicator(null);
-    onDrop(e, game.id, game.category);
+    onDrop(e, content.id, content.category);
   };
 
   if (isEditing) {
@@ -90,14 +106,14 @@ const GameItem = memo(function GameItem({
     <li 
       className="flex pt-1.5 first:pt-0 pl-7 relative group/item gap-2 min-h-[2.25rem]" 
       draggable={!isSharedView} 
-      onDragStart={!isSharedView ? e => onDragStart(e, game.id) : undefined}
+      onDragStart={!isSharedView ? e => onDragStart(e, content.id) : undefined}
       onDragEnd={!isSharedView ? onDragEnd : undefined}
       onDragOver={!isSharedView ? handleDragOver : undefined}
       onDragLeave={!isSharedView ? handleDragLeave : undefined}
       onDrop={!isSharedView ? handleDrop : undefined}
     >
       {/* Drop indicator before this item */}
-      {dropIndicator?.gameId === game.id && dropIndicator.position === 'before' && (
+      {dropIndicator?.contentId === content.id && dropIndicator.position === 'before' && (
         <div 
           className="absolute -top-1 left-0 right-0 h-0.5 rounded-full opacity-80 z-10" 
           style={{ backgroundColor: colors.highlight }} 
@@ -111,7 +127,7 @@ const GameItem = memo(function GameItem({
             <GripVertical size={14} strokeWidth={1.5} />
           </div>
         )}
-        {React.createElement(getGenreIcon(game.genre, GENRE_ICON_MAPPING), {
+        {React.createElement(getGenreIcon(getPrimaryGenre(content), GENRE_ICON_MAPPING), {
           className: `w-4 h-4 ${colors.text} flex-shrink-0 ${!isSharedView ? "group-hover/item:opacity-0" : ""} transition-opacity duration-200`,
           strokeWidth: 1.5
         })}
@@ -119,20 +135,20 @@ const GameItem = memo(function GameItem({
 
       {/* Main content area - takes up available space */}
       <div className={`flex-1 flex flex-col justify-center gap-0.5 min-w-0 ${!isSharedView ? "cursor-grab" : ""}`}>
-        {/* Game title line */}
+        {/* Content title line */}
         <div className="flex items-center">
-          <span className="font-medium leading-tight text-white truncate">{game.title}</span>
+          <span className="font-medium leading-tight text-white truncate">{content.title}</span>
         </div>
         
-        {/* Genre/year and action buttons line */}
+        {/* Content details and action buttons line */}
         <div className="flex justify-between items-center">
-          <span className="text-gray-400 text-xs">{game.genre} · {game.year}</span>
+          <span className="text-gray-400 text-xs">{getContentDisplayText(content)}</span>
           {!isSharedView && (
             <div className="flex gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity duration-200">
-              <IconBtn title="Edit" onClick={() => onEdit(game.id)}>
+              <IconBtn title="Edit" onClick={() => onEdit(content.id)}>
                 <Pen className="w-3 h-3" strokeWidth={1.5}/>
               </IconBtn>
-              <IconBtn title="Delete" onClick={() => onDelete(game.id)}>
+              <IconBtn title="Delete" onClick={() => onDelete(content.id)}>
                 <X className="w-3 h-3" strokeWidth={1.5}/>
               </IconBtn>
             </div>
@@ -142,21 +158,21 @@ const GameItem = memo(function GameItem({
 
       {/* Right-side deity area - spans full height */}
       <div className="flex items-center self-stretch ml-2">
-        {game.mythologicalFigureId ? (
-          <DeityBadge mythologicalFigureId={game.mythologicalFigureId} />
-        ) : supportsDieties(game.category) && !isSharedView ? (
+        {content.mythologicalFigureId ? (
+          <DeityBadge mythologicalFigureId={content.mythologicalFigureId} />
+        ) : supportsDieties(content.category) && !isSharedView ? (
           <DeityPopup
-            tier={game.category as 'olympian' | 'titan' | 'hero'}
+            tier={content.category as 'olympian' | 'titan' | 'hero'}
             usedDeityIds={usedDeityIds}
-            onSelect={(id) => onUpdateDeity(game.id, id)}
+            onSelect={(id) => onUpdateDeity(content.id, id)}
             onCancel={() => onToggleDeityEdit(null)}
-            isOpen={inlineDeityEdit === game.id}
-            selectedDeityId={game.mythologicalFigureId}
+            isOpen={inlineDeityEdit === content.id}
+            selectedDeityId={content.mythologicalFigureId}
             onToggle={() => {
-              if (inlineDeityEdit === game.id) {
+              if (inlineDeityEdit === content.id) {
                 onToggleDeityEdit(null);
               } else {
-                onToggleDeityEdit(game.id);
+                onToggleDeityEdit(content.id);
               }
             }}
           >
@@ -165,10 +181,10 @@ const GameItem = memo(function GameItem({
                 e.stopPropagation();
                 e.preventDefault();
                 // Directly call toggle since we prevented propagation
-                if (inlineDeityEdit === game.id) {
+                if (inlineDeityEdit === content.id) {
                   onToggleDeityEdit(null);
                 } else {
-                  onToggleDeityEdit(game.id);
+                  onToggleDeityEdit(content.id);
                 }
               }}
               className="border border-dashed border-gray-500 rounded-full w-6 h-6 flex items-center justify-center text-gray-400 text-xs hover:bg-slate-700 hover:text-white transition-colors opacity-60 group-hover/item:opacity-100"
@@ -181,7 +197,7 @@ const GameItem = memo(function GameItem({
       </div>
       
       {/* Drop indicator after this item */}
-      {dropIndicator?.gameId === game.id && dropIndicator.position === 'after' && (
+      {dropIndicator?.contentId === content.id && dropIndicator.position === 'after' && (
         <div 
           className="absolute -bottom-1 left-0 right-0 h-0.5 rounded-full opacity-80 z-10" 
           style={{ backgroundColor: colors.highlight }} 
@@ -191,4 +207,4 @@ const GameItem = memo(function GameItem({
   );
 });
 
-export default GameItem; 
+export default ContentItem; 

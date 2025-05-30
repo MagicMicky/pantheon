@@ -6,17 +6,17 @@ import { getUsedDeityIds } from '../utils/contentHelpers';
 import ContentItem from './ContentItem';
 import ContentEditForm from './ContentEditForm';
 
-interface GameCategoryProps {
+interface ContentCategoryProps {
   categoryId: CategoryID;
-  games: Content[];
+  content: Content[];
   isSharedView: boolean;
   editing: string | null;
   draft: Partial<Content>;
-  dropIndicator: { gameId: string; position: 'before' | 'after' } | null;
+  dropIndicator: { contentId: string; position: 'before' | 'after' } | null;
   inlineDeityEdit: string | null;
-  onEdit: (gameId: string) => void;
-  onDelete: (gameId: string) => void;
-  onSave: (gameId: string) => void;
+  onEdit: (contentId: string) => void;
+  onDelete: (contentId: string) => void;
+  onSave: (contentId: string) => void;
   onCancelEdit: () => void;
   onDraftChange: (updates: Partial<Content>) => void;
   onAutoFill: () => void;
@@ -26,15 +26,16 @@ interface GameCategoryProps {
   onDragLeave: (e: React.DragEvent<HTMLElement>) => void;
   onDragEnter: (e: React.DragEvent<HTMLDivElement>) => void;
   onDrop: (e: React.DragEvent<HTMLDivElement>, target: CategoryID) => void;
-  onDropOnGame: (e: React.DragEvent<HTMLLIElement>, targetGameId: string, targetCategory: CategoryID) => void;
-  onUpdateDeity: (gameId: string, deityId?: string) => void;
-  onToggleDeityEdit: (gameId: string | null) => void;
-  setDropIndicator: (indicator: { gameId: string; position: 'before' | 'after' } | null) => void;
+  onDropOnContent: (e: React.DragEvent<HTMLLIElement>, targetContentId: string, targetCategory: CategoryID) => void;
+  onUpdateDeity: (contentId: string, deityId?: string) => void;
+  onToggleDeityEdit: (contentId: string | null) => void;
+  setDropIndicator: (indicator: { contentId: string; position: 'before' | 'after' } | null) => void;
+  contentTypeName: string; // e.g., "games", "movies", "TV shows"
 }
 
-const GameCategory = memo(function GameCategory({
+const ContentCategory = memo(function ContentCategory({
   categoryId,
-  games,
+  content,
   isSharedView,
   editing,
   draft,
@@ -52,18 +53,19 @@ const GameCategory = memo(function GameCategory({
   onDragLeave,
   onDragEnter,
   onDrop,
-  onDropOnGame,
+  onDropOnContent,
   onUpdateDeity,
   onToggleDeityEdit,
-  setDropIndicator
-}: GameCategoryProps) {
+  setDropIndicator,
+  contentTypeName
+}: ContentCategoryProps) {
   const category = CATEGORIES[categoryId];
   const Icon = category.icon;
   
-  // Memoize filtered games list
-  const categoryGames = useMemo(() => 
-    games.filter(g => g.category === categoryId), 
-    [games, categoryId]
+  // Memoize filtered content list
+  const categoryContent = useMemo(() => 
+    content.filter(c => c.category === categoryId), 
+    [content, categoryId]
   );
 
   return (
@@ -85,52 +87,46 @@ const GameCategory = memo(function GameCategory({
       </CardHeader>
       <CardContent>
         <p className="text-sm text-gray-400 mb-2 italic">{category.blurb}</p>
-        {categoryGames.length ? (
+        {categoryContent.length ? (
           <ul className="space-y-1 text-sm divide-y divide-gray-800/30">
-            {categoryGames.map(content => editing === content.id ? (
+            {categoryContent.map(item => editing === item.id ? (
               <ContentEditForm
-                key={content.id}
-                content={content}
+                key={item.id}
+                content={item}
                 draft={draft}
                 onDraftChange={onDraftChange}
-                onSave={() => onSave(content.id)}
+                onSave={() => onSave(item.id)}
                 onCancel={onCancelEdit}
                 onAutoFill={onAutoFill}
                 inlineDeityEdit={inlineDeityEdit}
                 onToggleDeityEdit={onToggleDeityEdit}
-                usedDeityIds={getUsedDeityIds(games, content.id)}
+                usedDeityIds={getUsedDeityIds(content, item.id)}
               />
             ) : (
               <ContentItem
-                key={content.id}
-                content={content}
+                key={item.id}
+                content={item}
                 isSharedView={isSharedView}
-                isEditing={editing === content.id}
-                dropIndicator={dropIndicator ? {
-                  contentId: dropIndicator.gameId,
-                  position: dropIndicator.position
-                } : null}
+                isEditing={editing === item.id}
+                dropIndicator={dropIndicator}
                 inlineDeityEdit={inlineDeityEdit}
-                usedDeityIds={getUsedDeityIds(games, content.id)}
+                usedDeityIds={getUsedDeityIds(content, item.id)}
                 onEdit={onEdit}
                 onDelete={onDelete}
                 onDragStart={onDragStart}
                 onDragEnd={onDragEnd}
                 onDragOver={() => {}} // Handled in ContentItem
                 onDragLeave={() => {}} // Handled in ContentItem
-                onDrop={onDropOnGame}
+                onDrop={onDropOnContent}
                 onUpdateDeity={onUpdateDeity}
                 onToggleDeityEdit={onToggleDeityEdit}
-                setDropIndicator={(indicator) => setDropIndicator(indicator ? {
-                  gameId: indicator.contentId,
-                  position: indicator.position
-                } : null)}
+                setDropIndicator={setDropIndicator}
               />
             ))}
           </ul>
         ) : (
           <div className="flex items-center justify-center h-16 text-gray-500 italic text-sm border border-dashed border-gray-700/30 rounded-lg">
-            No content in this category yet
+            No {contentTypeName} in this category yet
           </div>
         )}
       </CardContent>
@@ -138,4 +134,4 @@ const GameCategory = memo(function GameCategory({
   );
 });
 
-export default GameCategory; 
+export default ContentCategory; 

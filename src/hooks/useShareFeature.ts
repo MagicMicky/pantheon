@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
-import { Game } from '../types';
-import { encodeGameData } from '../utils/helpers';
+import { Content, ContentType } from '../types';
+import { encodeContentData } from '../utils/helpers';
 import { createShareUrl } from '../utils/urlHelpers';
 
 interface CompressionStats {
@@ -18,10 +18,10 @@ interface UseShareFeatureReturn {
   generateShareLink: () => void;
   copyToClipboard: () => void;
   closeShareModal: () => void;
-  updateShareUrl: (games: Game[], title: string) => void;
+  updateShareUrl: (content: Content[], contentType: ContentType, title: string) => void;
 }
 
-export function useShareFeature(games: Game[]): UseShareFeatureReturn {
+export function useShareFeature(content: Content[], contentType: ContentType): UseShareFeatureReturn {
   const [shareUrl, setShareUrl] = useState<string>('');
   const [showShareModal, setShowShareModal] = useState<boolean>(false);
   const [sharedTitle, setSharedTitle] = useState<string>('');
@@ -31,9 +31,9 @@ export function useShareFeature(games: Game[]): UseShareFeatureReturn {
     ratio: 0
   });
 
-  const updateShareUrl = useCallback((gamesList: Game[], title: string) => {
-    const encodedData = encodeGameData(gamesList);
-    const url = createShareUrl(encodedData, title);
+  const updateShareUrl = useCallback((contentList: Content[], contentTypeParam: ContentType, title: string) => {
+    const encodedData = encodeContentData(contentList, contentTypeParam);
+    const url = createShareUrl(encodedData, contentTypeParam, title);
     setShareUrl(url);
     
     // Return the encoded data for compression stats calculation
@@ -42,10 +42,10 @@ export function useShareFeature(games: Game[]): UseShareFeatureReturn {
 
   const generateShareLink = useCallback(() => {
     // Get both compressed and uncompressed sizes for comparison
-    const rawData = JSON.stringify(games);
+    const rawData = JSON.stringify(content);
     const rawBase64 = btoa(encodeURIComponent(rawData));
     
-    const encodedData = updateShareUrl(games, sharedTitle);
+    const encodedData = updateShareUrl(content, contentType, sharedTitle);
     
     // Calculate compression stats
     const compressionRatio = Math.round((1 - (encodedData.length / rawBase64.length)) * 100);
@@ -56,7 +56,7 @@ export function useShareFeature(games: Game[]): UseShareFeatureReturn {
     });
     
     setShowShareModal(true);
-  }, [games, sharedTitle, updateShareUrl]);
+  }, [content, contentType, sharedTitle, updateShareUrl]);
 
   const copyToClipboard = useCallback(() => {
     navigator.clipboard.writeText(shareUrl);
