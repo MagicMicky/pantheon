@@ -553,7 +553,6 @@ export default function GamePantheon() {
             <ContentTypeSelector 
               currentContentType={currentContentType}
               onContentTypeChange={switchContentType}
-              className="transform translate-y-1"
             />
           ) : (
             <span className="text-5xl font-serif font-bold tracking-wider text-white transform translate-y-1">

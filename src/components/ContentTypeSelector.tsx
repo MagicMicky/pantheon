@@ -15,12 +15,6 @@ const CONTENT_TYPE_LABELS: Record<ContentType, string> = {
   tvshows: 'TV Show'
 };
 
-const CONTENT_TYPE_EMOJIS: Record<ContentType, string> = {
-  games: '🎮',
-  movies: '🎬',
-  tvshows: '📺'
-};
-
 export function ContentTypeSelector({ 
   currentContentType, 
   onContentTypeChange, 
@@ -28,7 +22,7 @@ export function ContentTypeSelector({
 }: ContentTypeSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPositioned, setIsPositioned] = useState(false);
-  const buttonRef = useRef<HTMLButtonElement>(null);
+  const buttonRef = useRef<HTMLSpanElement>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
 
   // Calculate dropdown position based on button position
@@ -36,8 +30,8 @@ export function ContentTypeSelector({
     if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
       setDropdownPosition({
-        top: rect.bottom + window.scrollY + 8, // 8px gap (mt-2)
-        left: rect.right + window.scrollX - 192 // 192px is w-48 (12rem)
+        top: rect.bottom + window.scrollY + 8, // 8px gap
+        left: rect.left + window.scrollX // Align left edge with button
       });
       setIsPositioned(true);
     }
@@ -76,7 +70,7 @@ export function ContentTypeSelector({
     }
   }, [isOpen]);
 
-  const handleButtonClick = () => {
+  const handleClick = () => {
     setIsOpen(!isOpen);
   };
 
@@ -85,10 +79,20 @@ export function ContentTypeSelector({
     setIsOpen(false);
   };
 
+  // Handle keyboard accessibility
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      setIsOpen(!isOpen);
+    } else if (e.key === 'Escape') {
+      setIsOpen(false);
+    }
+  };
+
   // Portal dropdown content - only render when positioned
   const dropdownContent = (isOpen && isPositioned) ? createPortal(
     <div 
-      className="fixed w-48 rounded-md shadow-lg bg-slate-800/95 backdrop-blur-md ring-1 ring-black ring-opacity-5 focus:outline-none"
+      className="fixed min-w-[160px] rounded-lg shadow-xl bg-slate-900/95 backdrop-blur-md border border-slate-700/50"
       style={{ 
         top: dropdownPosition.top, 
         left: dropdownPosition.left,
@@ -98,7 +102,7 @@ export function ContentTypeSelector({
         e.stopPropagation();
       }}
     >
-      <div className="py-1" role="menu" aria-orientation="vertical">
+      <div className="py-2" role="menu" aria-orientation="vertical">
         {(Object.keys(CONTENT_TYPE_LABELS) as ContentType[]).map((contentType) => (
           <button
             key={contentType}
@@ -112,14 +116,13 @@ export function ContentTypeSelector({
             className={`${
               currentContentType === contentType
                 ? 'bg-slate-700/70 text-white'
-                : 'text-gray-300 hover:bg-slate-700/50 hover:text-white'
-            } group flex w-full items-center px-4 py-2 text-sm transition-colors duration-150`}
+                : 'text-gray-300 hover:bg-slate-700/30 hover:text-white'
+            } group flex w-full items-center px-4 py-3 text-left transition-colors duration-150 text-4xl font-serif font-bold tracking-wider`}
             role="menuitem"
           >
-            <span className="mr-3">{CONTENT_TYPE_EMOJIS[contentType]}</span>
-            <span className="flex-1 text-left">{CONTENT_TYPE_LABELS[contentType]} Pantheon</span>
+            <span className="flex-1">{CONTENT_TYPE_LABELS[contentType]}</span>
             {currentContentType === contentType && (
-              <span className="ml-2 text-xs text-slate-400">•</span>
+              <span className="ml-3 text-sm text-slate-400">•</span>
             )}
           </button>
         ))}
@@ -129,19 +132,20 @@ export function ContentTypeSelector({
   ) : null;
 
   return (
-    <div className={`relative inline-block text-left ${className}`}>
-      <button
+    <div className={`relative inline-block ${className}`}>
+      <span
         ref={buttonRef}
-        type="button"
-        onClick={handleButtonClick}
-        className="inline-flex items-center justify-center w-full rounded-md border border-slate-600 bg-slate-800/70 backdrop-blur-sm px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-slate-700/70 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-all duration-200"
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+        className="text-5xl font-serif font-bold tracking-wider text-white hover:text-gray-200 transition-colors duration-200 cursor-pointer inline-flex items-center"
+        tabIndex={0}
+        role="button"
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
-        <span className="mr-2">{CONTENT_TYPE_EMOJIS[currentContentType]}</span>
-        {CONTENT_TYPE_LABELS[currentContentType]}
-        <ChevronDown className={`ml-2 -mr-1 h-4 w-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
-      </button>
+        <ChevronDown className={`mr-0 h-4 w-4 transition-all duration-200 opacity-70 hover:opacity-100 ${isOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
+        <span className="pr-1">{CONTENT_TYPE_LABELS[currentContentType]}</span>
+      </span>
 
       {dropdownContent}
     </div>
