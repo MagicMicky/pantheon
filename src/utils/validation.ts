@@ -1,5 +1,7 @@
-import { Game, CategoryID } from '../types';
-import { ValidatedGame, GameFormData, GameFormErrors } from '../types/enhanced';
+import { Game, Movie, TVShow, Content, CategoryID } from '../types';
+import { ValidatedGame, ContentFormData, ContentFormErrors } from '../types/enhanced';
+import { MOVIE_GENRES } from '../data/movies/movieGenres';
+import { TVSHOW_GENRES } from '../data/tvshows/tvShowGenres';
 
 // Result type for operations that can fail
 export type Result<T, E = string> = 
@@ -88,8 +90,8 @@ export const validateCategory = (category: CategoryID): Result<CategoryID> => {
 };
 
 // Comprehensive game validation
-export const validateGame = (game: Partial<Game>): Result<ValidatedGame, GameFormErrors> => {
-  const errors: GameFormErrors = {};
+export const validateGame = (game: Partial<Game>): Result<ValidatedGame, ContentFormErrors> => {
+  const errors: ContentFormErrors = {};
   
   // Validate ID
   if (!game.id?.trim()) {
@@ -135,14 +137,15 @@ export const validateGame = (game: Partial<Game>): Result<ValidatedGame, GameFor
       genre: (genreResult as { success: true; data: string }).data,
       year: (yearResult as { success: true; data: number }).data,
       category: (categoryResult as { success: true; data: CategoryID }).data,
+      contentType: 'games' as const,
       mythologicalFigureId: game.mythologicalFigureId
     }
   };
 };
 
 // Form validation
-export const validateGameForm = (formData: Partial<GameFormData>): GameFormErrors => {
-  const errors: GameFormErrors = {};
+export const validateGameForm = (formData: Partial<ContentFormData>): ContentFormErrors => {
+  const errors: ContentFormErrors = {};
   
   if (formData.title !== undefined) {
     const titleResult = validateTitle(formData.title);
@@ -176,9 +179,9 @@ export const validateGameForm = (formData: Partial<GameFormData>): GameFormError
 };
 
 // Batch validation
-export const validateGames = (games: Partial<Game>[]): Result<ValidatedGame[], Array<{ index: number; errors: GameFormErrors }>> => {
+export const validateGames = (games: Partial<Game>[]): Result<ValidatedGame[], Array<{ index: number; errors: ContentFormErrors }>> => {
   const validGames: ValidatedGame[] = [];
-  const validationErrors: Array<{ index: number; errors: GameFormErrors }> = [];
+  const validationErrors: Array<{ index: number; errors: ContentFormErrors }> = [];
   
   games.forEach((game, index) => {
     const result = validateGame(game);
@@ -206,4 +209,28 @@ export const isValidGame = (game: any): game is ValidatedGame => {
 export const toValidatedGame = (game: Partial<Game>): ValidatedGame | null => {
   const result = validateGame(game);
   return result.success ? result.data : null;
-}; 
+};
+
+// Content-specific genre validation
+export function validateGenres(content: Content): boolean {
+  switch (content.contentType) {
+    case 'games':
+      // Games have free-form string genres, so always valid if not empty
+      return Boolean((content as Game).genre?.trim());
+    
+    case 'movies':
+      const movieGenres = (content as Movie).genre;
+      return Array.isArray(movieGenres) && 
+             movieGenres.length > 0 && 
+             movieGenres.every(genre => MOVIE_GENRES.includes(genre as any));
+    
+    case 'tvshows':
+      const tvGenres = (content as TVShow).genre;
+      return Array.isArray(tvGenres) && 
+             tvGenres.length > 0 && 
+             tvGenres.every(genre => TVSHOW_GENRES.includes(genre as any));
+    
+    default:
+      return false;
+  }
+} 

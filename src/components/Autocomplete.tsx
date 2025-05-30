@@ -3,14 +3,21 @@ import { AutocompleteProps } from '../types';
 import { wikiSuggestions } from '../utils/wikipediaHelpers';
 import { Input } from './ui/Inputs';
 
-export const Autocomplete = ({ value, onChange, onSelect, inputClass = "", placeholder = "Title" }: AutocompleteProps) => {
+export const Autocomplete = ({ 
+  value, 
+  onChange, 
+  onSelect, 
+  inputClass = "", 
+  placeholder = "Title",
+  contentType 
+}: AutocompleteProps) => {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [picked, setPicked] = useState<string>("");
   const [focused, setFocused] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  // Fetch suggestions when input changes
+  // Fetch suggestions when input changes - use the original working function
   useEffect(() => {
     if (!focused) return;
     
@@ -19,6 +26,7 @@ export const Autocomplete = ({ value, onChange, onSelect, inputClass = "", place
         return setSuggestions([]);
       }
       
+      // Use the original working Wikipedia suggestions (no content-specific prefixes)
       const results = await wikiSuggestions(value);
       setSuggestions(results);
       setActiveIndex(-1);

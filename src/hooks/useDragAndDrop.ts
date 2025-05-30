@@ -14,7 +14,7 @@ import {
   insertGameAtPosition, 
   createGameFromSteam, 
   updateGameCategory 
-} from '../utils/gameHelpers';
+} from '../utils/contentHelpers';
 
 interface DropIndicator {
   gameId: string;
@@ -96,7 +96,8 @@ export function useDragAndDrop(
               if (g.id === newGame.id) {
                 return {
                   ...g,
-                  genre: g.genre === "Unknown" && additionalInfo.genre ? additionalInfo.genre : g.genre,
+                  genre: g.genre === "Unknown" && additionalInfo.genre ? 
+                    (Array.isArray(additionalInfo.genre) ? additionalInfo.genre[0] : additionalInfo.genre) : g.genre,
                   year: (!g.year || g.year === new Date().getFullYear()) && additionalInfo.year ? additionalInfo.year : g.year
                 };
               }
@@ -153,7 +154,8 @@ export function useDragAndDrop(
               if (g.id === newGame.id) {
                 return {
                   ...g,
-                  genre: g.genre === "Unknown" && additionalInfo.genre ? additionalInfo.genre : g.genre,
+                  genre: g.genre === "Unknown" && additionalInfo.genre ? 
+                    (Array.isArray(additionalInfo.genre) ? additionalInfo.genre[0] : additionalInfo.genre) : g.genre,
                   year: (!g.year || g.year === new Date().getFullYear()) && additionalInfo.year ? additionalInfo.year : g.year
                 };
               }
@@ -183,7 +185,7 @@ export function useDragAndDrop(
       // Moving to a different category
       const updatedGame = updateGameCategory(draggedGame, targetCategory);
       const gamesWithoutDragged = games.filter(g => g.id !== draggedGameId);
-      const newGames = insertGameAtPosition(gamesWithoutDragged, updatedGame, targetGameId, position, targetCategory);
+      const newGames = insertGameAtPosition(games, updatedGame, targetGameId, position, targetCategory);
       setGames(newGames);
       
       // Remove all drag highlights

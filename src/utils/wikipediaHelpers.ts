@@ -51,26 +51,9 @@ export async function wikiSuggestions(q: string): Promise<string[]> {
 }
 
 /**
- * Extract genre from Wikipedia infobox
+ * Get content info from Wikipedia - now supports all content types
  */
-export function extractGenreFromInfobox(html: string): string | undefined {
-  try {
-    const doc = new DOMParser().parseFromString(html, "text/html");
-    for (const tr of doc.querySelectorAll("table.infobox tr")) {
-      const th = tr.querySelector("th");
-      if (th && /Genre/i.test(th.textContent || "")) {
-        const td = tr.querySelector("td");
-        if (td) return td.textContent?.split(/•|,|\||\//)[0].trim();
-      }
-    }
-  } catch {}
-  return undefined;
-}
-
-/**
- * Get game info from Wikipedia
- */
-export async function wikipediaInfo(t: string): Promise<{ genre?: string; year?: number }> {
+export async function wikipediaInfo(t: string): Promise<{ genre?: string | string[]; year?: number; director?: string; runtime?: number; seasons?: number; status?: string }> {
   try {
     const [sum, html] = await Promise.all([
       fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(t)}`),
@@ -80,26 +63,83 @@ export async function wikipediaInfo(t: string): Promise<{ genre?: string; year?:
     if (!sum.ok) return {};
     
     const extract = (await sum.json()).extract ?? "";
-    let genre;
+    let result: any = {};
     
-    if (html.ok) 
-      genre = extractGenreFromInfobox(await html.text());
-      
-    if (!genre) {
+    // Extract year from text
+    const yearMatch = extract.match(/(19|20)\d{2}/);
+    if (yearMatch) {
+      result.year = +yearMatch[0];
+    }
+    
+    // Try to extract from infobox first
+    if (html.ok) {
+      const htmlContent = await html.text();
+      const infoboxData = extractFromInfobox(htmlContent);
+      result = { ...result, ...infoboxData };
+    }
+    
+    // If no genre found in infobox, try text-based extraction
+    if (!result.genre) {
       for (const [r, l] of GENRE_KEYWORDS) {
         if (r.test(extract)) {
-          genre = l;
+          result.genre = l;
           break;
         }
       }
     }
     
-    const y = extract.match(/(19|20)\d{2}/);
+    return result;
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Enhanced infobox extraction that handles multiple content types
+ */
+function extractFromInfobox(html: string): any {
+  try {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const result: any = {};
     
-    return { 
-      genre, 
-      year: y ? +y[0] : undefined 
-    };
+    for (const tr of doc.querySelectorAll("table.infobox tr")) {
+      const th = tr.querySelector("th");
+      const td = tr.querySelector("td");
+      
+      if (!th || !td) continue;
+      
+      const label = th.textContent?.toLowerCase() || "";
+      const value = td.textContent?.trim() || "";
+      
+      if (label.includes('genre')) {
+        // Check if this looks like a movie/TV show (multiple genres) or game (single genre)
+        const genres = value.split(/[,•|\/]/).map(g => g.trim()).filter(Boolean);
+        if (genres.length > 1) {
+          result.genre = genres; // Movies/TV shows get array
+        } else {
+          result.genre = genres[0] || value; // Games get string
+        }
+      } else if (label.includes('director')) {
+        result.director = value.split(',')[0].trim(); // First director if multiple
+      } else if (label.includes('running time') || label.includes('runtime')) {
+        const minutes = value.match(/\d+/);
+        if (minutes) result.runtime = +minutes[0];
+      } else if (label.includes('seasons') || label.includes('no. of seasons')) {
+        const seasons = value.match(/\d+/);
+        if (seasons) result.seasons = +seasons[0];
+      } else if (label.includes('status') || label.includes('original run')) {
+        if (value.toLowerCase().includes('present') || value.toLowerCase().includes('ongoing')) {
+          result.status = 'ongoing';
+        } else if (value.toLowerCase().includes('ended') || value.toLowerCase().includes('concluded')) {
+          result.status = 'ended';
+        } else if (value.toLowerCase().includes('cancelled')) {
+          result.status = 'cancelled';
+        }
+      }
+    }
+    
+    return result;
+    
   } catch {
     return {};
   }

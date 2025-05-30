@@ -8,7 +8,7 @@ import { Autocomplete } from './Autocomplete';
 import { Input } from './ui/Inputs';
 import { Button, IconBtn } from './ui/Buttons';
 import { DeityBadge, DeityPopup } from './DeityComponents';
-import { supportsDieties } from '../utils/gameHelpers';
+import { supportsDieties } from '../utils/contentHelpers';
 
 interface GameEditFormProps {
   game: Game;

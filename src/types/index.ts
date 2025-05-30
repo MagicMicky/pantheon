@@ -1,18 +1,48 @@
-// Type definitions for the Game Pantheon
+// Type definitions for the Multi-Content Pantheon
 export type CategoryID = "olympian"|"titan"|"demigod"|"muse"|"hero"|"other";
+export type ContentType = 'games' | 'movies' | 'tvshows';
 
-export interface Game { 
+// Base interface for all content types
+export interface BaseContent {
   id: string; 
   title: string; 
-  genre: string; 
   year: number; 
   category: CategoryID; 
+  contentType: ContentType;
   mythologicalFigureId?: string; 
   sharedTitle?: string;
+}
+
+// Game-specific content interface
+export interface Game extends BaseContent { 
+  contentType: 'games';
+  genre: string; 
   // Steam-related properties
   steamAppId?: string;
   steamHoursPlayed?: number;
 }
+
+// Movie-specific content interface
+export interface Movie extends BaseContent {
+  contentType: 'movies';
+  genre: string[]; // Movies can have multiple genres
+  director?: string;
+  runtime?: number; // Runtime in minutes
+  imdbId?: string;
+}
+
+// TV Show-specific content interface
+export interface TVShow extends BaseContent {
+  contentType: 'tvshows';
+  genre: string[]; // TV shows can have multiple genres
+  seasons?: number;
+  episodes?: number;
+  status?: 'ongoing' | 'ended' | 'cancelled';
+  tmdbId?: string;
+}
+
+// Union type for all content
+export type Content = Game | Movie | TVShow;
 
 // Define mythological figure interface
 export interface MythologicalFigure {
@@ -58,6 +88,7 @@ export interface AutocompleteProps {
   onSelect: (v: string) => void;
   inputClass?: string;
   placeholder?: string;
+  contentType?: ContentType; // Optional content type for content-specific suggestions
 }
 
 export interface DeitySelectorProps {
