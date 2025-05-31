@@ -70,6 +70,7 @@ const GameCategory = memo(function GameCategory({
     <Card 
       key={categoryId} 
       category={categoryId}
+      data-category={categoryId}
       onDragOver={!isSharedView ? (e: React.DragEvent<HTMLDivElement>) => onDragOver(e, categoryId) : undefined} 
       onDragLeave={!isSharedView ? onDragLeave : undefined}
       onDragEnter={!isSharedView ? onDragEnter : undefined}
