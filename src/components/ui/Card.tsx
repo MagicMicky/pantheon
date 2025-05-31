@@ -18,7 +18,7 @@ export const Card = ({ children, category = "other", ...p }: any) => {
 export const CardHeader = ({ children, category = "other" }: any) => {
   const colors = CATEGORY_COLORS[category as CategoryID];
   return (
-    <div className={`flex items-center gap-3 p-5 pb-3 border-b ${colors.border} bg-gradient-to-r ${colors.gradient}`}>
+    <div className={`flex items-center gap-2 md:gap-3 p-3 md:p-5 pb-2 md:pb-3 border-b ${colors.border} bg-gradient-to-r ${colors.gradient}`}>
       {children}
     </div>
   );
@@ -26,10 +26,10 @@ export const CardHeader = ({ children, category = "other" }: any) => {
 
 // CardTitle component
 export const CardTitle = ({ children }: any) => {
-  return <h2 className={`text-xl font-serif font-bold leading-tight tracking-wide text-white`}>{children}</h2>;
+  return <h2 className={`text-lg md:text-xl font-serif font-bold leading-tight tracking-wide text-white`}>{children}</h2>;
 };
 
 // CardContent component
 export const CardContent = ({ children, ...p }: any) => (
-  <div {...p} className="p-5 pt-4 grow flex flex-col gap-3">{children}</div>
+  <div {...p} className="p-3 md:p-5 pt-3 md:pt-4 grow flex flex-col gap-2 md:gap-3">{children}</div>
 ); 

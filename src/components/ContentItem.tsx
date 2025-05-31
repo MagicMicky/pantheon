@@ -146,12 +146,12 @@ const ContentItem = memo(function ContentItem({
         <div className="flex justify-between items-center">
           <span className="text-gray-400 text-xs">{getContentDisplayText(content)}</span>
           {!isSharedView && (
-            <div className="flex gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity duration-200">
+            <div className="flex gap-1 opacity-100 md:opacity-0 md:group-hover/item:opacity-100 transition-opacity duration-200">
               <IconBtn title="Edit" onClick={() => onEdit(content.id)}>
-                <Pen className="w-3 h-3" strokeWidth={1.5}/>
+                <Pen className="w-3 h-3 md:w-3 md:h-3" strokeWidth={1.5}/>
               </IconBtn>
               <IconBtn title="Delete" onClick={() => onDelete(content.id)}>
-                <X className="w-3 h-3" strokeWidth={1.5}/>
+                <X className="w-3 h-3 md:w-3 md:h-3" strokeWidth={1.5}/>
               </IconBtn>
             </div>
           )}

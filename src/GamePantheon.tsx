@@ -614,7 +614,7 @@ export default function GamePantheon() {
       
       {/* Add Form - only show if not in shared view */}
       {!isSharedView && (
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mx-auto max-w-4xl mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 mx-auto max-w-6xl mb-8 md:mb-12 px-2 md:px-0">
           <AddContentForm
             newContent={newContent}
             content={displayContent}
