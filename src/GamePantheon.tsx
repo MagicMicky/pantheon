@@ -528,8 +528,8 @@ export default function GamePantheon() {
 
   // Return JSX
   return (
-    <div className="p-8 bg-gradient-to-br from-slate-950 to-gray-900 min-h-screen select-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] font-sans">
-      <header className="text-center mb-10 relative">
+    <div className="p-4 md:p-8 bg-gradient-to-br from-slate-950 to-gray-900 min-h-screen select-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] font-sans">
+      <header className="text-center mb-8 md:mb-10 relative">
         {/* Mobile: Stack vertically, Desktop: Horizontal layout */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-center gap-2 md:gap-4 mb-1">
           {/* Title line - responsive layout */}
@@ -636,7 +636,7 @@ export default function GamePantheon() {
         </div>
       )}
 
-      <div className="grid gap-6" style={{gridTemplateColumns:"repeat(auto-fill,minmax(320px,1fr))"}}>
+      <div className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         {Object.entries(CATEGORIES).map(([categoryId]) => (
           <GameCategory
             key={categoryId}
