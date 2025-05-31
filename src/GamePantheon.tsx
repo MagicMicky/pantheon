@@ -530,41 +530,49 @@ export default function GamePantheon() {
   return (
     <div className="p-8 bg-gradient-to-br from-slate-950 to-gray-900 min-h-screen select-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] font-sans">
       <header className="text-center mb-10 relative">
-        <div className="flex items-center justify-center gap-4 mb-1">
-          <h1 className="text-5xl font-serif font-bold tracking-wider text-white">
-            <span className="inline-block mr-2 transform translate-y-1">🏛️</span> 
-            The 
-          </h1>
-          {!isSharedView ? (
-            <ContentTypeSelector 
-              currentContentType={currentContentType}
-              onContentTypeChange={switchContentType}
-            />
-          ) : (
-            <span className="text-5xl font-serif font-bold tracking-wider text-white transform translate-y-1">
-              {currentContentType === 'games' && 'Game'}
-              {currentContentType === 'movies' && 'Movie'}
-              {currentContentType === 'tvshows' && 'TV Show'}
-            </span>
-          )}
-          <h1 className="text-5xl font-serif font-bold tracking-wider text-white">
-            Pantheon
-          </h1>
+        {/* Mobile: Stack vertically, Desktop: Horizontal layout */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-center gap-2 md:gap-4 mb-1">
+          {/* Title line - responsive layout */}
+          <div className="flex items-center justify-center gap-2 md:gap-4">
+            <h1 className="text-3xl md:text-5xl font-serif font-bold tracking-wider text-white">
+              <span className="inline-block mr-1 md:mr-2 transform translate-y-1">🏛️</span> 
+              The 
+            </h1>
+            {!isSharedView ? (
+              <ContentTypeSelector 
+                currentContentType={currentContentType}
+                onContentTypeChange={switchContentType}
+              />
+            ) : (
+              <span className="text-3xl md:text-5xl font-serif font-bold tracking-wider text-white transform translate-y-1">
+                {currentContentType === 'games' && 'Game'}
+                {currentContentType === 'movies' && 'Movie'}
+                {currentContentType === 'tvshows' && 'TV Show'}
+              </span>
+            )}
+            <h1 className="text-3xl md:text-5xl font-serif font-bold tracking-wider text-white">
+              Pantheon
+            </h1>
+          </div>
         </div>
-        <p className="text-gray-400 text-sm tracking-wide mt-2 italic">
+        
+        {/* Subtitle */}
+        <p className="text-gray-400 text-xs md:text-sm tracking-wide mt-2 italic px-4 md:px-0">
           {currentContentType === 'games' && "Curate your personal collection of gaming greatness"}
           {currentContentType === 'movies' && "Curate your personal collection of cinematic masterpieces"}
           {currentContentType === 'tvshows' && "Curate your personal collection of television excellence"}
         </p>
         
-        {/* Data management and share buttons */}
-        <HeaderControls
-          isSharedView={isSharedView}
-          onShare={generateShareLink}
-          onExport={exportData}
-          onImport={importData}
-          onOpenHistory={openHistoryModal}
-        />
+        {/* Data management and share buttons - mobile: below title, desktop: absolute positioned */}
+        <div className="mt-4 md:mt-0 md:absolute md:right-0 md:top-0">
+          <HeaderControls
+            isSharedView={isSharedView}
+            onShare={generateShareLink}
+            onExport={exportData}
+            onImport={importData}
+            onOpenHistory={openHistoryModal}
+          />
+        </div>
         
         {/* Shared view banner */}
         {isSharedView && (
