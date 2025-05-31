@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 /**
  * Sets a meta tag in the document head
  */
-function setMetaTag(nameOrProperty: string, content: string, isProperty: boolean = false): void {
+function setMetaTag(nameOrProperty: string, content: string, isProperty = false): void {
   let element = document.querySelector(
     isProperty ? `meta[property="${nameOrProperty}"]` : `meta[name="${nameOrProperty}"]`
   );
@@ -87,7 +87,23 @@ export function useMetaTags(config: MetaTagsConfig): void {
 /**
  * Sets default meta tags for the application
  */
-export function setDefaultMetaTags(): void {
-  setMetaTag("og:type", "website", true);
-  setMetaTag("twitter:card", "summary_large_image");
+export function setDefaultMetaTags() {
+  const defaultMeta = {
+    'og:type': 'website',
+    'twitter:card': 'summary_large_image'
+  };
+  
+  Object.entries(defaultMeta).forEach(([property, content]) => {
+    const existingMeta = document.querySelector(`meta[property="${property}"], meta[name="${property}"]`);
+    if (!existingMeta) {
+      const metaTag = document.createElement('meta');
+      if (property.startsWith('twitter:')) {
+        metaTag.setAttribute('name', property);
+      } else {
+        metaTag.setAttribute('property', property);
+      }
+      metaTag.setAttribute('content', content);
+      document.head.appendChild(metaTag);
+    }
+  });
 } 

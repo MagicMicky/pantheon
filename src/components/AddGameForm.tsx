@@ -1,12 +1,12 @@
-import React, { memo } from 'react';
-import { Game, CategoryID } from '../types';
 import { Plus } from 'lucide-react';
+import { memo } from 'react';
 import { CATEGORIES } from '../data/categories';
+import { CategoryID, Game } from '../types';
+import { getUsedDeityIds, supportsDieties } from '../utils/contentHelpers';
 import { Autocomplete } from './Autocomplete';
-import { Input, Select } from './ui/Inputs';
-import { Button } from './ui/Buttons';
 import { DeitySelector } from './DeityComponents';
-import { supportsDieties, getUsedDeityIds } from '../utils/contentHelpers';
+import { Button } from './ui/Buttons';
+import { Input, Select } from './ui/Inputs';
 
 interface AddGameFormProps {
   newGame: Partial<Game>;
@@ -33,13 +33,15 @@ const AddGameForm = memo(function AddGameForm({
           value={newGame.title??""} 
           onChange={v => onNewGameChange({...newGame, title: v})} 
           onSelect={async v => {
-            const { wikipediaInfo } = await import('../utils/wikipediaHelpers');
-            const info = await wikipediaInfo(v);
-            // For games, ensure genre is a string (not array)
-            const gameInfo = {
-              ...info,
-              genre: Array.isArray(info.genre) ? info.genre[0] : info.genre
-            };
+            const info = await import('../utils/wikipediaHelpers').then(m => m.wikipediaInfo(v));
+            const gameInfo: Partial<Game> = {};
+            
+            // Only add genre if it's a valid string
+            const genre = Array.isArray(info.genre) ? info.genre[0] : info.genre;
+            if (genre && typeof genre === 'string') {
+              gameInfo.genre = genre;
+            }
+            
             onNewGameChange({...newGame, title: v, ...gameInfo});
           }}
         />

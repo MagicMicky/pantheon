@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useReducer, ReactNode, useEffect, useRef, useState, useMemo } from 'react';
-import { Content, Game, Movie, TVShow, CategoryID, ContentType } from '../types';
-import { uid } from '../utils/helpers';
+import { createContext, ReactNode, useContext, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { CategoryID, Content, ContentType, Game, Movie, TVShow } from '../types';
 import { updateContentCategory } from '../utils/contentHelpers';
+import { uid } from '../utils/helpers';
 import { localStateManager } from '../utils/localStateManager';
 
 // Action types
@@ -12,7 +12,7 @@ type PantheonAction =
   | { type: 'DELETE_CONTENT'; payload: string; contentType: ContentType }
   | { type: 'MOVE_CONTENT'; payload: { id: string; newCategory: CategoryID }; contentType: ContentType }
   | { type: 'REORDER_CONTENT'; payload: Content[]; contentType: ContentType }
-  | { type: 'UPDATE_DEITY'; payload: { contentId: string; deityId?: string }; contentType: ContentType }
+  | { type: 'UPDATE_DEITY'; payload: { contentId: string; deityId: string | undefined }; contentType: ContentType }
   | { type: 'SWITCH_CONTENT_TYPE'; payload: ContentType }
   | { type: 'RESET_TO_DEFAULT'; contentType: ContentType };
 
@@ -69,19 +69,21 @@ const getDefaultContent = (contentType: ContentType): Content[] => {
 // Reducer
 function pantheonReducer(state: PantheonState, action: PantheonAction): PantheonState {
   switch (action.type) {
-    case 'SET_CONTENT':
+    case 'SET_CONTENT': {
       const setKey = `${action.contentType}Content` as keyof PantheonState;
       return { ...state, [setKey]: action.payload };
+    }
     
-    case 'ADD_CONTENT':
+    case 'ADD_CONTENT': {
       const addKey = `${action.contentType}Content` as keyof PantheonState;
       const currentAddContent = state[addKey] as Content[];
       return { 
         ...state, 
         [addKey]: [...currentAddContent, { ...action.payload, id: uid() }] 
       };
+    }
     
-    case 'UPDATE_CONTENT':
+    case 'UPDATE_CONTENT': {
       const updateKey = `${action.contentType}Content` as keyof PantheonState;
       const currentUpdateContent = state[updateKey] as Content[];
       return {
@@ -92,16 +94,18 @@ function pantheonReducer(state: PantheonState, action: PantheonAction): Pantheon
             : content
         )
       };
+    }
     
-    case 'DELETE_CONTENT':
+    case 'DELETE_CONTENT': {
       const deleteKey = `${action.contentType}Content` as keyof PantheonState;
       const currentDeleteContent = state[deleteKey] as Content[];
       return {
         ...state,
         [deleteKey]: currentDeleteContent.filter(content => content.id !== action.payload)
       };
+    }
     
-    case 'MOVE_CONTENT':
+    case 'MOVE_CONTENT': {
       const moveKey = `${action.contentType}Content` as keyof PantheonState;
       const currentMoveContent = state[moveKey] as Content[];
       return {
@@ -112,12 +116,14 @@ function pantheonReducer(state: PantheonState, action: PantheonAction): Pantheon
             : content
         )
       };
+    }
     
-    case 'REORDER_CONTENT':
+    case 'REORDER_CONTENT': {
       const reorderKey = `${action.contentType}Content` as keyof PantheonState;
       return { ...state, [reorderKey]: action.payload };
+    }
     
-    case 'UPDATE_DEITY':
+    case 'UPDATE_DEITY': {
       const deityKey = `${action.contentType}Content` as keyof PantheonState;
       const currentDeityContent = state[deityKey] as Content[];
       return {
@@ -128,17 +134,19 @@ function pantheonReducer(state: PantheonState, action: PantheonAction): Pantheon
             : content
         )
       };
+    }
     
     case 'SWITCH_CONTENT_TYPE':
       return { ...state, currentContentType: action.payload };
     
-    case 'RESET_TO_DEFAULT':
+    case 'RESET_TO_DEFAULT': {
       const resetKey = `${action.contentType}Content` as keyof PantheonState;
       const defaultContent = getDefaultContent(action.contentType);
       return { 
         ...state, 
         [resetKey]: defaultContent
       };
+    }
     
     default:
       return state;
@@ -217,6 +225,8 @@ export function PantheonProvider({
           
           return () => clearTimeout(timeoutId);
         }
+        
+        return undefined;
       };
 
       // Save each content type separately with debouncing
@@ -231,6 +241,8 @@ export function PantheonProvider({
         cleanupTVShows?.();
       };
     }
+    
+    return undefined;
   }, [state.gamesContent, state.moviesContent, state.tvshowsContent, isSharedView]);
 
   // Action creators

@@ -1,38 +1,31 @@
-import React, { useState, useEffect, useRef } from "react";
-import { 
-  Share2, Copy, ArrowLeft, Download, Upload, History
-} from "lucide-react";
+import React, { useEffect, useState } from "react";
 
 // Import types
-import { Game, Content, Movie, TVShow, CategoryID, ContentType } from "./types";
+import { CategoryID, Content, ContentType, Game, Movie, TVShow } from "./types";
 
 // Import components
-import { Button, IconBtn } from "./components/ui/Buttons";
-import { Confirm } from "./components/ui/Confirm";
-import { SteamGamesImport } from "./components/SteamGamesImport";
-import { ShareModal, HistoryModal } from "./components/modals";
-import { SharedViewBanner, HeaderControls, SharedViewCTA } from "./components/shared";
+import AddContentForm from "./components/AddContentForm";
 import { ContentTypeSelector } from "./components/ContentTypeSelector";
 import GameCategory from "./components/GameCategory";
-import GameItem from "./components/GameItem";
-import GameEditForm from "./components/GameEditForm";
-import AddContentForm from "./components/AddContentForm";
+import { SteamGamesImport } from "./components/SteamGamesImport";
+import { HistoryModal, ShareModal } from "./components/modals";
+import { HeaderControls, SharedViewBanner, SharedViewCTA } from "./components/shared";
+import { Confirm } from "./components/ui/Confirm";
 
 // Import data
-import { CATEGORIES, CATEGORY_COLORS } from "./data/categories";
+import { CATEGORIES } from "./data/categories";
 
 // Import utilities
-import { uid, encodeGameData, decodeGameData, decodeContentData } from "./utils/helpers";
-import { wikipediaInfo } from "./utils/wikipediaHelpers";
+import { decodeContentData, decodeGameData } from "./utils/helpers";
 import { localStateManager } from "./utils/localStateManager";
-import { removeShareParams, getShareParams } from "./utils/urlHelpers";
-import { supportsDieties, getUsedDeityIds } from "./utils/contentHelpers";
+import { getShareParams, removeShareParams } from "./utils/urlHelpers";
+import { wikipediaInfo } from "./utils/wikipediaHelpers";
 
 // Import hooks
-import { useShareFeature } from "./hooks/useShareFeature";
-import { useMetaTags, setDefaultMetaTags } from "./hooks/useMetaTags";
-import { useModalState, useConfirmationModal } from "./hooks/useModalState";
 import { useContentDragAndDrop } from "./hooks/useContentDragAndDrop";
+import { setDefaultMetaTags, useMetaTags } from "./hooks/useMetaTags";
+import { useConfirmationModal, useModalState } from "./hooks/useModalState";
+import { useShareFeature } from "./hooks/useShareFeature";
 
 // Import context
 import { usePantheonContext } from "./contexts/PantheonContext";
@@ -56,13 +49,10 @@ export default function GamePantheon() {
     addContent,
     updateContent,
     deleteContent,
-    moveContent,
-    reorderContent,
     updateDeity: updateContentDeity,
     setContent,
     resetToDefault,
     // Legacy compatibility for games
-    games,
     setGames
   } = usePantheonContext();
   
@@ -99,7 +89,6 @@ export default function GamePantheon() {
     removeDragHighlightHandler,
     setDropIndicator
   } = useContentDragAndDrop(
-    displayContent,
     (newContent) => {
       if (currentContentType === 'games') {
         // Legacy compatibility for games
@@ -129,9 +118,6 @@ export default function GamePantheon() {
   
   // Add a new state for inline deity editing
   const [inlineDeityEdit, setInlineDeityEdit] = useState<string | null>(null);
-  
-  // Add a ref to track if this is first render
-  const isInitialMount = useRef(true);
   
   // Prepare meta tags configuration
   const [metaTagsConfig, setMetaTagsConfig] = useState<{
@@ -643,7 +629,7 @@ export default function GamePantheon() {
       )}
 
       <div className="grid gap-6" style={{gridTemplateColumns:"repeat(auto-fill,minmax(320px,1fr))"}}>
-        {Object.entries(CATEGORIES).map(([categoryId, meta]) => (
+        {Object.entries(CATEGORIES).map(([categoryId]) => (
           <GameCategory
             key={categoryId}
             categoryId={categoryId as CategoryID}

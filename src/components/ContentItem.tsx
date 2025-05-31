@@ -1,13 +1,13 @@
-import React, { memo } from 'react';
-import { Content, Game, Movie, TVShow, CategoryID } from '../types';
 import { GripVertical, Pen, X } from 'lucide-react';
-import { getGenreIcon } from '../utils/helpers';
-import { GENRE_ICON_MAPPING } from '../data/genreIcons';
+import React, { memo } from 'react';
 import { CATEGORY_COLORS } from '../data/categories';
+import { GENRE_ICON_MAPPING } from '../data/genreIcons';
+import { CategoryID, Content, Game, Movie, TVShow } from '../types';
+import { getContentDisplayText, supportsDieties } from '../utils/contentHelpers';
+import { calculateDropPosition } from '../utils/dragHelpers';
+import { getGenreIcon } from '../utils/helpers';
 import { DeityBadge, DeityPopup } from './DeityComponents';
 import { IconBtn } from './ui/Buttons';
-import { supportsDieties, getContentDisplayText } from '../utils/contentHelpers';
-import { calculateDropPosition } from '../utils/dragHelpers';
 
 interface ContentItemProps {
   content: Content;
@@ -53,12 +53,14 @@ const ContentItem = memo(function ContentItem({
     switch (content.contentType) {
       case 'games':
         return (content as Game).genre;
-      case 'movies':
+      case 'movies': {
         const movieGenres = (content as Movie).genre;
         return Array.isArray(movieGenres) ? movieGenres[0] || 'Unknown' : 'Unknown';
-      case 'tvshows':
+      }
+      case 'tvshows': {
         const tvGenres = (content as TVShow).genre;
         return Array.isArray(tvGenres) ? tvGenres[0] || 'Unknown' : 'Unknown';
+      }
       default:
         return 'Unknown';
     }

@@ -9,8 +9,8 @@ export interface BaseContent {
   year: number; 
   category: CategoryID; 
   contentType: ContentType;
-  mythologicalFigureId?: string; 
-  sharedTitle?: string;
+  mythologicalFigureId?: string | undefined; 
+  sharedTitle?: string | undefined;
 }
 
 // Game-specific content interface
@@ -18,27 +18,27 @@ export interface Game extends BaseContent {
   contentType: 'games';
   genre: string; 
   // Steam-related properties
-  steamAppId?: string;
-  steamHoursPlayed?: number;
+  steamAppId?: string | undefined;
+  steamHoursPlayed?: number | undefined;
 }
 
 // Movie-specific content interface
 export interface Movie extends BaseContent {
   contentType: 'movies';
   genre: string[]; // Movies can have multiple genres
-  director?: string;
-  runtime?: number; // Runtime in minutes
-  imdbId?: string;
+  director?: string | undefined;
+  runtime?: number | undefined; // Runtime in minutes
+  imdbId?: string | undefined;
 }
 
 // TV Show-specific content interface
 export interface TVShow extends BaseContent {
   contentType: 'tvshows';
   genre: string[]; // TV shows can have multiple genres
-  seasons?: number;
-  episodes?: number;
-  status?: 'ongoing' | 'ended' | 'cancelled';
-  tmdbId?: string;
+  seasons?: number | undefined;
+  episodes?: number | undefined;
+  status?: 'ongoing' | 'ended' | 'cancelled' | undefined;
+  tmdbId?: string | undefined;
 }
 
 // Union type for all content
@@ -68,32 +68,32 @@ export interface CategoryColors {
 // Props for UI components
 export interface CardProps {
   children: React.ReactNode;
-  category?: CategoryID;
-  className?: string;
-  onDragOver?: (e: React.DragEvent) => void;
-  onDragLeave?: (e: React.DragEvent) => void;
-  onDragEnter?: (e: React.DragEvent) => void;
-  onDrop?: (e: React.DragEvent) => void;
+  category?: CategoryID | undefined;
+  className?: string | undefined;
+  onDragOver?: ((e: React.DragEvent) => void) | undefined;
+  onDragLeave?: ((e: React.DragEvent) => void) | undefined;
+  onDragEnter?: ((e: React.DragEvent) => void) | undefined;
+  onDrop?: ((e: React.DragEvent) => void) | undefined;
 }
 
 export interface TooltipProps {
   children: React.ReactNode;
   content: React.ReactNode;
-  position?: 'top' | 'bottom';
+  position?: 'top' | 'bottom' | undefined;
 }
 
 export interface AutocompleteProps {
   value: string;
   onChange: (v: string) => void;
   onSelect: (v: string) => void;
-  inputClass?: string;
-  placeholder?: string;
-  contentType?: ContentType; // Optional content type for content-specific suggestions
+  inputClass?: string | undefined;
+  placeholder?: string | undefined;
+  contentType?: ContentType | undefined; // Optional content type for content-specific suggestions
 }
 
 export interface DeitySelectorProps {
   tier: 'olympian' | 'titan' | 'hero';
-  selectedDeityId?: string;
+  selectedDeityId?: string | undefined;
   onChange: (id: string | undefined) => void;
-  usedDeityIds?: string[];
+  usedDeityIds?: string[] | undefined;
 } 

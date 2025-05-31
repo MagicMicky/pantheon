@@ -1,20 +1,20 @@
-import { useState, useCallback } from 'react';
-import { Game, CategoryID } from '../types';
-import { wikipediaInfo } from '../utils/wikipediaHelpers';
-import { 
-  calculateDropPosition, 
-  applyDragHighlight, 
-  removeDragHighlight, 
-  clearOtherDragHighlights,
-  createGameDragData,
-  createSteamGameDragData,
-  parseDragData
-} from '../utils/dragHelpers';
-import { 
-  insertGameAtPosition, 
-  createGameFromSteam, 
-  updateGameCategory 
+import { useCallback, useState } from 'react';
+import { CategoryID, Game } from '../types';
+import {
+    createGameFromSteam,
+    insertGameAtPosition,
+    updateGameCategory
 } from '../utils/contentHelpers';
+import {
+    applyDragHighlight,
+    calculateDropPosition,
+    clearOtherDragHighlights,
+    createGameDragData,
+    createSteamGameDragData,
+    parseDragData,
+    removeDragHighlight
+} from '../utils/dragHelpers';
+import { wikipediaInfo } from '../utils/wikipediaHelpers';
 
 interface DropIndicator {
   gameId: string;
@@ -184,7 +184,6 @@ export function useDragAndDrop(
     if (draggedGame.category !== targetCategory) {
       // Moving to a different category
       const updatedGame = updateGameCategory(draggedGame, targetCategory);
-      const gamesWithoutDragged = games.filter(g => g.id !== draggedGameId);
       const newGames = insertGameAtPosition(games, updatedGame, targetGameId, position, targetCategory);
       setGames(newGames);
       

@@ -1,6 +1,6 @@
-import { Content, Game, Movie, TVShow, CategoryID, ContentType } from '../types';
-import { uid } from './helpers';
 import { MYTHOLOGICAL_FIGURES } from '../data/mythologicalFigures';
+import { CategoryID, Content, ContentType, Game, Movie, TVShow } from '../types';
+import { uid } from './helpers';
 
 /**
  * Determines if a category supports mythological deities
@@ -144,7 +144,7 @@ export function createNewContent(
   };
 
   switch (contentType) {
-    case 'games':
+    case 'games': {
       return {
         ...baseContent,
         contentType: 'games',
@@ -152,8 +152,9 @@ export function createNewContent(
         steamAppId: (baseData as Partial<Game>).steamAppId,
         steamHoursPlayed: (baseData as Partial<Game>).steamHoursPlayed,
       } as Game;
+    }
 
-    case 'movies':
+    case 'movies': {
       return {
         ...baseContent,
         contentType: 'movies',
@@ -162,8 +163,9 @@ export function createNewContent(
         runtime: (baseData as Partial<Movie>).runtime,
         imdbId: (baseData as Partial<Movie>).imdbId,
       } as Movie;
+    }
 
-    case 'tvshows':
+    case 'tvshows': {
       return {
         ...baseContent,
         contentType: 'tvshows',
@@ -173,6 +175,7 @@ export function createNewContent(
         status: (baseData as Partial<TVShow>).status || 'ongoing',
         tmdbId: (baseData as Partial<TVShow>).tmdbId,
       } as TVShow;
+    }
 
     default:
       throw new Error(`Unknown content type: ${contentType}`);
@@ -188,18 +191,20 @@ export function getContentDisplayText(content: Content): string {
   switch (content.contentType) {
     case 'games':
       return `${(content as Game).genre} • ${year}`;
-    case 'movies':
+    case 'movies': {
       const movie = content as Movie;
       const movieGenres = movie.genre;
       const movieGenreText = Array.isArray(movieGenres) ? movieGenres.slice(0, 2).join(', ') : 'Unknown';
       const directorText = movie.director ? ` • ${movie.director}` : '';
       return `${movieGenreText} • ${year}${directorText}`;
-    case 'tvshows':
+    }
+    case 'tvshows': {
       const tvGenres = (content as TVShow).genre;
       const tvGenreText = Array.isArray(tvGenres) ? tvGenres.slice(0, 2).join(', ') : 'Unknown';
       const status = (content as TVShow).status;
       const statusText = status ? ` • ${status}` : '';
       return `${tvGenreText} • ${year}${statusText}`;
+    }
     default:
       return `${year}`;
   }

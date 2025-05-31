@@ -1,5 +1,5 @@
 import * as LZString from 'lz-string';
-import { Game, Movie, TVShow, Content, CategoryID, ContentType } from '../types';
+import { CategoryID, Content, ContentType, Game, Movie, TVShow } from '../types';
 
 // Helper functions
 export function uid() {
@@ -29,17 +29,20 @@ export function optimizeContentData(content: Content[], contentType: ContentType
     ];
     
     switch (contentType) {
-      case 'games':
+      case 'games': {
         const game = item as Game;
         return [...base, game.genre]; // [id, title, year, category, deity, genre]
+      }
         
-      case 'movies':
+      case 'movies': {
         const movie = item as Movie;
         return [...base, movie.genre, movie.director, movie.runtime]; // [id, title, year, category, deity, genres[], director, runtime]
+      }
         
-      case 'tvshows':
+      case 'tvshows': {
         const tv = item as TVShow;
         return [...base, tv.genre, tv.seasons, tv.status]; // [id, title, year, category, deity, genres[], seasons, status]
+      }
         
       default:
         return base;

@@ -1,16 +1,16 @@
-import { useState, useCallback, useRef } from 'react';
-import { Content, CategoryID, ContentType, Game } from '../types';
-import { 
-  calculateDropPosition, 
-  applyDragHighlight, 
-  removeDragHighlight, 
-  clearOtherDragHighlights,
-  parseDragData
-} from '../utils/dragHelpers';
-import { 
-  insertContentAtPosition, 
-  updateContentCategory 
+import { useCallback, useRef, useState } from 'react';
+import { CategoryID, Content, Game } from '../types';
+import {
+    insertContentAtPosition,
+    updateContentCategory
 } from '../utils/contentHelpers';
+import {
+    applyDragHighlight,
+    calculateDropPosition,
+    clearOtherDragHighlights,
+    parseDragData,
+    removeDragHighlight
+} from '../utils/dragHelpers';
 import { uid } from '../utils/helpers';
 import { wikipediaInfo } from '../utils/wikipediaHelpers';
 
@@ -41,7 +41,6 @@ function createContentDragData(contentId: string): string {
 }
 
 export function useContentDragAndDrop(
-  content: Content[],
   setContent: (content: Content[] | ((prevContent: Content[]) => Content[])) => void
 ): UseContentDragAndDropReturn {
   const [dropIndicator, setDropIndicator] = useState<DropIndicator | null>(null);

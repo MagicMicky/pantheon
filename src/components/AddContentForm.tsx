@@ -1,12 +1,12 @@
-import React, { memo } from 'react';
-import { Content, Game, Movie, TVShow, CategoryID, ContentType } from '../types';
 import { Plus } from 'lucide-react';
+import { memo } from 'react';
 import { CATEGORIES } from '../data/categories';
+import { CategoryID, Content, ContentType, Game, Movie, TVShow } from '../types';
+import { getUsedDeityIds, supportsDieties } from '../utils/contentHelpers';
 import { Autocomplete } from './Autocomplete';
-import { Input, Select } from './ui/Inputs';
-import { Button } from './ui/Buttons';
 import { DeitySelector } from './DeityComponents';
-import { supportsDieties, getUsedDeityIds } from '../utils/contentHelpers';
+import { Button } from './ui/Buttons';
+import { Input, Select } from './ui/Inputs';
 
 interface AddContentFormProps {
   newContent: Partial<Content>;
@@ -48,7 +48,7 @@ const AddContentForm = memo(function AddContentForm({
   // Render content-type-specific fields
   const renderContentSpecificFields = () => {
     switch (contentType) {
-      case 'games':
+      case 'games': {
         const gameDraft = newContent as Partial<Game>;
         return (
           <Input 
@@ -57,8 +57,9 @@ const AddContentForm = memo(function AddContentForm({
             onChange={e => onNewContentChange({...newContent, genre: e.target.value} as Partial<Content>)}
           />
         );
+      }
       
-      case 'movies':
+      case 'movies': {
         const movieDraft = newContent as Partial<Movie>;
         const movieGenreValue = Array.isArray(movieDraft.genre) ? movieDraft.genre.join(', ') : '';
         return (
@@ -78,8 +79,9 @@ const AddContentForm = memo(function AddContentForm({
             />
           </>
         );
+      }
       
-      case 'tvshows':
+      case 'tvshows': {
         const tvDraft = newContent as Partial<TVShow>;
         const tvGenreValue = Array.isArray(tvDraft.genre) ? tvDraft.genre.join(', ') : '';
         return (
@@ -102,6 +104,7 @@ const AddContentForm = memo(function AddContentForm({
             </Select>
           </>
         );
+      }
       
       default:
         return null;
@@ -115,7 +118,7 @@ const AddContentForm = memo(function AddContentForm({
       </h2>
       <div className="grid sm:grid-cols-2 gap-4 mb-4">
         <Autocomplete 
-          value={newContent.title ?? ""} 
+          value={newContent.title || ""} 
           onChange={v => onNewContentChange({...newContent, title: v})} 
           onSelect={async v => {
             const info = await import('../utils/wikipediaHelpers').then(m => m.wikipediaInfo(v));
@@ -132,7 +135,6 @@ const AddContentForm = memo(function AddContentForm({
             onNewContentChange({...newContent, ...basicInfo} as Partial<Content>);
           }}
           placeholder={config.titlePlaceholder}
-          contentType={contentType}
         />
         
         {/* Content-type-specific fields */}

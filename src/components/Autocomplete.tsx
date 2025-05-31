@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, KeyboardEvent, FocusEvent } from "react";
+import { KeyboardEvent, useEffect, useRef, useState } from "react";
 import { AutocompleteProps } from '../types';
 import { wikiSuggestions } from '../utils/wikipediaHelpers';
 import { Input } from './ui/Inputs';
@@ -8,9 +8,8 @@ export const Autocomplete = ({
   onChange, 
   onSelect, 
   inputClass = "", 
-  placeholder = "Title",
-  contentType 
-}: AutocompleteProps) => {
+  placeholder = "Title"
+}: Omit<AutocompleteProps, 'contentType'>) => {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [picked, setPicked] = useState<string>("");
@@ -76,7 +75,7 @@ export const Autocomplete = ({
       <Input 
         value={value} 
         onFocus={() => setFocused(true)} 
-        onBlur={(e: FocusEvent) => setFocused(false)} 
+        onBlur={() => setFocused(false)} 
         onChange={e => onChange(e.target.value)} 
         onKeyDown={handleKey} 
         className={inputClass} 

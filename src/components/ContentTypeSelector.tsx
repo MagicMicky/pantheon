@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { ChevronDown } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ContentType } from '../types';
-import { ChevronDown } from 'lucide-react';
 
 interface ContentTypeSelectorProps {
   currentContentType: ContentType;
@@ -42,19 +42,8 @@ export function ContentTypeSelector({
     if (isOpen) {
       setIsPositioned(false); // Reset positioning flag
       updateDropdownPosition();
-      // Update position on scroll/resize
-      const handlePositionUpdate = () => updateDropdownPosition();
-      window.addEventListener('scroll', handlePositionUpdate);
-      window.addEventListener('resize', handlePositionUpdate);
-      
-      return () => {
-        window.removeEventListener('scroll', handlePositionUpdate);
-        window.removeEventListener('resize', handlePositionUpdate);
-      };
-    } else {
-      setIsPositioned(false);
     }
-  }, [isOpen]);
+  }, [isOpen, updateDropdownPosition]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -66,8 +55,12 @@ export function ContentTypeSelector({
 
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
     }
+    
+    return undefined;
   }, [isOpen]);
 
   const handleClick = () => {

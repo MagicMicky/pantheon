@@ -113,7 +113,7 @@ function extractFromInfobox(html: string): any {
       
       if (label.includes('genre')) {
         // Check if this looks like a movie/TV show (multiple genres) or game (single genre)
-        const genres = value.split(/[,•|\/]/).map(g => g.trim()).filter(Boolean);
+        const genres = value.split(/[,•|/]/).map(g => g.trim()).filter(Boolean);
         if (genres.length > 1) {
           result.genre = genres; // Movies/TV shows get array
         } else {

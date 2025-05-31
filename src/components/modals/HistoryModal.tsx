@@ -1,4 +1,3 @@
-import React from 'react';
 import { History } from 'lucide-react';
 import { Button } from '../ui/Buttons';
 import { ModalWrapper } from './ModalWrapper';

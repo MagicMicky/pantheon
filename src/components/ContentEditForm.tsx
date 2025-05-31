@@ -1,14 +1,14 @@
-import React, { memo } from 'react';
-import { Content, Game, Movie, TVShow } from '../types';
 import { RefreshCw, X } from 'lucide-react';
-import { getGenreIcon } from '../utils/helpers';
-import { GENRE_ICON_MAPPING } from '../data/genreIcons';
+import React, { memo } from 'react';
 import { CATEGORY_COLORS } from '../data/categories';
-import { Autocomplete } from './Autocomplete';
-import { Input, Select } from './ui/Inputs';
-import { Button, IconBtn } from './ui/Buttons';
-import { DeityBadge, DeityPopup } from './DeityComponents';
+import { GENRE_ICON_MAPPING } from '../data/genreIcons';
+import { Content, Game, Movie, TVShow } from '../types';
 import { supportsDieties } from '../utils/contentHelpers';
+import { getGenreIcon } from '../utils/helpers';
+import { Autocomplete } from './Autocomplete';
+import { DeityBadge, DeityPopup } from './DeityComponents';
+import { Button } from './ui/Buttons';
+import { Input, Select } from './ui/Inputs';
 
 interface ContentEditFormProps {
   content: Content;
@@ -40,12 +40,14 @@ const ContentEditForm = memo(function ContentEditForm({
     switch (content.contentType) {
       case 'games':
         return (draft as Partial<Game>).genre || (content as Game).genre || '';
-      case 'movies':
+      case 'movies': {
         const movieGenres = (draft as Partial<Movie>).genre || (content as Movie).genre;
         return Array.isArray(movieGenres) ? movieGenres[0] || '' : '';
-      case 'tvshows':
+      }
+      case 'tvshows': {
         const tvGenres = (draft as Partial<TVShow>).genre || (content as TVShow).genre;
         return Array.isArray(tvGenres) ? tvGenres[0] || '' : '';
+      }
       default:
         return '';
     }
@@ -73,7 +75,7 @@ const ContentEditForm = memo(function ContentEditForm({
           </div>
         );
       
-      case 'movies':
+      case 'movies': {
         const movieDraft = draft as Partial<Movie>;
         const genreValue = Array.isArray(movieDraft.genre) ? movieDraft.genre.join(', ') : '';
         return (
@@ -102,8 +104,9 @@ const ContentEditForm = memo(function ContentEditForm({
             />
           </div>
         );
+      }
       
-      case 'tvshows':
+      case 'tvshows': {
         const tvDraft = draft as Partial<TVShow>;
         const tvGenreValue = Array.isArray(tvDraft.genre) ? tvDraft.genre.join(', ') : '';
         return (
@@ -135,6 +138,7 @@ const ContentEditForm = memo(function ContentEditForm({
             </Select>
           </div>
         );
+      }
       
       default:
         return null;
@@ -173,7 +177,6 @@ const ContentEditForm = memo(function ContentEditForm({
               onDraftChange({ ...draft, ...basicInfo });
             }}
             inputClass="text-xs"
-            contentType={content.contentType}
           />
         </div>
         
@@ -217,7 +220,7 @@ const ContentEditForm = memo(function ContentEditForm({
                 onSelect={(id) => onDraftChange({ ...draft, mythologicalFigureId: id })}
                 onCancel={() => onToggleDeityEdit(null)}
                 isOpen={inlineDeityEdit === content.id}
-                selectedDeityId={draft.mythologicalFigureId}
+                selectedDeityId={draft.mythologicalFigureId || undefined}
                 onToggle={() => {
                   if (inlineDeityEdit === content.id) {
                     onToggleDeityEdit(null);

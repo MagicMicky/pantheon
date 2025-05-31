@@ -1,4 +1,4 @@
-import { Game, Movie, TVShow, Content, CategoryID, ContentType } from './index';
+import { CategoryID, Content, ContentType, Game, Movie, TVShow } from './index';
 
 // Enhanced content validation types
 export interface ValidatedGame extends Game {
@@ -8,6 +8,7 @@ export interface ValidatedGame extends Game {
   readonly year: number;
   readonly category: CategoryID;
   readonly contentType: 'games';
+  readonly mythologicalFigureId?: string | undefined;
 }
 
 export interface ValidatedMovie extends Movie {
@@ -17,6 +18,7 @@ export interface ValidatedMovie extends Movie {
   readonly year: number;
   readonly category: CategoryID;
   readonly contentType: 'movies';
+  readonly mythologicalFigureId?: string | undefined;
 }
 
 export interface ValidatedTVShow extends TVShow {
@@ -26,6 +28,7 @@ export interface ValidatedTVShow extends TVShow {
   readonly year: number;
   readonly category: CategoryID;
   readonly contentType: 'tvshows';
+  readonly mythologicalFigureId?: string | undefined;
 }
 
 export type ValidatedContent = ValidatedGame | ValidatedMovie | ValidatedTVShow;
@@ -36,37 +39,37 @@ export interface ContentFormData {
   year: number;
   category: CategoryID;
   contentType: ContentType;
-  mythologicalFigureId?: string;
+  mythologicalFigureId?: string | undefined;
   // Game-specific
-  genre?: string;
-  steamAppId?: string;
-  steamHoursPlayed?: number;
+  genre?: string | undefined;
+  steamAppId?: string | undefined;
+  steamHoursPlayed?: number | undefined;
   // Movie-specific
-  movieGenres?: string[];
-  director?: string;
-  runtime?: number;
-  imdbId?: string;
+  movieGenres?: string[] | undefined;
+  director?: string | undefined;
+  runtime?: number | undefined;
+  imdbId?: string | undefined;
   // TV Show-specific
-  tvGenres?: string[];
-  seasons?: number;
-  episodes?: number;
-  status?: 'ongoing' | 'ended' | 'cancelled';
-  tmdbId?: string;
+  tvGenres?: string[] | undefined;
+  seasons?: number | undefined;
+  episodes?: number | undefined;
+  status?: 'ongoing' | 'ended' | 'cancelled' | undefined;
+  tmdbId?: string | undefined;
 }
 
 export interface ContentFormErrors {
-  title?: string;
-  genre?: string;
-  movieGenres?: string;
-  tvGenres?: string;
-  year?: string;
-  category?: string;
-  mythologicalFigureId?: string;
-  director?: string;
-  runtime?: string;
-  seasons?: string;
-  episodes?: string;
-  status?: string;
+  title?: string | undefined;
+  genre?: string | undefined;
+  movieGenres?: string | undefined;
+  tvGenres?: string | undefined;
+  year?: string | undefined;
+  category?: string | undefined;
+  mythologicalFigureId?: string | undefined;
+  director?: string | undefined;
+  runtime?: string | undefined;
+  seasons?: string | undefined;
+  episodes?: string | undefined;
+  status?: string | undefined;
 }
 
 // Drag and drop types - updated for content
@@ -162,7 +165,7 @@ export interface UpdateDeityAction {
   type: 'UPDATE_DEITY';
   payload: {
     contentId: string;
-    deityId?: string;
+    deityId?: string | undefined;
   };
 }
 
@@ -224,16 +227,16 @@ export interface ShareConfig {
 
 // Meta tags configuration
 export interface MetaTagsConfig {
-  title?: string;
-  description?: string;
-  ogTitle?: string;
-  ogDescription?: string;
-  ogUrl?: string;
-  ogImage?: string;
-  twitterTitle?: string;
-  twitterDescription?: string;
-  twitterImage?: string;
-  twitterImageAlt?: string;
+  title?: string | undefined;
+  description?: string | undefined;
+  ogTitle?: string | undefined;
+  ogDescription?: string | undefined;
+  ogUrl?: string | undefined;
+  ogImage?: string | undefined;
+  twitterTitle?: string | undefined;
+  twitterDescription?: string | undefined;
+  twitterImage?: string | undefined;
+  twitterImageAlt?: string | undefined;
 }
 
 // History types

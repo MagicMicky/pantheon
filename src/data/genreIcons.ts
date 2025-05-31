@@ -1,7 +1,25 @@
 import {
-  Sword, Crosshair, Car, Trophy, Dice1, Ghost, Brain, Globe,
-  Building, Rocket, Gamepad2, Map, Users, Heart, ZapOff, 
-  Skull, Music, Snowflake, Landmark, Clock, Clover, Wand2, Hourglass
+    Brain,
+    Building,
+    Car,
+    Clock, Clover,
+    Crosshair,
+    Dice1,
+    Gamepad2,
+    Ghost,
+    Globe,
+    Heart,
+    Hourglass,
+    Landmark,
+    Map,
+    Music,
+    Rocket,
+    Skull,
+    Sword,
+    Trophy,
+    Users,
+    Wand2,
+    ZapOff
 } from 'lucide-react';
 
 // Genre icons mapping for game list items

@@ -1,6 +1,5 @@
-import React from "react";
-import { CategoryID } from "../../types";
 import { CATEGORY_COLORS } from "../../data/categories";
+import { CategoryID } from "../../types";
 
 // Card component
 export const Card = ({ children, category = "other", ...p }: any) => {
@@ -26,7 +25,7 @@ export const CardHeader = ({ children, category = "other" }: any) => {
 };
 
 // CardTitle component
-export const CardTitle = ({ children, category = "other" }: any) => {
+export const CardTitle = ({ children }: any) => {
   return <h2 className={`text-xl font-serif font-bold leading-tight tracking-wide text-white`}>{children}</h2>;
 };
 

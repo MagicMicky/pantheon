@@ -1,14 +1,14 @@
-import React, { memo } from 'react';
-import { Game } from '../types';
 import { RefreshCw, X } from 'lucide-react';
-import { getGenreIcon } from '../utils/helpers';
-import { GENRE_ICON_MAPPING } from '../data/genreIcons';
+import React, { memo } from 'react';
 import { CATEGORY_COLORS } from '../data/categories';
-import { Autocomplete } from './Autocomplete';
-import { Input } from './ui/Inputs';
-import { Button, IconBtn } from './ui/Buttons';
-import { DeityBadge, DeityPopup } from './DeityComponents';
+import { GENRE_ICON_MAPPING } from '../data/genreIcons';
+import { Game } from '../types';
 import { supportsDieties } from '../utils/contentHelpers';
+import { getGenreIcon } from '../utils/helpers';
+import { Autocomplete } from './Autocomplete';
+import { DeityBadge, DeityPopup } from './DeityComponents';
+import { Button } from './ui/Buttons';
+import { Input } from './ui/Inputs';
 
 interface GameEditFormProps {
   game: Game;

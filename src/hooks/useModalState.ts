@@ -1,10 +1,10 @@
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 /**
  * Generic hook for managing modal state
  */
-export function useModalState(initialState: boolean = false) {
-  const [isOpen, setIsOpen] = useState<boolean>(initialState);
+export function useModalState() {
+  const [isOpen, setIsOpen] = useState(false);
 
   const open = useCallback(() => setIsOpen(true), []);
   const close = useCallback(() => setIsOpen(false), []);

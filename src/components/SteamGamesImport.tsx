@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Game } from "../types";
-import { fetchSteamGames, isGameInCollection, isValidSteamId } from "../utils/steamHelpers";
-import { Card, CardHeader, CardTitle, CardContent } from "./ui/Card";
-import { Button, IconBtn } from "./ui/Buttons";
-import { Input } from "./ui/Inputs";
-import { X, RefreshCw, GripVertical, Edit, EyeOff, RotateCcw } from "lucide-react";
-import { getGenreIcon } from "../utils/helpers";
+import { Edit, EyeOff, GripVertical, RefreshCw, RotateCcw } from "lucide-react";
+import React, { useCallback, useEffect, useState } from "react";
 import { GENRE_ICON_MAPPING } from "../data/genreIcons";
+import { Game } from "../types";
+import { getGenreIcon } from "../utils/helpers";
+import { fetchSteamGames, isGameInCollection, isValidSteamId } from "../utils/steamHelpers";
+import { Button } from "./ui/Buttons";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/Card";
+import { Input } from "./ui/Inputs";
 
 const STEAM_ID_STORAGE_KEY = 'pantheonSteamId';
 const IGNORED_GAMES_STORAGE_KEY = 'pantheonIgnoredSteamGames';
@@ -331,14 +331,14 @@ export const SteamGamesImport: React.FC<SteamGamesImportProps> = ({ existingGame
                 <h4 className="text-sm font-medium text-slate-300 mb-3">📝 How to find your Steam ID:</h4>
                 <ol className="text-xs text-slate-400 space-y-2 list-decimal list-inside text-left mb-3">
                   <li>Go to your Steam profile page</li>
-                  <li>Right-click and "Copy page URL"</li>
+                  <li>Right-click and &ldquo;Copy page URL&rdquo;</li>
                   <li>Your Steam ID is the long number in the URL:</li>
                 </ol>
                 <div className="p-2 bg-slate-900/50 rounded text-xs text-slate-300 font-mono mb-3">
                   steamcommunity.com/profiles/<span className="text-blue-300">76561198012345678</span>
                 </div>
                 <p className="text-xs text-slate-500">
-                  💡 Make sure your Steam profile is set to "Public"
+                  💡 Make sure your Steam profile is set to &ldquo;Public&rdquo;
                 </p>
               </div>
             ) : (
@@ -354,6 +354,12 @@ export const SteamGamesImport: React.FC<SteamGamesImportProps> = ({ existingGame
             <p className="text-sm">Fetching your Steam library...</p>
           </div>
         )}
+
+        <div className="text-xs text-gray-400 text-center mt-1">
+          <span className="inline-block w-3 h-3 bg-green-600 rounded-full mr-1"></span>
+          Already in your pantheon &middot; <span className="inline-block w-3 h-3 bg-yellow-600 rounded-full mr-1"></span>
+          &ldquo;Wish&rdquo; (0 hours played)
+        </div>
       </CardContent>
     </Card>
   );

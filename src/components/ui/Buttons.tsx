@@ -1,4 +1,3 @@
-import React from "react";
 
 // Regular button component
 export const Button = ({ children, onClick, className="" }: any) => (

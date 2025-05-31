@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useReducer, ReactNode, useEffect, useRef } from 'react';
-import { Game, CategoryID } from '../types';
-import { uid } from '../utils/helpers';
+import React, { createContext, ReactNode, useContext, useEffect, useReducer, useRef } from 'react';
+import { CategoryID, Game } from '../types';
 import { updateGameCategory } from '../utils/contentHelpers';
+import { uid } from '../utils/helpers';
 import { localStateManager } from '../utils/localStateManager';
 
 // Action types
@@ -12,7 +12,7 @@ type GameAction =
   | { type: 'DELETE_GAME'; payload: string }
   | { type: 'MOVE_GAME'; payload: { id: string; newCategory: CategoryID } }
   | { type: 'REORDER_GAMES'; payload: Game[] }
-  | { type: 'UPDATE_DEITY'; payload: { gameId: string; deityId?: string } }
+  | { type: 'UPDATE_DEITY'; payload: { gameId: string; deityId: string | undefined } }
   | { type: 'RESET_TO_DEFAULT' };
 
 // State interface

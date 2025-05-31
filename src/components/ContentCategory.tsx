@@ -1,10 +1,10 @@
 import React, { memo, useMemo } from 'react';
-import { Content, CategoryID } from '../types';
-import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
-import { CATEGORIES, CATEGORY_COLORS } from '../data/categories';
+import { CATEGORIES } from '../data/categories';
+import { CategoryID, Content } from '../types';
 import { getUsedDeityIds } from '../utils/contentHelpers';
-import ContentItem from './ContentItem';
 import ContentEditForm from './ContentEditForm';
+import ContentItem from './ContentItem';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/Card';
 
 interface ContentCategoryProps {
   categoryId: CategoryID;

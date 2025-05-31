@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import { X } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { DeitySelectorProps } from "../types";
 import { MYTHOLOGICAL_FIGURES, getMythologicalFiguresByTier } from "../data/mythologicalFigures";
+import { DeitySelectorProps } from "../types";
 import { Tooltip } from "./Tooltip";
 import { Button } from "./ui/Buttons";
-import { X } from "lucide-react";
 
 // Deity Badge component for displaying in game list
 export const DeityBadge = ({ mythologicalFigureId }: { mythologicalFigureId?: string }) => {
@@ -117,7 +117,7 @@ interface DeityPopupProps {
   children: React.ReactNode; // The trigger element (+ button)
   isOpen: boolean;
   onToggle: () => void;
-  selectedDeityId?: string;
+  selectedDeityId?: string | undefined;
 }
 
 export const DeityPopup = ({ 
@@ -181,6 +181,8 @@ export const DeityPopup = ({
         window.removeEventListener('resize', handleResize);
       };
     }
+    
+    return undefined;
   }, [isOpen]);
 
   return (

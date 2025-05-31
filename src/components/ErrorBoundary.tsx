@@ -8,20 +8,23 @@ interface Props {
 
 interface State {
   hasError: boolean;
-  error?: Error;
+  error?: Error | null;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { hasError: false, error: null };
   }
 
   static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
+    return {
+      hasError: true,
+      error
+    };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  override componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
     
     // Call custom error handler if provided
@@ -30,49 +33,57 @@ export class ErrorBoundary extends Component<Props, State> {
     }
   }
 
-  render() {
+  override render() {
     if (this.state.hasError) {
       // Custom fallback UI
       if (this.props.fallback) {
         return this.props.fallback;
       }
-
-      // Default fallback UI
+      
+      // Default error UI
       return (
-        <div className="flex flex-col items-center justify-center min-h-[200px] p-8 bg-red-900/20 border border-red-700/30 rounded-xl mx-4">
-          <div className="text-red-400 text-6xl mb-4">⚠️</div>
-          <h2 className="text-xl font-bold text-red-300 mb-2">Something went wrong</h2>
-          <p className="text-red-400 text-center mb-4 max-w-md">
-            We encountered an unexpected error. Please try refreshing the page or contact support if the problem persists.
-          </p>
-          <div className="flex gap-4">
-            <button
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-red-700 hover:bg-red-600 text-white rounded-md transition-colors"
-            >
-              Refresh Page
-            </button>
-            <button
-              onClick={() => this.setState({ hasError: false, error: undefined })}
-              className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-md transition-colors"
-            >
-              Try Again
-            </button>
+        <div className="min-h-screen bg-slate-900 flex items-center justify-center p-8">
+          <div className="bg-slate-800 rounded-lg p-6 max-w-lg w-full border border-slate-700">
+            <h2 className="text-xl font-bold text-red-400 mb-4 flex items-center gap-2">
+              ⚠️ Something went wrong
+            </h2>
+            
+            <p className="text-gray-300 mb-4">
+              An unexpected error occurred. This has been logged and we'll look into it.
+            </p>
+            
+            {this.state.error && (
+              <details className="mb-4 bg-slate-900 rounded p-3">
+                <summary className="text-sm text-gray-400 cursor-pointer">
+                  Error details
+                </summary>
+                <pre className="text-xs text-red-300 mt-2 overflow-auto">
+                  {this.state.error.message}
+                  {'\n'}
+                  {this.state.error.stack}
+                </pre>
+              </details>
+            )}
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+              >
+                Reload Page
+              </button>
+              <button
+                onClick={() => this.setState({ hasError: false, error: null })}
+                className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-md transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
           </div>
-          {process.env.NODE_ENV === 'development' && this.state.error && (
-            <details className="mt-4 p-4 bg-slate-800 rounded text-sm text-gray-300 max-w-2xl">
-              <summary className="cursor-pointer text-red-300 font-medium">
-                Error Details (Development Only)
-              </summary>
-              <pre className="mt-2 whitespace-pre-wrap break-words">
-                {this.state.error.stack}
-              </pre>
-            </details>
-          )}
         </div>
       );
     }
-
+    
     return this.props.children;
   }
 }
