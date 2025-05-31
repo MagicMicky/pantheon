@@ -189,7 +189,7 @@ const ContentItem = memo(function ContentItem({
                   onToggleDeityEdit(content.id);
                 }
               }}
-              className="border border-dashed border-gray-500 rounded-full w-6 h-6 flex items-center justify-center text-gray-400 text-xs hover:bg-slate-700 hover:text-white transition-colors opacity-60 group-hover/item:opacity-100"
+              className="border border-dashed border-gray-500 rounded-full w-6 h-6 md:w-6 md:h-6 min-w-[32px] min-h-[32px] md:min-w-0 md:min-h-0 flex items-center justify-center text-gray-400 text-xs hover:bg-slate-700 hover:text-white transition-colors opacity-60 group-hover/item:opacity-100"
               title="Add mythological figure"
             >
               +
