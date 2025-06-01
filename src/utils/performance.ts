@@ -54,7 +54,7 @@ export function usePerformanceProfiler(componentName: string) {
     };
   }
   
-  return () => {}; // No-op in production
+  return () => { /* no-op */ }; // No-op in production
 }
 
 // Memory usage tracking

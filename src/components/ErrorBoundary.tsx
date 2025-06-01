@@ -57,11 +57,14 @@ export class ErrorBoundary extends Component<Props, State> {
                 <summary className="text-sm text-gray-400 cursor-pointer">
                   Error details
                 </summary>
+                {/* eslint-disable react/no-unescaped-entities */}
                 <pre className="text-xs text-red-300 mt-2 overflow-auto">
-                  {this.state.error.message}
-                  {'\n'}
-                  {this.state.error.stack}
+                  {`${this.state.error.message}\n${this.state.error.stack}`
+                    .replace(/'/g, "&apos;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/>/g, "&gt;")}
                 </pre>
+                {/* eslint-enable react/no-unescaped-entities */}
               </details>
             )}
             

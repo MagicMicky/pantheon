@@ -1,7 +1,7 @@
-import { Game, Movie, TVShow, Content, CategoryID } from '../types';
-import { ValidatedGame, ContentFormData, ContentFormErrors } from '../types/enhanced';
 import { MOVIE_GENRES } from '../data/movies/movieGenres';
 import { TVSHOW_GENRES } from '../data/tvshows/tvShowGenres';
+import { CategoryID, Content, Game, Movie, TVShow } from '../types';
+import { ContentFormData, ContentFormErrors, ValidatedGame } from '../types/enhanced';
 
 // Result type for operations that can fail
 export type Result<T, E = string> = 
@@ -13,12 +13,12 @@ const VALIDATION_RULES = {
   title: {
     minLength: 1,
     maxLength: 200,
-    pattern: /^[a-zA-Z0-9\s\-\.\:\'\!\?]+$/
+    pattern: /^[a-zA-Z0-9\s.:'!?-‑]+$/
   },
   genre: {
     minLength: 1,
     maxLength: 50,
-    pattern: /^[a-zA-Z0-9\s\-\‑]+$/
+    pattern: /^[a-zA-Z0-9\s-‑]+$/
   },
   year: {
     min: 1970,
@@ -218,17 +218,19 @@ export function validateGenres(content: Content): boolean {
       // Games have free-form string genres, so always valid if not empty
       return Boolean((content as Game).genre?.trim());
     
-    case 'movies':
+    case 'movies': {
       const movieGenres = (content as Movie).genre;
       return Array.isArray(movieGenres) && 
              movieGenres.length > 0 && 
              movieGenres.every(genre => MOVIE_GENRES.includes(genre as any));
+    }
     
-    case 'tvshows':
+    case 'tvshows': {
       const tvGenres = (content as TVShow).genre;
       return Array.isArray(tvGenres) && 
              tvGenres.length > 0 && 
              tvGenres.every(genre => TVSHOW_GENRES.includes(genre as any));
+    }
     
     default:
       return false;

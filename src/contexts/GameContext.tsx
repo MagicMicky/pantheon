@@ -1,6 +1,6 @@
 import React, { createContext, ReactNode, useContext, useEffect, useReducer, useRef } from 'react';
 import { CategoryID, Game } from '../types';
-import { updateGameCategory } from '../utils/contentHelpers';
+import { updateContentCategory } from '../utils/contentHelpers';
 import { uid } from '../utils/helpers';
 import { localStateManager } from '../utils/localStateManager';
 
@@ -80,7 +80,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         games: state.games.map(game => 
           game.id === action.payload.id 
-            ? updateGameCategory(game, action.payload.newCategory)
+            ? updateContentCategory(game, action.payload.newCategory) as Game
             : game
         )
       };

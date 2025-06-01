@@ -3,7 +3,7 @@ import { CategoryID, Game } from '../types';
 import {
     createGameFromSteam,
     insertGameAtPosition,
-    updateGameCategory
+    updateContentCategory
 } from '../utils/contentHelpers';
 import {
     applyDragHighlight,
@@ -112,7 +112,7 @@ export function useDragAndDrop(
       // This is an existing game being moved
       setGames(games.map(g => {
         if (g.id === dragData.id) {
-          return updateGameCategory(g, target);
+          return updateContentCategory(g, target) as Game;
         }
         return g;
       }));
@@ -183,7 +183,7 @@ export function useDragAndDrop(
 
     if (draggedGame.category !== targetCategory) {
       // Moving to a different category
-      const updatedGame = updateGameCategory(draggedGame, targetCategory);
+      const updatedGame = updateContentCategory(draggedGame, targetCategory) as Game;
       const newGames = insertGameAtPosition(games, updatedGame, targetGameId, position, targetCategory);
       setGames(newGames);
       

@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-05-30T18:53:32.955Z",
+    "detectionDate": "2025-06-01T17:04:11.711Z",
     "formats": {
       "typescript": {
         "sources": {
@@ -65,8 +65,8 @@
             "newClones": 0
           },
           "/home/magicmicky/Development/pantheon/src/utils/validation.ts": {
-            "lines": 235,
-            "tokens": 2452,
+            "lines": 237,
+            "tokens": 2462,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -102,7 +102,7 @@
           },
           "/home/magicmicky/Development/pantheon/src/utils/performance.ts": {
             "lines": 81,
-            "tokens": 792,
+            "tokens": 795,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -125,26 +125,14 @@
             "newClones": 0
           },
           "/home/magicmicky/Development/pantheon/src/utils/helpers.ts": {
-            "lines": 169,
-            "tokens": 1485,
+            "lines": 172,
+            "tokens": 1500,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
             "duplicatedTokens": 0,
             "percentage": 0,
             "percentageTokens": 0,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
-          "/home/magicmicky/Development/pantheon/src/utils/gameHelpers.ts": {
-            "lines": 111,
-            "tokens": 858,
-            "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 29,
-            "duplicatedTokens": 172,
-            "percentage": 26.13,
-            "percentageTokens": 20.05,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -161,20 +149,20 @@
             "newClones": 0
           },
           "/home/magicmicky/Development/pantheon/src/utils/contentHelpers.ts": {
-            "lines": 223,
-            "tokens": 2061,
+            "lines": 225,
+            "tokens": 2039,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 29,
-            "duplicatedTokens": 172,
-            "percentage": 13,
-            "percentageTokens": 8.35,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
           "/home/magicmicky/Development/pantheon/src/types/index.ts": {
             "lines": 98,
-            "tokens": 743,
+            "tokens": 843,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -185,8 +173,8 @@
             "newClones": 0
           },
           "/home/magicmicky/Development/pantheon/src/types/enhanced.ts": {
-            "lines": 284,
-            "tokens": 1846,
+            "lines": 287,
+            "tokens": 2032,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -208,21 +196,9 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
-          "/home/magicmicky/Development/pantheon/src/hooks/useOptimizedCallbacks.ts": {
-            "lines": 119,
-            "tokens": 1103,
-            "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
           "/home/magicmicky/Development/pantheon/src/hooks/useModalState.ts": {
             "lines": 50,
-            "tokens": 389,
+            "tokens": 378,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -233,8 +209,8 @@
             "newClones": 0
           },
           "/home/magicmicky/Development/pantheon/src/hooks/useMetaTags.ts": {
-            "lines": 92,
-            "tokens": 689,
+            "lines": 108,
+            "tokens": 838,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -245,20 +221,20 @@
             "newClones": 0
           },
           "/home/magicmicky/Development/pantheon/src/hooks/useDragAndDrop.ts": {
-            "lines": 240,
-            "tokens": 2408,
+            "lines": 239,
+            "tokens": 2383,
             "sources": 1,
             "clones": 2,
             "duplicatedLines": 50,
             "duplicatedTokens": 504,
-            "percentage": 20.83,
-            "percentageTokens": 20.93,
+            "percentage": 20.92,
+            "percentageTokens": 21.15,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
           "/home/magicmicky/Development/pantheon/src/hooks/useContentDragAndDrop.ts": {
-            "lines": 279,
-            "tokens": 2748,
+            "lines": 445,
+            "tokens": 4371,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -281,8 +257,8 @@
             "newClones": 0
           },
           "/home/magicmicky/Development/pantheon/src/data/genreIcons.ts": {
-            "lines": 81,
-            "tokens": 675,
+            "lines": 99,
+            "tokens": 689,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -306,14 +282,14 @@
           }
         },
         "total": {
-          "lines": 3460,
-          "tokens": 29567,
-          "sources": 25,
-          "clones": 2,
-          "duplicatedLines": 54,
-          "duplicatedTokens": 424,
-          "percentage": 1.56,
-          "percentageTokens": 1.43,
+          "lines": 3439,
+          "tokens": 29648,
+          "sources": 23,
+          "clones": 1,
+          "duplicatedLines": 25,
+          "duplicatedTokens": 252,
+          "percentage": 0.73,
+          "percentageTokens": 0.85,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -346,7 +322,7 @@
           },
           "/home/magicmicky/Development/pantheon/src/components/ui/Card.tsx": {
             "lines": 22,
-            "tokens": 200,
+            "tokens": 193,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -406,7 +382,7 @@
           },
           "/home/magicmicky/Development/pantheon/src/components/modals/ShareModal.tsx": {
             "lines": 48,
-            "tokens": 479,
+            "tokens": 485,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -488,45 +464,9 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
-          "/home/magicmicky/Development/pantheon/src/components/GameItem.tsx": {
-            "lines": 95,
-            "tokens": 895,
-            "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 39,
-            "duplicatedTokens": 387,
-            "percentage": 41.05,
-            "percentageTokens": 43.24,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
-          "/home/magicmicky/Development/pantheon/src/components/GameEditForm.tsx": {
-            "lines": 51,
-            "tokens": 451,
-            "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
-          "/home/magicmicky/Development/pantheon/src/components/GameCategory.tsx": {
-            "lines": 30,
-            "tokens": 308,
-            "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 21,
-            "duplicatedTokens": 234,
-            "percentage": 70,
-            "percentageTokens": 75.97,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
           "/home/magicmicky/Development/pantheon/src/components/ErrorBoundary.tsx": {
             "lines": 6,
-            "tokens": 60,
+            "tokens": 62,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -537,8 +477,8 @@
             "newClones": 0
           },
           "/home/magicmicky/Development/pantheon/src/components/DeityComponents.tsx": {
-            "lines": 198,
-            "tokens": 1710,
+            "lines": 330,
+            "tokens": 2961,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -561,20 +501,20 @@
             "newClones": 0
           },
           "/home/magicmicky/Development/pantheon/src/components/ContentItem.tsx": {
-            "lines": 95,
-            "tokens": 889,
+            "lines": 98,
+            "tokens": 933,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 39,
-            "duplicatedTokens": 387,
-            "percentage": 41.05,
-            "percentageTokens": 43.53,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
           "/home/magicmicky/Development/pantheon/src/components/ContentEditForm.tsx": {
-            "lines": 149,
-            "tokens": 1475,
+            "lines": 150,
+            "tokens": 1476,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -585,20 +525,8 @@
             "newClones": 0
           },
           "/home/magicmicky/Development/pantheon/src/components/ContentCategory.tsx": {
-            "lines": 30,
-            "tokens": 308,
-            "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 21,
-            "duplicatedTokens": 234,
-            "percentage": 70,
-            "percentageTokens": 75.97,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
-          "/home/magicmicky/Development/pantheon/src/components/Autocomplete.tsx": {
-            "lines": 19,
-            "tokens": 197,
+            "lines": 53,
+            "tokens": 472,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -608,9 +536,9 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
-          "/home/magicmicky/Development/pantheon/src/components/AddGameForm.tsx": {
-            "lines": 31,
-            "tokens": 321,
+          "/home/magicmicky/Development/pantheon/src/components/Autocomplete.tsx": {
+            "lines": 19,
+            "tokens": 194,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -621,8 +549,8 @@
             "newClones": 0
           },
           "/home/magicmicky/Development/pantheon/src/components/AddContentForm.tsx": {
-            "lines": 113,
-            "tokens": 1211,
+            "lines": 115,
+            "tokens": 1216,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -633,8 +561,8 @@
             "newClones": 0
           },
           "/home/magicmicky/Development/pantheon/src/GamePantheon.tsx": {
-            "lines": 151,
-            "tokens": 954,
+            "lines": 156,
+            "tokens": 1021,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -646,14 +574,14 @@
           }
         },
         "total": {
-          "lines": 1306,
-          "tokens": 11695,
-          "sources": 27,
-          "clones": 2,
-          "duplicatedLines": 60,
-          "duplicatedTokens": 621,
-          "percentage": 4.59,
-          "percentageTokens": 5.31,
+          "lines": 1265,
+          "tokens": 11250,
+          "sources": 23,
+          "clones": 0,
+          "duplicatedLines": 0,
+          "duplicatedTokens": 0,
+          "percentage": 0,
+          "percentageTokens": 0,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -673,8 +601,8 @@
             "newClones": 0
           },
           "/home/magicmicky/Development/pantheon/src/components/ui/Confirm.tsx": {
-            "lines": 30,
-            "tokens": 263,
+            "lines": 29,
+            "tokens": 254,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -685,8 +613,8 @@
             "newClones": 0
           },
           "/home/magicmicky/Development/pantheon/src/components/ui/Card.tsx": {
-            "lines": 35,
-            "tokens": 353,
+            "lines": 34,
+            "tokens": 337,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -697,8 +625,8 @@
             "newClones": 0
           },
           "/home/magicmicky/Development/pantheon/src/components/ui/Buttons.tsx": {
-            "lines": 21,
-            "tokens": 147,
+            "lines": 19,
+            "tokens": 137,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -709,8 +637,8 @@
             "newClones": 0
           },
           "/home/magicmicky/Development/pantheon/src/components/shared/SharedViewCTA.tsx": {
-            "lines": 25,
-            "tokens": 228,
+            "lines": 24,
+            "tokens": 219,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -721,8 +649,8 @@
             "newClones": 0
           },
           "/home/magicmicky/Development/pantheon/src/components/shared/SharedViewBanner.tsx": {
-            "lines": 28,
-            "tokens": 243,
+            "lines": 27,
+            "tokens": 234,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -746,7 +674,7 @@
           },
           "/home/magicmicky/Development/pantheon/src/components/modals/ShareModal.tsx": {
             "lines": 124,
-            "tokens": 1013,
+            "tokens": 1019,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -769,8 +697,8 @@
             "newClones": 0
           },
           "/home/magicmicky/Development/pantheon/src/components/modals/HistoryModal.tsx": {
-            "lines": 60,
-            "tokens": 515,
+            "lines": 59,
+            "tokens": 506,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -781,8 +709,8 @@
             "newClones": 0
           },
           "/home/magicmicky/Development/pantheon/src/contexts/PantheonContext.tsx": {
-            "lines": 382,
-            "tokens": 3685,
+            "lines": 394,
+            "tokens": 3741,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -794,7 +722,7 @@
           },
           "/home/magicmicky/Development/pantheon/src/contexts/GameContext.tsx": {
             "lines": 212,
-            "tokens": 1897,
+            "tokens": 1904,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -806,7 +734,7 @@
           },
           "/home/magicmicky/Development/pantheon/src/components/Tooltip.tsx": {
             "lines": 84,
-            "tokens": 725,
+            "tokens": 722,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -817,8 +745,8 @@
             "newClones": 0
           },
           "/home/magicmicky/Development/pantheon/src/components/SteamGamesImport.tsx": {
-            "lines": 359,
-            "tokens": 3103,
+            "lines": 365,
+            "tokens": 3173,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -828,45 +756,9 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
-          "/home/magicmicky/Development/pantheon/src/components/GameItem.tsx": {
-            "lines": 193,
-            "tokens": 1805,
-            "sources": 1,
-            "clones": 5,
-            "duplicatedLines": 64,
-            "duplicatedTokens": 690,
-            "percentage": 33.16,
-            "percentageTokens": 38.23,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
-          "/home/magicmicky/Development/pantheon/src/components/GameEditForm.tsx": {
-            "lines": 146,
-            "tokens": 1235,
-            "sources": 1,
-            "clones": 2,
-            "duplicatedLines": 36,
-            "duplicatedTokens": 349,
-            "percentage": 24.66,
-            "percentageTokens": 28.26,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
-          "/home/magicmicky/Development/pantheon/src/components/GameCategory.tsx": {
-            "lines": 140,
-            "tokens": 1354,
-            "sources": 1,
-            "clones": 3,
-            "duplicatedLines": 38,
-            "duplicatedTokens": 511,
-            "percentage": 27.14,
-            "percentageTokens": 37.74,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
           "/home/magicmicky/Development/pantheon/src/components/ErrorBoundary.tsx": {
-            "lines": 94,
-            "tokens": 785,
+            "lines": 108,
+            "tokens": 847,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -877,20 +769,20 @@
             "newClones": 0
           },
           "/home/magicmicky/Development/pantheon/src/components/DeityComponents.tsx": {
-            "lines": 230,
-            "tokens": 1971,
+            "lines": 362,
+            "tokens": 3234,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 2,
+            "duplicatedLines": 44,
+            "duplicatedTokens": 404,
+            "percentage": 12.15,
+            "percentageTokens": 12.49,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
           "/home/magicmicky/Development/pantheon/src/components/ContentTypeSelector.tsx": {
-            "lines": 152,
-            "tokens": 1251,
+            "lines": 145,
+            "tokens": 1171,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -901,44 +793,8 @@
             "newClones": 0
           },
           "/home/magicmicky/Development/pantheon/src/components/ContentItem.tsx": {
-            "lines": 209,
-            "tokens": 1984,
-            "sources": 1,
-            "clones": 4,
-            "duplicatedLines": 58,
-            "duplicatedTokens": 574,
-            "percentage": 27.75,
-            "percentageTokens": 28.93,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
-          "/home/magicmicky/Development/pantheon/src/components/ContentEditForm.tsx": {
-            "lines": 252,
-            "tokens": 2427,
-            "sources": 1,
-            "clones": 4,
-            "duplicatedLines": 66,
-            "duplicatedTokens": 665,
-            "percentage": 26.19,
-            "percentageTokens": 27.4,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
-          "/home/magicmicky/Development/pantheon/src/components/ContentCategory.tsx": {
-            "lines": 136,
-            "tokens": 1304,
-            "sources": 1,
-            "clones": 2,
-            "duplicatedLines": 32,
-            "duplicatedTokens": 395,
-            "percentage": 23.53,
-            "percentageTokens": 30.29,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
-          "/home/magicmicky/Development/pantheon/src/components/Autocomplete.tsx": {
-            "lines": 102,
-            "tokens": 1014,
+            "lines": 224,
+            "tokens": 2195,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -948,27 +804,51 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
-          "/home/magicmicky/Development/pantheon/src/components/AddGameForm.tsx": {
-            "lines": 84,
-            "tokens": 834,
+          "/home/magicmicky/Development/pantheon/src/components/ContentEditForm.tsx": {
+            "lines": 255,
+            "tokens": 2439,
             "sources": 1,
             "clones": 2,
-            "duplicatedLines": 34,
-            "duplicatedTokens": 321,
-            "percentage": 40.48,
-            "percentageTokens": 38.49,
+            "duplicatedLines": 30,
+            "duplicatedTokens": 316,
+            "percentage": 11.76,
+            "percentageTokens": 12.96,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "/home/magicmicky/Development/pantheon/src/components/ContentCategory.tsx": {
+            "lines": 154,
+            "tokens": 1565,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "/home/magicmicky/Development/pantheon/src/components/Autocomplete.tsx": {
+            "lines": 101,
+            "tokens": 1006,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
           "/home/magicmicky/Development/pantheon/src/components/AddContentForm.tsx": {
-            "lines": 174,
-            "tokens": 1695,
+            "lines": 176,
+            "tokens": 1699,
             "sources": 1,
-            "clones": 2,
-            "duplicatedLines": 34,
-            "duplicatedTokens": 321,
-            "percentage": 19.54,
-            "percentageTokens": 18.94,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -985,82 +865,46 @@
             "newClones": 0
           },
           "/home/magicmicky/Development/pantheon/src/GamePantheon.tsx": {
-            "lines": 708,
-            "tokens": 5430,
+            "lines": 705,
+            "tokens": 5401,
             "sources": 1,
             "clones": 2,
             "duplicatedLines": 16,
             "duplicatedTokens": 252,
-            "percentage": 2.26,
-            "percentageTokens": 4.64,
+            "percentage": 2.27,
+            "percentageTokens": 4.67,
             "newDuplicatedLines": 0,
             "newClones": 0
           }
         },
         "total": {
-          "lines": 4085,
-          "tokens": 36100,
-          "sources": 28,
-          "clones": 13,
-          "duplicatedLines": 189,
-          "duplicatedTokens": 2039,
-          "percentage": 4.63,
-          "percentageTokens": 5.65,
+          "lines": 3706,
+          "tokens": 32642,
+          "sources": 24,
+          "clones": 3,
+          "duplicatedLines": 45,
+          "duplicatedTokens": 486,
+          "percentage": 1.21,
+          "percentageTokens": 1.49,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
       }
     },
     "total": {
-      "lines": 8851,
-      "tokens": 77362,
-      "sources": 80,
-      "clones": 17,
-      "duplicatedLines": 303,
-      "duplicatedTokens": 3084,
-      "percentage": 3.42,
-      "percentageTokens": 3.99,
+      "lines": 8410,
+      "tokens": 73540,
+      "sources": 70,
+      "clones": 4,
+      "duplicatedLines": 70,
+      "duplicatedTokens": 738,
+      "percentage": 0.83,
+      "percentageTokens": 1,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
   "duplicates": [
-    {
-      "format": "typescript",
-      "lines": 30,
-      "fragment": "];\n}\n\n/**\n * Creates a new game from Steam game data\n */\nexport function createGameFromSteam(\n  steamGame: any, \n  targetCategory: CategoryID\n): Game {\n  let mythologicalFigureId = steamGame.mythologicalFigureId;\n  \n  // Clear deity if the target category doesn't support deities at all\n  if (!supportsDieties(targetCategory)) {\n    mythologicalFigureId = undefined;\n  }\n  // If the target category supports deities, check if the current deity belongs to the target category\n  else if (mythologicalFigureId) {\n    const deity = MYTHOLOGICAL_FIGURES[mythologicalFigureId];\n    // Clear deity if it doesn't exist or doesn't belong to the target category\n    if (!deity || deity.tier !== targetCategory) {\n      mythologicalFigureId = undefined;\n    }\n  }\n  \n  return {\n    ...steamGame,\n    id: uid(), // Generate a new ID\n    category: targetCategory,\n    contentType",
-      "tokens": 0,
-      "firstFile": {
-        "name": "/home/magicmicky/Development/pantheon/src/utils/contentHelpers.ts",
-        "start": 45,
-        "end": 74,
-        "startLoc": {
-          "line": 45,
-          "column": 19,
-          "position": 430
-        },
-        "endLoc": {
-          "line": 74,
-          "column": 12,
-          "position": 602
-        }
-      },
-      "secondFile": {
-        "name": "/home/magicmicky/Development/pantheon/src/utils/gameHelpers.ts",
-        "start": 45,
-        "end": 74,
-        "startLoc": {
-          "line": 45,
-          "column": 17,
-          "position": 418
-        },
-        "endLoc": {
-          "line": 74,
-          "column": 49,
-          "position": 590
-        }
-      }
-    },
     {
       "format": "typescript",
       "lines": 26,
@@ -1073,12 +917,12 @@
         "startLoc": {
           "line": 145,
           "column": 9,
-          "position": 1504
+          "position": 1500
         },
         "endLoc": {
           "line": 170,
           "column": 30,
-          "position": 1756
+          "position": 1752
         }
       },
       "secondFile": {
@@ -1088,228 +932,48 @@
         "startLoc": {
           "line": 87,
           "column": 2,
-          "position": 953
+          "position": 945
         },
         "endLoc": {
           "line": 111,
           "column": 2,
-          "position": 1203
+          "position": 1195
         }
       }
     },
     {
       "format": "tsx",
-      "lines": 7,
-      "fragment": ": (e: React.DragEvent<HTMLLIElement>, targetGameId: string, targetCategory: CategoryID) => void;\n  onUpdateDeity: (gameId: string, deityId?: string) => void;\n  onToggleDeityEdit: (gameId: string | null) => void;\n  setDropIndicator: (indicator: { gameId: string; position: 'before' | 'after' } | null) => void;\n}\n\nconst GameCategory",
+      "lines": 23,
+      "fragment": "return (\n            <Tooltip\n              key={deity.id}\n              position=\"bottom\"\n              content={\n                <div className=\"flex flex-col gap-2\">\n                  <div className=\"flex items-center gap-3 border-b border-gray-700/50 pb-2\">\n                    <Icon className=\"w-5 h-5\" style={{ color: deity.color }} strokeWidth={2} />\n                    <div className=\"font-medium text-sm\">{deity.name}</div>\n                  </div>\n                  <div className=\"text-gray-300 text-xs\">{deity.description}</div>\n                  <div className=\"text-gray-400 italic text-xs mt-1\">\n                    <span className=\"font-medium text-gray-300\">Domain:</span> {deity.domain}\n                  </div>\n                  {isUsed && (\n                    <div className=\"text-red-400 text-xs mt-1 border-t border-gray-700/50 pt-1\">\n                      Already assigned to another game\n                    </div>\n                  )}\n                </div>\n              }\n            >\n              {",
       "tokens": 0,
       "firstFile": {
-        "name": "/home/magicmicky/Development/pantheon/src/components/GameCategory.tsx",
-        "start": 29,
-        "end": 35,
+        "name": "/home/magicmicky/Development/pantheon/src/components/DeityComponents.tsx",
+        "start": 182,
+        "end": 204,
         "startLoc": {
-          "line": 29,
-          "column": 13,
-          "position": 422
+          "line": 182,
+          "column": 11,
+          "position": 1766
         },
         "endLoc": {
-          "line": 35,
-          "column": 13,
-          "position": 538
-        }
-      },
-      "secondFile": {
-        "name": "/home/magicmicky/Development/pantheon/src/components/GameItem.tsx",
-        "start": 25,
-        "end": 31,
-        "startLoc": {
-          "line": 25,
-          "column": 7,
-          "position": 336
-        },
-        "endLoc": {
-          "line": 31,
-          "column": 9,
-          "position": 452
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 40,
-      "fragment": ".id) : undefined}\n      onDragEnd={!isSharedView ? onDragEnd : undefined}\n      onDragOver={!isSharedView ? handleDragOver : undefined}\n      onDragLeave={!isSharedView ? handleDragLeave : undefined}\n      onDrop={!isSharedView ? handleDrop : undefined}\n    >\n      {/* Drop indicator before this item */}\n      {dropIndicator?.contentId === content.id && dropIndicator.position === 'before' && (\n        <div \n          className=\"absolute -top-1 left-0 right-0 h-0.5 rounded-full opacity-80 z-10\" \n          style={{ backgroundColor: colors.highlight }} \n        />\n      )}\n      \n      {/* Left icon area */}\n      <div className=\"absolute left-0 top-1/2 -translate-y-1/2 w-5 flex justify-center\">\n        {!isSharedView && (\n          <div className=\"absolute opacity-0 group-hover/item:opacity-100 text-gray-500 cursor-grab transition-opacity duration-200\">\n            <GripVertical size={14} strokeWidth={1.5} />\n          </div>\n        )}\n        {React.createElement(getGenreIcon(getPrimaryGenre(content), GENRE_ICON_MAPPING), {\n          className: `w-4 h-4 ${colors.text} flex-shrink-0 ${!isSharedView ? \"group-hover/item:opacity-0\" : \"\"} transition-opacity duration-200`,\n          strokeWidth: 1.5\n        })}\n      </div>\n\n      {/* Main content area - takes up available space */}\n      <div className={`flex-1 flex flex-col justify-center gap-0.5 min-w-0 ${!isSharedView ? \"cursor-grab\" : \"\"}`}>\n        {/* Content title line */}\n        <div className=\"flex items-center\">\n          <span className=\"font-medium leading-tight text-white truncate\">{content.title}</span>\n        </div>\n        \n        {/* Content details and action buttons line */}\n        <div className=\"flex justify-between items-center\">\n          <span className=\"text-gray-400 text-xs\">{getContentDisplayText(content)}</span>\n          {!isSharedView && (\n            <div className=\"flex gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity duration-200\">\n              <IconBtn title=\"Edit\" onClick={() => onEdit(content",
-      "tokens": 0,
-      "firstFile": {
-        "name": "/home/magicmicky/Development/pantheon/src/components/ContentItem.tsx",
-        "start": 109,
-        "end": 148,
-        "startLoc": {
-          "line": 109,
-          "column": 9,
-          "position": 1088
-        },
-        "endLoc": {
-          "line": 148,
-          "column": 8,
-          "position": 1475
-        }
-      },
-      "secondFile": {
-        "name": "/home/magicmicky/Development/pantheon/src/components/GameItem.tsx",
-        "start": 93,
-        "end": 132,
-        "startLoc": {
-          "line": 93,
-          "column": 6,
-          "position": 903
-        },
-        "endLoc": {
-          "line": 132,
-          "column": 5,
-          "position": 1296
-        }
-      }
-    },
-    {
-      "format": "tsx",
-      "lines": 6,
-      "fragment": ": string) => void;\n  onDragStart: (e: React.DragEvent<HTMLLIElement>, id: string) => void;\n  onDragEnd: () => void;\n  onDragOver: (e: React.DragEvent<HTMLLIElement>) => void;\n  onDragLeave: (e: React.DragEvent<HTMLLIElement>) => void;\n  onDrop: (e: React.DragEvent<HTMLLIElement>, targetContentId",
-      "tokens": 0,
-      "firstFile": {
-        "name": "/home/magicmicky/Development/pantheon/src/components/ContentItem.tsx",
-        "start": 20,
-        "end": 25,
-        "startLoc": {
-          "line": 20,
-          "column": 10,
-          "position": 255
-        },
-        "endLoc": {
-          "line": 25,
-          "column": 16,
-          "position": 362
-        }
-      },
-      "secondFile": {
-        "name": "/home/magicmicky/Development/pantheon/src/components/GameItem.tsx",
-        "start": 20,
-        "end": 25,
-        "startLoc": {
-          "line": 20,
-          "column": 7,
-          "position": 243
-        },
-        "endLoc": {
-          "line": 25,
-          "column": 13,
-          "position": 350
-        }
-      }
-    },
-    {
-      "format": "tsx",
-      "lines": 24,
-      "fragment": ".id, position });\n    \n    onDragOver(e);\n  };\n\n  const handleDragLeave = (e: React.DragEvent<HTMLLIElement>) => {\n    if (isSharedView) return;\n    \n    // Only clear if we're actually leaving this element and not entering a child\n    const relatedTarget = e.relatedTarget as HTMLElement;\n    const currentTarget = e.currentTarget as HTMLElement;\n    \n    if (!relatedTarget || !currentTarget.contains(relatedTarget)) {\n      setDropIndicator(null);\n    }\n    \n    onDragLeave(e);\n  };\n\n  const handleDrop = (e: React.DragEvent<HTMLLIElement>) => {\n    if (isSharedView) return;\n    \n    setDropIndicator(null);\n    onDrop(e, content",
-      "tokens": 0,
-      "firstFile": {
-        "name": "/home/magicmicky/Development/pantheon/src/components/ContentItem.tsx",
-        "start": 75,
-        "end": 98,
-        "startLoc": {
-          "line": 75,
-          "column": 8,
-          "position": 827
-        },
-        "endLoc": {
-          "line": 98,
-          "column": 8,
-          "position": 1015
-        }
-      },
-      "secondFile": {
-        "name": "/home/magicmicky/Development/pantheon/src/components/GameItem.tsx",
-        "start": 59,
-        "end": 82,
-        "startLoc": {
-          "line": 59,
-          "column": 5,
-          "position": 642
-        },
-        "endLoc": {
-          "line": 82,
-          "column": 5,
-          "position": 830
-        }
-      }
-    },
-    {
-      "format": "tsx",
-      "lines": 15,
-      "fragment": ".id && dropIndicator.position === 'before' && (\n        <div \n          className=\"absolute -top-1 left-0 right-0 h-0.5 rounded-full opacity-80 z-10\" \n          style={{ backgroundColor: colors.highlight }} \n        />\n      )}\n      \n      {/* Left icon area */}\n      <div className=\"absolute left-0 top-1/2 -translate-y-1/2 w-5 flex justify-center\">\n        {!isSharedView && (\n          <div className=\"absolute opacity-0 group-hover/item:opacity-100 text-gray-500 cursor-grab transition-opacity duration-200\">\n            <GripVertical size={14} strokeWidth={1.5} />\n          </div>\n        )}\n        {React.createElement(getGenreIcon(getPrimaryGenre",
-      "tokens": 0,
-      "firstFile": {
-        "name": "/home/magicmicky/Development/pantheon/src/components/ContentItem.tsx",
-        "start": 116,
-        "end": 130,
-        "startLoc": {
-          "line": 116,
-          "column": 8,
-          "position": 1157
-        },
-        "endLoc": {
-          "line": 130,
-          "column": 16,
-          "position": 1275
-        }
-      },
-      "secondFile": {
-        "name": "/home/magicmicky/Development/pantheon/src/components/GameItem.tsx",
-        "start": 100,
-        "end": 114,
-        "startLoc": {
-          "line": 100,
-          "column": 5,
-          "position": 972
-        },
-        "endLoc": {
-          "line": 114,
-          "column": 5,
-          "position": 1090
-        }
-      }
-    },
-    {
-      "format": "tsx",
-      "lines": 17,
-      "fragment": "}</span>\n          {!isSharedView && (\n            <div className=\"flex gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity duration-200\">\n              <IconBtn title=\"Edit\" onClick={() => onEdit(content.id)}>\n                <Pen className=\"w-3 h-3\" strokeWidth={1.5}/>\n              </IconBtn>\n              <IconBtn title=\"Delete\" onClick={() => onDelete(content.id)}>\n                <X className=\"w-3 h-3\" strokeWidth={1.5}/>\n              </IconBtn>\n            </div>\n          )}\n        </div>\n      </div>\n\n      {/* Right-side deity area - spans full height */}\n      <div className=\"flex items-center self-stretch ml-2\">\n        {content",
-      "tokens": 0,
-      "firstFile": {
-        "name": "/home/magicmicky/Development/pantheon/src/components/ContentItem.tsx",
-        "start": 145,
-        "end": 161,
-        "startLoc": {
-          "line": 145,
+          "line": 204,
           "column": 2,
-          "position": 1430
-        },
-        "endLoc": {
-          "line": 161,
-          "column": 8,
-          "position": 1591
+          "position": 1968
         }
       },
       "secondFile": {
-        "name": "/home/magicmicky/Development/pantheon/src/components/GameItem.tsx",
-        "start": 129,
-        "end": 145,
+        "name": "/home/magicmicky/Development/pantheon/src/components/DeityComponents.tsx",
+        "start": 65,
+        "end": 87,
         "startLoc": {
-          "line": 129,
-          "column": 5,
-          "position": 1251
+          "line": 65,
+          "column": 11,
+          "position": 636
         },
         "endLoc": {
-          "line": 145,
-          "column": 5,
-          "position": 1412
+          "line": 87,
+          "column": 2,
+          "position": 838
         }
       }
     },
@@ -1320,284 +984,32 @@
       "tokens": 0,
       "firstFile": {
         "name": "/home/magicmicky/Development/pantheon/src/components/ContentEditForm.tsx",
-        "start": 112,
-        "end": 127,
+        "start": 115,
+        "end": 130,
         "startLoc": {
-          "line": 112,
+          "line": 115,
           "column": 13,
-          "position": 1156
+          "position": 1170
         },
         "endLoc": {
-          "line": 127,
+          "line": 130,
           "column": 7,
-          "position": 1314
+          "position": 1328
         }
       },
       "secondFile": {
         "name": "/home/magicmicky/Development/pantheon/src/components/ContentEditForm.tsx",
-        "start": 82,
-        "end": 97,
+        "start": 84,
+        "end": 99,
         "startLoc": {
-          "line": 82,
+          "line": 84,
           "column": 11,
-          "position": 849
+          "position": 858
         },
         "endLoc": {
-          "line": 97,
+          "line": 99,
           "column": 6,
-          "position": 1007
-        }
-      }
-    },
-    {
-      "format": "tsx",
-      "lines": 16,
-      "fragment": "{/* Action buttons */}\n        <div className=\"flex gap-2 justify-end\">\n          <Button onClick={onAutoFill} className=\"text-xs px-2 py-1 bg-slate-700 hover:bg-slate-600\">\n            <RefreshCw className=\"w-3 h-3 mr-1\" strokeWidth={1.5}/>\n            Auto\n          </Button>\n          <Button onClick={onSave} className=\"text-xs px-2 py-1 bg-blue-600 hover:bg-blue-700\">\n            Save\n          </Button>\n          <Button onClick={onCancel} className=\"text-xs px-2 py-1 bg-slate-700 hover:bg-slate-600\">\n            Cancel\n          </Button>\n        </div>\n      </div>\n\n      {/* Right-side deity area - consistent with ContentItem */",
-      "tokens": 0,
-      "firstFile": {
-        "name": "/home/magicmicky/Development/pantheon/src/components/ContentEditForm.tsx",
-        "start": 183,
-        "end": 198,
-        "startLoc": {
-          "line": 183,
-          "column": 9,
-          "position": 1863
-        },
-        "endLoc": {
-          "line": 198,
-          "column": 58,
-          "position": 1983
-        }
-      },
-      "secondFile": {
-        "name": "/home/magicmicky/Development/pantheon/src/components/GameEditForm.tsx",
-        "start": 77,
-        "end": 92,
-        "startLoc": {
-          "line": 77,
-          "column": 9,
-          "position": 671
-        },
-        "endLoc": {
-          "line": 92,
-          "column": 55,
-          "position": 791
-        }
-      }
-    },
-    {
-      "format": "tsx",
-      "lines": 22,
-      "fragment": "}\n      <div className=\"flex items-start self-stretch ml-2 pt-2\">\n        {supportsDieties(draft.category) && (\n          <div className=\"flex items-center gap-2\">\n            {draft.mythologicalFigureId ? (\n              <div className=\"flex items-center gap-1\">\n                <DeityBadge mythologicalFigureId={draft.mythologicalFigureId} />\n                <button \n                  onClick={() => onDraftChange({ ...draft, mythologicalFigureId: undefined })}\n                  className=\"text-gray-500 hover:text-red-400 transition-colors ml-1\"\n                  title=\"Remove deity\"\n                >\n                  <X className=\"w-3 h-3\" strokeWidth={1.5} />\n                </button>\n              </div>\n            ) : (\n              <DeityPopup\n                tier={draft.category as 'olympian' | 'titan' | 'hero'}\n                usedDeityIds={usedDeityIds}\n                onSelect={(id) => onDraftChange({ ...draft, mythologicalFigureId: id })}\n                onCancel={() => onToggleDeityEdit(null)}\n                isOpen={inlineDeityEdit === content",
-      "tokens": 0,
-      "firstFile": {
-        "name": "/home/magicmicky/Development/pantheon/src/components/ContentEditForm.tsx",
-        "start": 198,
-        "end": 219,
-        "startLoc": {
-          "line": 198,
-          "column": 58,
-          "position": 1984
-        },
-        "endLoc": {
-          "line": 219,
-          "column": 8,
-          "position": 2213
-        }
-      },
-      "secondFile": {
-        "name": "/home/magicmicky/Development/pantheon/src/components/GameEditForm.tsx",
-        "start": 92,
-        "end": 113,
-        "startLoc": {
-          "line": 92,
-          "column": 55,
-          "position": 792
-        },
-        "endLoc": {
-          "line": 113,
-          "column": 5,
-          "position": 1021
-        }
-      }
-    },
-    {
-      "format": "javascript",
-      "lines": 22,
-      "fragment": "={categoryId} \n      category={categoryId}\n      onDragOver={!isSharedView ? (e: React.DragEvent<HTMLDivElement>) => onDragOver(e, categoryId) : undefined} \n      onDragLeave={!isSharedView ? onDragLeave : undefined}\n      onDragEnter={!isSharedView ? onDragEnter : undefined}\n      onDrop={!isSharedView ? (e: React.DragEvent<HTMLDivElement>) => {\n        onDragLeave(e);\n        setDropIndicator(null);\n        onDrop(e, categoryId);\n      } : undefined}\n    >\n      <CardHeader category={categoryId}>\n        <Icon className=\"w-5 h-5 text-white opacity-90\"/>\n        <CardTitle category={categoryId}>{category.name}</CardTitle>\n      </CardHeader>\n      <CardContent>\n        <p className=\"text-sm text-gray-400 mb-2 italic\">{category.blurb}</p>\n        {categoryContent.length ? (\n          <ul className=\"space-y-1 text-sm divide-y divide-gray-800/30\">\n            {categoryContent.map(item => editing === item.id ? (\n              <ContentEditForm\n                key={item",
-      "tokens": 0,
-      "firstFile": {
-        "name": "/home/magicmicky/Development/pantheon/src/components/ContentCategory.tsx",
-        "start": 73,
-        "end": 94,
-        "startLoc": {
-          "line": 73,
-          "column": 4,
-          "position": 750
-        },
-        "endLoc": {
-          "line": 94,
-          "column": 5,
-          "position": 984
-        }
-      },
-      "secondFile": {
-        "name": "/home/magicmicky/Development/pantheon/src/components/GameCategory.tsx",
-        "start": 71,
-        "end": 92,
-        "startLoc": {
-          "line": 71,
-          "column": 4,
-          "position": 737
-        },
-        "endLoc": {
-          "line": 92,
-          "column": 8,
-          "position": 971
-        }
-      }
-    },
-    {
-      "format": "tsx",
-      "lines": 11,
-      "fragment": ": string) => void;\n  onCancelEdit: () => void;\n  onDraftChange: (updates: Partial<Content>) => void;\n  onAutoFill: () => void;\n  onDragStart: (e: React.DragEvent<HTMLLIElement>, id: string) => void;\n  onDragEnd: () => void;\n  onDragOver: (e: React.DragEvent<HTMLElement>, category: CategoryID) => void;\n  onDragLeave: (e: React.DragEvent<HTMLElement>) => void;\n  onDragEnter: (e: React.DragEvent<HTMLDivElement>) => void;\n  onDrop: (e: React.DragEvent<HTMLDivElement>, target: CategoryID) => void;\n  onDropOnContent",
-      "tokens": 0,
-      "firstFile": {
-        "name": "/home/magicmicky/Development/pantheon/src/components/ContentCategory.tsx",
-        "start": 19,
-        "end": 29,
-        "startLoc": {
-          "line": 19,
-          "column": 10,
-          "position": 232
-        },
-        "endLoc": {
-          "line": 29,
-          "column": 16,
-          "position": 421
-        }
-      },
-      "secondFile": {
-        "name": "/home/magicmicky/Development/pantheon/src/components/GameCategory.tsx",
-        "start": 19,
-        "end": 29,
-        "startLoc": {
-          "line": 19,
-          "column": 7,
-          "position": 232
-        },
-        "endLoc": {
-          "line": 29,
-          "column": 13,
-          "position": 421
-        }
-      }
-    },
-    {
-      "format": "tsx",
-      "lines": 23,
-      "fragment": ", categoryId]\n  );\n\n  return (\n    <Card \n      key={categoryId} \n      category={categoryId}\n      onDragOver={!isSharedView ? (e: React.DragEvent<HTMLDivElement>) => onDragOver(e, categoryId) : undefined} \n      onDragLeave={!isSharedView ? onDragLeave : undefined}\n      onDragEnter={!isSharedView ? onDragEnter : undefined}\n      onDrop={!isSharedView ? (e: React.DragEvent<HTMLDivElement>) => {\n        onDragLeave(e);\n        setDropIndicator(null);\n        onDrop(e, categoryId);\n      } : undefined}\n    >\n      <CardHeader category={categoryId}>\n        <Icon className=\"w-5 h-5 text-white opacity-90\"/>\n        <CardTitle category={categoryId}>{category.name}</CardTitle>\n      </CardHeader>\n      <CardContent>\n        <p className=\"text-sm text-gray-400 mb-2 italic\">{category.blurb}</p>\n        {categoryContent",
-      "tokens": 0,
-      "firstFile": {
-        "name": "/home/magicmicky/Development/pantheon/src/components/ContentCategory.tsx",
-        "start": 68,
-        "end": 90,
-        "startLoc": {
-          "line": 68,
-          "column": 8,
-          "position": 730
-        },
-        "endLoc": {
-          "line": 90,
-          "column": 16,
-          "position": 936
-        }
-      },
-      "secondFile": {
-        "name": "/home/magicmicky/Development/pantheon/src/components/GameCategory.tsx",
-        "start": 66,
-        "end": 88,
-        "startLoc": {
-          "line": 66,
-          "column": 6,
-          "position": 717
-        },
-        "endLoc": {
-          "line": 88,
-          "column": 14,
-          "position": 923
-        }
-      }
-    },
-    {
-      "format": "tsx",
-      "lines": 18,
-      "fragment": "<Input \n          type=\"number\" \n          placeholder=\"Year\" \n          value={newContent.year ?? \"\"} \n          onChange={e => onNewContentChange({...newContent, year: +e.target.value})}\n        />\n        <Select \n          value={newContent.category} \n          onChange={e => onNewContentChange({...newContent, category: e.target.value as CategoryID})}\n        >\n          {Object.entries(CATEGORIES).map(([k,v]) => (\n            <option key={k} value={k}>{v.name}</option>\n          ))}\n        </Select>\n      </div>\n      \n      {/* Mythological Figure Selector - only show for appropriate categories */}\n      {supportsDieties(newContent",
-      "tokens": 0,
-      "firstFile": {
-        "name": "/home/magicmicky/Development/pantheon/src/components/AddContentForm.tsx",
-        "start": 141,
-        "end": 158,
-        "startLoc": {
-          "line": 141,
-          "column": 9,
-          "position": 1372
-        },
-        "endLoc": {
-          "line": 158,
-          "column": 11,
-          "position": 1539
-        }
-      },
-      "secondFile": {
-        "name": "/home/magicmicky/Development/pantheon/src/components/AddGameForm.tsx",
-        "start": 51,
-        "end": 68,
-        "startLoc": {
-          "line": 51,
-          "column": 9,
-          "position": 512
-        },
-        "endLoc": {
-          "line": 68,
-          "column": 8,
-          "position": 678
-        }
-      }
-    },
-    {
-      "format": "tsx",
-      "lines": 18,
-      "fragment": ".category) && (\n        <DeitySelector \n          tier={newContent.category as 'olympian' | 'titan' | 'hero'}\n          selectedDeityId={newContent.mythologicalFigureId}\n          onChange={(id) => onNewContentChange({...newContent, mythologicalFigureId: id})}\n          usedDeityIds={getUsedDeityIds(content)}\n        />\n      )}\n      \n      <div className=\"flex justify-between mt-6\">\n        <Button onClick={onAutoFill} className=\"bg-slate-700 hover:bg-slate-600 text-gray-200\">Auto‑Fill</Button>\n        <Button onClick={onAdd} className=\"bg-slate-700 hover:bg-slate-600\">Add</Button>\n      </div>\n    </div>\n  );\n});\n\nexport default AddContentForm",
-      "tokens": 0,
-      "firstFile": {
-        "name": "/home/magicmicky/Development/pantheon/src/components/AddContentForm.tsx",
-        "start": 158,
-        "end": 175,
-        "startLoc": {
-          "line": 158,
-          "column": 11,
-          "position": 1540
-        },
-        "endLoc": {
-          "line": 175,
-          "column": 15,
-          "position": 1694
-        }
-      },
-      "secondFile": {
-        "name": "/home/magicmicky/Development/pantheon/src/components/AddGameForm.tsx",
-        "start": 68,
-        "end": 85,
-        "startLoc": {
-          "line": 68,
-          "column": 8,
-          "position": 679
-        },
-        "endLoc": {
-          "line": 85,
-          "column": 12,
-          "position": 833
+          "position": 1016
         }
       }
     },
@@ -1608,32 +1020,32 @@
       "tokens": 0,
       "firstFile": {
         "name": "/home/magicmicky/Development/pantheon/src/GamePantheon.tsx",
-        "start": 467,
-        "end": 475,
+        "start": 456,
+        "end": 464,
         "startLoc": {
-          "line": 467,
+          "line": 456,
           "column": 6,
-          "position": 3663
+          "position": 3546
         },
         "endLoc": {
-          "line": 475,
+          "line": 464,
           "column": 9,
-          "position": 3789
+          "position": 3672
         }
       },
       "secondFile": {
         "name": "/home/magicmicky/Development/pantheon/src/GamePantheon.tsx",
-        "start": 454,
-        "end": 462,
+        "start": 443,
+        "end": 451,
         "startLoc": {
-          "line": 454,
+          "line": 443,
           "column": 11,
-          "position": 3470
+          "position": 3353
         },
         "endLoc": {
-          "line": 462,
+          "line": 451,
           "column": 14,
-          "position": 3596
+          "position": 3479
         }
       }
     }

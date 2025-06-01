@@ -130,8 +130,8 @@ const ContentCategory = memo(function ContentCategory({
                 onDelete={onDelete}
                 onDragStart={onDragStart}
                 onDragEnd={onDragEnd}
-                onDragOver={() => {}} // Handled in ContentItem
-                onDragLeave={() => {}} // Handled in ContentItem
+                onDragOver={() => { /* Handled in ContentItem */ }} 
+                onDragLeave={() => { /* Handled in ContentItem */ }} 
                 onDrop={onDropOnContent}
                 onUpdateDeity={onUpdateDeity}
                 onToggleDeityEdit={onToggleDeityEdit}
