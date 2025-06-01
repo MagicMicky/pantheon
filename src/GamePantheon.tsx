@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 // Import types
-import { Content, ContentType, Game, Movie, TVShow } from "./types";
+import { CategoryID, Content, ContentType, Game, Movie, TVShow } from "./types";
 
 // Import components
 import AddContentForm from "./components/AddContentForm";
@@ -510,20 +510,6 @@ export default function GamePantheon() {
     e.dataTransfer.effectAllowed = "move";
   };
 
-  // Convert dropIndicator for legacy compatibility
-  const genericDropIndicator = dropIndicator ? {
-    contentId: dropIndicator.contentId,
-    position: dropIndicator.position
-  } : null;
-
-  // Convert setDropIndicator for legacy compatibility
-  const setGenericDropIndicator = (indicator: { contentId: string; position: 'before' | 'after' } | null) => {
-    setDropIndicator(indicator ? {
-      contentId: indicator.contentId,
-      position: indicator.position
-    } : null);
-  };
-
   // Update newContent when currentContentType changes
   useEffect(() => {
     setNewContent({category: "hero", contentType: currentContentType});
@@ -640,7 +626,7 @@ export default function GamePantheon() {
       )}
 
       <div className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-        {Object.entries(CATEGORIES).map(([categoryIdString, categoryDetails]) => {
+        {Object.entries(CATEGORIES).map(([categoryIdString]) => {
           const categoryId = categoryIdString as CategoryID;
           return (
             <ContentCategory
