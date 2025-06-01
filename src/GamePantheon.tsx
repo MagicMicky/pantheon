@@ -518,20 +518,22 @@ export default function GamePantheon() {
   // Return JSX
   return (
     <div className="p-4 md:p-8 bg-gradient-to-br from-slate-950 to-gray-900 min-h-screen select-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] font-sans">
-      <header className="text-center mb-8 md:mb-10 relative">
+      <header className="text-center mb-4 md:mb-10 relative">
         {/* Mobile: Stack vertically, Desktop: Horizontal layout */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-center gap-2 md:gap-4 mb-1">
           {/* Title line - responsive layout */}
           <div className="flex items-center justify-center gap-2 md:gap-4">
-            <h1 className="text-3xl md:text-5xl font-serif font-bold tracking-wider text-white">
-              <span className="inline-block mr-1 md:mr-2 transform translate-y-1">🏛️</span> 
+            <h1 className="text-3xl md:text-5xl font-serif font-bold tracking-wider text-white transform translate-y-1">
+              <span className="inline-block mr-1 md:mr-2">🏛️</span> 
               The 
             </h1>
             {!isSharedView ? (
-              <ContentTypeSelector 
-                currentContentType={currentContentType}
-                onContentTypeChange={switchContentType}
-              />
+              <div className="transform translate-y-1">
+                <ContentTypeSelector 
+                  currentContentType={currentContentType}
+                  onContentTypeChange={switchContentType}
+                />
+              </div>
             ) : (
               <span className="text-3xl md:text-5xl font-serif font-bold tracking-wider text-white transform translate-y-1">
                 {currentContentType === 'games' && 'Game'}
@@ -539,7 +541,7 @@ export default function GamePantheon() {
                 {currentContentType === 'tvshows' && 'TV Show'}
               </span>
             )}
-            <h1 className="text-3xl md:text-5xl font-serif font-bold tracking-wider text-white">
+            <h1 className="text-3xl md:text-5xl font-serif font-bold tracking-wider text-white transform translate-y-1">
               Pantheon
             </h1>
           </div>

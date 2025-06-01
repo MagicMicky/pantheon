@@ -261,25 +261,42 @@ export const DeityPopup = ({
     if (!triggerRef.current) return;
     
     const rect = triggerRef.current.getBoundingClientRect();
-    const popupWidth = isTouchDevice() ? Math.min(350, window.innerWidth - 16) : 300; // Responsive width
+    const popupWidth = isTouchDevice() ? Math.min(350, window.innerWidth - 24) : 300; // More margin on mobile
     const popupHeight = isTouchDevice() ? 360 : 280; // Taller on mobile for confirm button
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    const margin = 8;
+    const margin = 12; // Increased margin for better spacing
     
-    // Calculate horizontal position - prefer right-aligned
-    let x = rect.right - popupWidth;
-    if (x < margin) { // If popup would go off left edge
-      x = rect.left; // Align left edge instead
+    // Calculate horizontal position
+    let x = rect.right - popupWidth; // Prefer right-aligned
+    
+    // Check if popup would overflow on the left
+    if (x < margin) {
+      x = rect.left; // Try left-aligned
+      if (x + popupWidth > viewportWidth - margin) {
+        // If still overflows, center it in viewport
+        x = Math.max(margin, (viewportWidth - popupWidth) / 2);
+      }
     }
-    if (x + popupWidth > viewportWidth - margin) { // If popup would go off right edge
+    
+    // Final check for right overflow
+    if (x + popupWidth > viewportWidth - margin) {
       x = viewportWidth - popupWidth - margin;
     }
     
     // Calculate vertical position - prefer below trigger
-    let y = rect.bottom + 4;
-    if (y + popupHeight > viewportHeight - margin) { // If popup would go off bottom edge
-      y = rect.top - popupHeight - 4; // Position above trigger with small gap
+    let y = rect.bottom + 8; // Slightly more spacing
+    
+    // Check if popup would overflow at the bottom
+    if (y + popupHeight > viewportHeight - margin) {
+      // Try positioning above
+      const yAbove = rect.top - popupHeight - 8;
+      if (yAbove >= margin) {
+        y = yAbove;
+      } else {
+        // If doesn't fit above either, position to fit in viewport
+        y = Math.max(margin, viewportHeight - popupHeight - margin);
+      }
     }
     
     setPosition({ x, y });
@@ -321,10 +338,11 @@ export const DeityPopup = ({
           
           {/* Popup content */}
           <div 
-            className={`fixed z-20 ${isTouchDevice() ? 'w-[350px] max-w-[calc(100vw-16px)]' : 'w-[300px]'}`}
+            className={`fixed z-20 ${isTouchDevice() ? 'max-w-[calc(100vw-24px)]' : 'w-[300px]'}`}
             style={{
               left: `${position.x}px`,
               top: `${position.y}px`,
+              width: isTouchDevice() ? Math.min(350, window.innerWidth - 24) : 300,
             }}
             onClick={(e) => e.stopPropagation()}
           >
