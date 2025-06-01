@@ -64,14 +64,29 @@ const migrateGenreFormat = (content: Content[]): Content[] => {
   let migrationCount = 0;
   
   const migratedContent = content.map(item => {
-    if (item.contentType === 'games') {
-      const game = item as Game;
+    // Check if this is a game (either has contentType: 'games' or looks like a game)
+    const itemAny = item as any;
+    const isGame = item.contentType === 'games' || 
+                   (!item.contentType && 'genre' in itemAny && 
+                    ('steamAppId' in itemAny || 'steamHoursPlayed' in itemAny || 
+                     typeof itemAny.genre === 'string'));
+    
+    if (isGame) {
+      const game = itemAny; // Use any to handle missing contentType
+      
       // Check if genre is a string instead of array
       if (typeof game.genre === 'string') {
         migrationCount++;
         return {
           ...game,
+          contentType: 'games', // Ensure contentType is set
           genre: [game.genre] // Convert string to array
+        };
+      } else {
+        // Game already has array genre, but might be missing contentType
+        return {
+          ...game,
+          contentType: 'games' // Ensure contentType is set
         };
       }
     }
@@ -377,15 +392,23 @@ export const localStateManager = {
         const migratedContent = migrateGenreFormat(content);
         
         // Check if any changes were made
-        const needsMigration = content.some((item: any) => 
-          item.contentType === 'games' && typeof item.genre === 'string'
-        );
+        const needsMigration = content.some((item: any) => {
+          const isGame = item.contentType === 'games' || 
+                         (!item.contentType && 'genre' in item && 
+                          ('steamAppId' in item || 'steamHoursPlayed' in item || 
+                           typeof item.genre === 'string'));
+          return isGame && typeof item.genre === 'string';
+        });
         
         if (needsMigration) {
           localStorage.setItem(STORAGE_KEYS.games, JSON.stringify(migratedContent));
-          const migrationCount = content.filter((item: any) => 
-            item.contentType === 'games' && typeof item.genre === 'string'
-          ).length;
+          const migrationCount = content.filter((item: any) => {
+            const isGame = item.contentType === 'games' || 
+                           (!item.contentType && 'genre' in item && 
+                            ('steamAppId' in item || 'steamHoursPlayed' in item || 
+                             typeof item.genre === 'string'));
+            return isGame && typeof item.genre === 'string';
+          }).length;
           console.log(`Successfully migrated ${migrationCount} games to new genre format`);
           return migrationCount;
         }
@@ -403,9 +426,13 @@ export const localStateManager = {
       const savedContent = localStorage.getItem(STORAGE_KEYS.games);
       if (savedContent) {
         const content = JSON.parse(savedContent);
-        return content.some((item: any) => 
-          item.contentType === 'games' && typeof item.genre === 'string'
-        );
+        return content.some((item: any) => {
+          const isGame = item.contentType === 'games' || 
+                         (!item.contentType && 'genre' in item && 
+                          ('steamAppId' in item || 'steamHoursPlayed' in item || 
+                           typeof item.genre === 'string'));
+          return isGame && typeof item.genre === 'string';
+        });
       }
       return false;
     } catch (e) {
