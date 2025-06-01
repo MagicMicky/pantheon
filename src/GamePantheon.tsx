@@ -5,8 +5,8 @@ import { CategoryID, Content, ContentType, Game, Movie, TVShow } from "./types";
 
 // Import components
 import AddContentForm from "./components/AddContentForm";
+import ContentCategory from "./components/ContentCategory";
 import { ContentTypeSelector } from "./components/ContentTypeSelector";
-import GameCategory from "./components/GameCategory";
 import { SteamGamesImport } from "./components/SteamGamesImport";
 import { HistoryModal, ShareModal } from "./components/modals";
 import { HeaderControls, SharedViewBanner, SharedViewCTA } from "./components/shared";
@@ -510,20 +510,6 @@ export default function GamePantheon() {
     e.dataTransfer.effectAllowed = "move";
   };
 
-  // Convert dropIndicator for legacy compatibility
-  const genericDropIndicator = dropIndicator ? {
-    contentId: dropIndicator.contentId,
-    position: dropIndicator.position
-  } : null;
-
-  // Convert setDropIndicator for legacy compatibility
-  const setGenericDropIndicator = (indicator: { contentId: string; position: 'before' | 'after' } | null) => {
-    setDropIndicator(indicator ? {
-      contentId: indicator.contentId,
-      position: indicator.position
-    } : null);
-  };
-
   // Update newContent when currentContentType changes
   useEffect(() => {
     setNewContent({category: "hero", contentType: currentContentType});
@@ -640,44 +626,41 @@ export default function GamePantheon() {
       )}
 
       <div className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-        {Object.entries(CATEGORIES).map(([categoryId]) => (
-          <GameCategory
-            key={categoryId}
-            categoryId={categoryId as CategoryID}
-            games={displayContent as Game[]}
-            isSharedView={isSharedView}
-            editing={editing}
-            draft={draft}
-            dropIndicator={genericDropIndicator}
-            inlineDeityEdit={inlineDeityEdit}
-            onEdit={handleEdit}
-            onDelete={requestRemove}
-            onSave={handleSave}
-            onCancelEdit={handleCancelEdit}
-            onDraftChange={handleDraftChange}
-            onAutoFill={autoEdit}
-            onDragStart={onDragStart}
-            onDragEnd={onDragEnd}
-            onDragOver={allowDrop}
-            onDragLeave={removeDragHighlightHandler}
-            onDragEnter={(e: React.DragEvent<HTMLDivElement>) => {
-                e.stopPropagation();
-              allowDrop(e, categoryId as CategoryID);
-            }}
-            onDrop={(e: React.DragEvent<HTMLDivElement>, target: CategoryID) => {
-              removeDragHighlightHandler(e);
-              setGenericDropIndicator(null);
-              onDrop(e, target);
-            }}
-            onDropOnContent={onDropOnContent}
-            onUpdateDeity={updateDeity}
-            onToggleDeityEdit={handleToggleDeityEdit}
-            setDropIndicator={setGenericDropIndicator}
-            onTouchStart={onTouchStart}
-            onTouchMove={onTouchMove}
-            onTouchEnd={onTouchEnd}
-          />
-        ))}
+        {Object.entries(CATEGORIES).map(([categoryIdString]) => {
+          const categoryId = categoryIdString as CategoryID;
+          return (
+            <ContentCategory
+              key={categoryId}
+              categoryId={categoryId}
+              content={displayContent}
+              contentTypeName={currentContentType === 'games' ? 'games' : (currentContentType === 'movies' ? 'movies' : 'TV shows')}
+              isSharedView={isSharedView}
+              editing={editing}
+              draft={draft}
+              dropIndicator={dropIndicator}
+              inlineDeityEdit={inlineDeityEdit}
+              onEdit={handleEdit}
+              onDelete={requestRemove}
+              onSave={handleSave}
+              onCancelEdit={handleCancelEdit}
+              onDraftChange={handleDraftChange}
+              onAutoFill={autoEdit}
+              onDragStart={onDragStart}
+              onDragEnd={onDragEnd}
+              onDragOver={(e: React.DragEvent<HTMLElement>) => allowDrop(e, categoryId)}
+              onDragLeave={removeDragHighlightHandler}
+              onDragEnter={(e: React.DragEvent<HTMLDivElement>) => allowDrop(e, categoryId)}
+              onDrop={(e: React.DragEvent<HTMLDivElement>) => onDrop(e, categoryId)}
+              onDropOnContent={onDropOnContent}
+              onUpdateDeity={updateDeity}
+              onToggleDeityEdit={handleToggleDeityEdit}
+              setDropIndicator={setDropIndicator}
+              onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEnd}
+            />
+          );
+        })}
       </div>
       
       {/* Confirmation dialogs */}

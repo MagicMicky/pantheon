@@ -221,9 +221,6 @@ export const insertGameAtPosition = (
 ): Game[] => {
   return insertContentAtPosition(games, newGame, targetGameId, position, targetCategory) as Game[];
 };
-export const updateGameCategory = (game: Game, newCategory: CategoryID): Game => {
-  return updateContentCategory(game, newCategory) as Game;
-};
 export const isGameValid = (game: Partial<Game>): game is Game => {
   return isContentValid(game) && (game as Content).contentType === 'games';
 }; 
