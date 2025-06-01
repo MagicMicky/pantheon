@@ -61,8 +61,10 @@ const ContentItem = memo(function ContentItem({
   // Get the primary genre for icon display
   const getPrimaryGenre = (content: Content): string => {
     switch (content.contentType) {
-      case 'games':
-        return (content as Game).genre;
+      case 'games': {
+        const gameGenres = (content as Game).genre;
+        return Array.isArray(gameGenres) ? gameGenres[0] || 'Unknown' : 'Unknown';
+      }
       case 'movies': {
         const movieGenres = (content as Movie).genre;
         return Array.isArray(movieGenres) ? movieGenres[0] || 'Unknown' : 'Unknown';

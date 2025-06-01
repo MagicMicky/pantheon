@@ -16,7 +16,7 @@ export interface BaseContent {
 // Game-specific content interface
 export interface Game extends BaseContent { 
   contentType: 'games';
-  genre: string; 
+  genre: string[]; // Games can now have multiple genres like movies/TV
   // Steam-related properties
   steamAppId?: string | undefined;
   steamHoursPlayed?: number | undefined;

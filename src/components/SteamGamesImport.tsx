@@ -273,7 +273,7 @@ export const SteamGamesImport: React.FC<SteamGamesImportProps> = ({ existingGame
                         <div className="absolute opacity-0 group-hover/item:opacity-100 text-gray-500 cursor-grab transition-opacity duration-200">
                           <GripVertical size={14} strokeWidth={1.5} />
                         </div>
-                        {React.createElement(getGenreIcon(game.genre || "", GENRE_ICON_MAPPING), {
+                        {React.createElement(getGenreIcon(Array.isArray(game.genre) ? game.genre[0] || "" : game.genre || "", GENRE_ICON_MAPPING), {
                           className: "w-4 h-4 text-blue-300 flex-shrink-0 group-hover/item:opacity-0 transition-opacity duration-200",
                           strokeWidth: 1.5
                         })}

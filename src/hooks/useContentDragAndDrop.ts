@@ -307,8 +307,13 @@ export function useContentDragAndDrop(
       ghostElement: null
     });
     
-    // Prevent default to avoid scrolling
-    e.preventDefault();
+    // Safely prevent default to avoid scrolling
+    try {
+      e.preventDefault();
+    } catch (error) {
+      // Ignore passive event listener errors
+      console.debug('preventDefault failed on passive event listener');
+    }
   }, []);
 
   const onTouchMove = useCallback((e: React.TouchEvent<HTMLLIElement>) => {
@@ -370,7 +375,13 @@ export function useContentDragAndDrop(
       }
     }
     
-    e.preventDefault();
+    // Safely prevent default to avoid scrolling
+    try {
+      e.preventDefault();
+    } catch (error) {
+      // Ignore passive event listener errors
+      console.debug('preventDefault failed on passive event listener');
+    }
   }, [touchDragState]);
 
   const onTouchEnd = useCallback(async (e: React.TouchEvent<HTMLLIElement>) => {
