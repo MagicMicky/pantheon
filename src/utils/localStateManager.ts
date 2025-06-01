@@ -1,7 +1,7 @@
-import { Game, Content, ContentType } from '../types';
-import { uid } from './helpers';
 import { DEFAULT_MOVIES } from '../data/movies/defaultMovies';
 import { DEFAULT_TVSHOWS } from '../data/tvshows/defaultTVShows';
+import { Content, ContentType, Game } from '../types';
+import { uid } from './helpers';
 
 // Storage keys for different content types
 const STORAGE_KEYS = {
@@ -154,7 +154,7 @@ export const localStateManager = {
         return [{
           id: uid(),
           title: "The Legend of Zelda: Breath of the Wild",
-          genre: "Action‑Adventure",
+          genre: ["Action‑Adventure"],
           year: 2017,
           category: "olympian", 
           contentType: 'games',

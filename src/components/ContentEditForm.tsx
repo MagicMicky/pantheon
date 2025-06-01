@@ -5,10 +5,10 @@ import { GENRE_ICON_MAPPING } from '../data/genreIcons';
 import { Content, Game, Movie, TVShow } from '../types';
 import { supportsDieties } from '../utils/contentHelpers';
 import { getGenreIcon } from '../utils/helpers';
-import { Autocomplete } from './Autocomplete';
 import { DeityBadge, DeityPopup } from './DeityComponents';
+import { SmartAutocomplete } from './SmartAutocomplete';
 import { Button } from './ui/Buttons';
-import { Input, Select } from './ui/Inputs';
+import { Input } from './ui/Inputs';
 
 interface ContentEditFormProps {
   content: Content;
@@ -36,20 +36,13 @@ const ContentEditForm = memo(function ContentEditForm({
   const colors = CATEGORY_COLORS[content.category];
 
   // Get the primary genre for icon display
-  const getPrimaryGenre = (): string => {
-    switch (content.contentType) {
-      case 'games':
-        return (draft as Partial<Game>).genre || (content as Game).genre || '';
-      case 'movies': {
-        const movieGenres = (draft as Partial<Movie>).genre || (content as Movie).genre;
-        return Array.isArray(movieGenres) ? movieGenres[0] || '' : '';
-      }
-      case 'tvshows': {
-        const tvGenres = (draft as Partial<TVShow>).genre || (content as TVShow).genre;
-        return Array.isArray(tvGenres) ? tvGenres[0] || '' : '';
-      }
-      default:
-        return '';
+  const getPrimaryGenre = () => {
+    if (content.contentType === 'games') {
+      const gameGenres = (content as Game).genre;
+      return Array.isArray(gameGenres) ? gameGenres[0] || 'Unknown' : 'Unknown';
+    } else {
+      const genres = (content as Movie | TVShow).genre;
+      return Array.isArray(genres) ? genres[0] || 'Unknown' : 'Unknown';
     }
   };
 
@@ -60,10 +53,13 @@ const ContentEditForm = memo(function ContentEditForm({
         return (
           <div className="grid grid-cols-2 gap-2">
             <Input 
-              value={(draft as Partial<Game>).genre || ""} 
-              onChange={e => onDraftChange({ ...draft, genre: e.target.value } as Partial<Content>)} 
-              className="text-xs" 
-              placeholder="Genre"
+              placeholder="Genres (comma-separated)"
+              value={Array.isArray((draft as Partial<Game>).genre) ? (draft as Partial<Game>).genre!.join(', ') : ''} 
+              onChange={e => {
+                const genres = e.target.value.split(',').map(g => g.trim()).filter(Boolean);
+                onDraftChange({ ...draft, genre: genres } as Partial<Content>);
+              }} 
+              className="text-xs"
             />
             <Input 
               type="number" 
@@ -96,11 +92,16 @@ const ContentEditForm = memo(function ContentEditForm({
               className="text-xs" 
               placeholder="Year"
             />
-            <Input 
-              value={movieDraft.director || ""} 
-              onChange={e => onDraftChange({ ...draft, director: e.target.value } as Partial<Content>)} 
-              className="text-xs col-span-2" 
+            <SmartAutocomplete
+              value={movieDraft.director || ""}
+              onChange={value => onDraftChange({ ...draft, director: value } as Partial<Content>)}
+              onSelect={value => onDraftChange({ ...draft, director: value } as Partial<Content>)}
               placeholder="Director"
+              fieldType="director"
+              contentType={content.contentType}
+              existingContent={[]} // We'll pass an empty array for now
+              inputClass="text-xs col-span-2"
+              showFieldIcon={false}
             />
           </div>
         );
@@ -127,15 +128,15 @@ const ContentEditForm = memo(function ContentEditForm({
               className="text-xs" 
               placeholder="Year"
             />
-            <Select 
-              value={tvDraft.status || "ongoing"} 
-              onChange={e => onDraftChange({ ...draft, status: e.target.value as 'ongoing' | 'ended' | 'cancelled' } as Partial<Content>)} 
-              className="text-xs col-span-2"
+            <select
+              value={tvDraft.status || "ongoing"}
+              onChange={e => onDraftChange({ ...draft, status: e.target.value as 'ongoing' | 'ended' | 'cancelled' } as Partial<Content>)}
+              className="text-xs col-span-2 w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="ongoing">Ongoing</option>
               <option value="ended">Ended</option>
               <option value="cancelled">Cancelled</option>
-            </Select>
+            </select>
           </div>
         );
       }
@@ -159,24 +160,43 @@ const ContentEditForm = memo(function ContentEditForm({
       <div className="flex-1 flex flex-col gap-2 min-w-0">
         {/* Title input */}
         <div>
-          <Autocomplete 
+          <SmartAutocomplete 
             value={draft.title || ""} 
             onChange={v => onDraftChange({ ...draft, title: v })} 
             onSelect={async v => {
-              const info = await import('../utils/wikipediaHelpers').then(m => m.wikipediaInfo(v));
-              // Only apply compatible fields to avoid TypeScript errors
-              const basicInfo: any = { title: v };
-              if (info.year) basicInfo.year = info.year;
-              if (info.genre) {
-                if (content.contentType === 'games' && typeof info.genre === 'string') {
-                  basicInfo.genre = info.genre;
-                } else if ((content.contentType === 'movies' || content.contentType === 'tvshows') && Array.isArray(info.genre)) {
-                  basicInfo.genre = info.genre;
+              try {
+                // The SmartAutocomplete already updated the title via onChange,
+                // so we just need to fetch additional info in background
+                const { wikipediaInfo } = await import('../utils/wikipediaHelpers');
+                const info = await wikipediaInfo(v);
+                
+                // Only apply additional fields to avoid TypeScript errors (title already set)
+                const additionalInfo: any = {};
+                if (info.year) additionalInfo.year = info.year;
+                if (info.genre && Array.isArray(info.genre)) {
+                  additionalInfo.genre = info.genre;
                 }
+                if (info.director && content.contentType === 'movies') {
+                  additionalInfo.director = info.director;
+                }
+                if (info.status && content.contentType === 'tvshows') {
+                  additionalInfo.status = info.status;
+                }
+                
+                // Apply only the additional info (title is already set by onChange)
+                if (Object.keys(additionalInfo).length > 0) {
+                  onDraftChange({ ...draft, title: v, ...additionalInfo });
+                }
+              } catch (error) {
+                console.error('Failed to fetch Wikipedia info:', error);
+                // No need to update title again - SmartAutocomplete already did it
               }
-              onDraftChange({ ...draft, ...basicInfo });
             }}
             inputClass="text-xs"
+            fieldType="title"
+            contentType={content.contentType}
+            existingContent={[]} // We'll pass an empty array for now
+            showFieldIcon={false}
           />
         </div>
         
