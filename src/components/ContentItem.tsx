@@ -26,9 +26,13 @@ interface ContentItemProps {
   onUpdateDeity: (contentId: string, deityId?: string) => void;
   onToggleDeityEdit: (contentId: string | null) => void;
   setDropIndicator: (indicator: { contentId: string; position: 'before' | 'after' } | null) => void;
+  // Touch event handlers for mobile - make them non-optional and provide defaults
+  onTouchStart: (e: React.TouchEvent<HTMLLIElement>, id: string) => void;
+  onTouchMove: (e: React.TouchEvent<HTMLLIElement>) => void;
+  onTouchEnd: (e: React.TouchEvent<HTMLLIElement>) => void;
 }
 
-const ContentItem = memo(function ContentItem({
+const ContentItem = memo(function ContentItem({ 
   content,
   isSharedView,
   isEditing,
@@ -44,7 +48,13 @@ const ContentItem = memo(function ContentItem({
   onDrop,
   onUpdateDeity,
   onToggleDeityEdit,
-  setDropIndicator
+  setDropIndicator,
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  onTouchStart = (_e: React.TouchEvent<HTMLLIElement>, _id: string) => {},
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  onTouchMove = (_e: React.TouchEvent<HTMLLIElement>) => {},
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  onTouchEnd = (_e: React.TouchEvent<HTMLLIElement>) => {}
 }: ContentItemProps) {
   const colors = CATEGORY_COLORS[content.category];
 
@@ -113,6 +123,9 @@ const ContentItem = memo(function ContentItem({
       onDragOver={!isSharedView ? handleDragOver : undefined}
       onDragLeave={!isSharedView ? handleDragLeave : undefined}
       onDrop={!isSharedView ? handleDrop : undefined}
+      onTouchStart={!isSharedView ? e => onTouchStart(e, content.id) : undefined}
+      onTouchMove={!isSharedView ? onTouchMove : undefined}
+      onTouchEnd={!isSharedView ? onTouchEnd : undefined}
     >
       {/* Drop indicator before this item */}
       {dropIndicator?.contentId === content.id && dropIndicator.position === 'before' && (
@@ -146,12 +159,12 @@ const ContentItem = memo(function ContentItem({
         <div className="flex justify-between items-center">
           <span className="text-gray-400 text-xs">{getContentDisplayText(content)}</span>
           {!isSharedView && (
-            <div className="flex gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity duration-200">
+            <div className="flex gap-1 opacity-100 md:opacity-0 md:group-hover/item:opacity-100 transition-opacity duration-200">
               <IconBtn title="Edit" onClick={() => onEdit(content.id)}>
-                <Pen className="w-3 h-3" strokeWidth={1.5}/>
+                <Pen className="w-3 h-3 md:w-3 md:h-3" strokeWidth={1.5}/>
               </IconBtn>
               <IconBtn title="Delete" onClick={() => onDelete(content.id)}>
-                <X className="w-3 h-3" strokeWidth={1.5}/>
+                <X className="w-3 h-3 md:w-3 md:h-3" strokeWidth={1.5}/>
               </IconBtn>
             </div>
           )}
@@ -189,7 +202,7 @@ const ContentItem = memo(function ContentItem({
                   onToggleDeityEdit(content.id);
                 }
               }}
-              className="border border-dashed border-gray-500 rounded-full w-6 h-6 flex items-center justify-center text-gray-400 text-xs hover:bg-slate-700 hover:text-white transition-colors opacity-60 group-hover/item:opacity-100"
+              className="border border-dashed border-gray-500 rounded-full w-6 h-6 md:w-6 md:h-6 min-w-[32px] min-h-[32px] md:min-w-0 md:min-h-0 flex items-center justify-center text-gray-400 text-xs hover:bg-slate-700 hover:text-white transition-colors opacity-60 group-hover/item:opacity-100"
               title="Add mythological figure"
             >
               +

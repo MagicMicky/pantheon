@@ -87,7 +87,10 @@ export default function GamePantheon() {
     onDropOnContent,
     allowDrop,
     removeDragHighlightHandler,
-    setDropIndicator
+    setDropIndicator,
+    onTouchStart,
+    onTouchMove,
+    onTouchEnd
   } = useContentDragAndDrop(
     (newContent) => {
       if (currentContentType === 'games') {
@@ -508,15 +511,15 @@ export default function GamePantheon() {
   };
 
   // Convert dropIndicator for legacy compatibility
-  const legacyDropIndicator = dropIndicator ? {
-    gameId: dropIndicator.contentId,
+  const genericDropIndicator = dropIndicator ? {
+    contentId: dropIndicator.contentId,
     position: dropIndicator.position
   } : null;
 
   // Convert setDropIndicator for legacy compatibility
-  const setLegacyDropIndicator = (indicator: { gameId: string; position: 'before' | 'after' } | null) => {
+  const setGenericDropIndicator = (indicator: { contentId: string; position: 'before' | 'after' } | null) => {
     setDropIndicator(indicator ? {
-      contentId: indicator.gameId,
+      contentId: indicator.contentId,
       position: indicator.position
     } : null);
   };
@@ -528,43 +531,51 @@ export default function GamePantheon() {
 
   // Return JSX
   return (
-    <div className="p-8 bg-gradient-to-br from-slate-950 to-gray-900 min-h-screen select-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] font-sans">
-      <header className="text-center mb-10 relative">
-        <div className="flex items-center justify-center gap-4 mb-1">
-          <h1 className="text-5xl font-serif font-bold tracking-wider text-white">
-            <span className="inline-block mr-2 transform translate-y-1">🏛️</span> 
-            The 
-          </h1>
-          {!isSharedView ? (
-            <ContentTypeSelector 
-              currentContentType={currentContentType}
-              onContentTypeChange={switchContentType}
-            />
-          ) : (
-            <span className="text-5xl font-serif font-bold tracking-wider text-white transform translate-y-1">
-              {currentContentType === 'games' && 'Game'}
-              {currentContentType === 'movies' && 'Movie'}
-              {currentContentType === 'tvshows' && 'TV Show'}
-            </span>
-          )}
-          <h1 className="text-5xl font-serif font-bold tracking-wider text-white">
-            Pantheon
-          </h1>
+    <div className="p-4 md:p-8 bg-gradient-to-br from-slate-950 to-gray-900 min-h-screen select-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] font-sans">
+      <header className="text-center mb-8 md:mb-10 relative">
+        {/* Mobile: Stack vertically, Desktop: Horizontal layout */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-center gap-2 md:gap-4 mb-1">
+          {/* Title line - responsive layout */}
+          <div className="flex items-center justify-center gap-2 md:gap-4">
+            <h1 className="text-3xl md:text-5xl font-serif font-bold tracking-wider text-white">
+              <span className="inline-block mr-1 md:mr-2 transform translate-y-1">🏛️</span> 
+              The 
+            </h1>
+            {!isSharedView ? (
+              <ContentTypeSelector 
+                currentContentType={currentContentType}
+                onContentTypeChange={switchContentType}
+              />
+            ) : (
+              <span className="text-3xl md:text-5xl font-serif font-bold tracking-wider text-white transform translate-y-1">
+                {currentContentType === 'games' && 'Game'}
+                {currentContentType === 'movies' && 'Movie'}
+                {currentContentType === 'tvshows' && 'TV Show'}
+              </span>
+            )}
+            <h1 className="text-3xl md:text-5xl font-serif font-bold tracking-wider text-white">
+              Pantheon
+            </h1>
+          </div>
         </div>
-        <p className="text-gray-400 text-sm tracking-wide mt-2 italic">
+        
+        {/* Subtitle */}
+        <p className="text-gray-400 text-xs md:text-sm tracking-wide mt-2 italic px-4 md:px-0">
           {currentContentType === 'games' && "Curate your personal collection of gaming greatness"}
           {currentContentType === 'movies' && "Curate your personal collection of cinematic masterpieces"}
           {currentContentType === 'tvshows' && "Curate your personal collection of television excellence"}
         </p>
         
-        {/* Data management and share buttons */}
-        <HeaderControls
-          isSharedView={isSharedView}
-          onShare={generateShareLink}
-          onExport={exportData}
-          onImport={importData}
-          onOpenHistory={openHistoryModal}
-        />
+        {/* Data management and share buttons - mobile: below title, desktop: absolute positioned */}
+        <div className="mt-4 md:mt-0 md:absolute md:right-0 md:top-0">
+          <HeaderControls
+            isSharedView={isSharedView}
+            onShare={generateShareLink}
+            onExport={exportData}
+            onImport={importData}
+            onOpenHistory={openHistoryModal}
+          />
+        </div>
         
         {/* Shared view banner */}
         {isSharedView && (
@@ -606,7 +617,7 @@ export default function GamePantheon() {
       
       {/* Add Form - only show if not in shared view */}
       {!isSharedView && (
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mx-auto max-w-4xl mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 mx-auto max-w-6xl mb-8 md:mb-12 px-2 md:px-0">
           <AddContentForm
             newContent={newContent}
             content={displayContent}
@@ -628,7 +639,7 @@ export default function GamePantheon() {
         </div>
       )}
 
-      <div className="grid gap-6" style={{gridTemplateColumns:"repeat(auto-fill,minmax(320px,1fr))"}}>
+      <div className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         {Object.entries(CATEGORIES).map(([categoryId]) => (
           <GameCategory
             key={categoryId}
@@ -637,7 +648,7 @@ export default function GamePantheon() {
             isSharedView={isSharedView}
             editing={editing}
             draft={draft}
-            dropIndicator={legacyDropIndicator}
+            dropIndicator={genericDropIndicator}
             inlineDeityEdit={inlineDeityEdit}
             onEdit={handleEdit}
             onDelete={requestRemove}
@@ -655,13 +666,16 @@ export default function GamePantheon() {
             }}
             onDrop={(e: React.DragEvent<HTMLDivElement>, target: CategoryID) => {
               removeDragHighlightHandler(e);
-                            setLegacyDropIndicator(null);
+              setGenericDropIndicator(null);
               onDrop(e, target);
             }}
-            onDropOnGame={onDropOnContent}
+            onDropOnContent={onDropOnContent}
             onUpdateDeity={updateDeity}
             onToggleDeityEdit={handleToggleDeityEdit}
-            setDropIndicator={setLegacyDropIndicator}
+            setDropIndicator={setGenericDropIndicator}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
           />
         ))}
       </div>

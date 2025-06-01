@@ -31,6 +31,10 @@ interface ContentCategoryProps {
   onToggleDeityEdit: (contentId: string | null) => void;
   setDropIndicator: (indicator: { contentId: string; position: 'before' | 'after' } | null) => void;
   contentTypeName: string; // e.g., "games", "movies", "TV shows"
+  // Touch event handlers for mobile
+  onTouchStart?: (e: React.TouchEvent<HTMLLIElement>, id: string) => void;
+  onTouchMove?: (e: React.TouchEvent<HTMLLIElement>) => void;
+  onTouchEnd?: (e: React.TouchEvent<HTMLLIElement>) => void;
 }
 
 const ContentCategory = memo(function ContentCategory({
@@ -57,7 +61,10 @@ const ContentCategory = memo(function ContentCategory({
   onUpdateDeity,
   onToggleDeityEdit,
   setDropIndicator,
-  contentTypeName
+  contentTypeName,
+  onTouchStart,
+  onTouchMove,
+  onTouchEnd
 }: ContentCategoryProps) {
   const category = CATEGORIES[categoryId];
   const Icon = category.icon;
@@ -67,6 +74,14 @@ const ContentCategory = memo(function ContentCategory({
     content.filter(c => c.category === categoryId), 
     [content, categoryId]
   );
+
+  // Wrapper functions for touch handlers to ensure they are always defined when passed to ContentItem
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  const handleTouchStart = onTouchStart ? (e: React.TouchEvent<HTMLLIElement>, id: string) => onTouchStart(e, id) : (_e: React.TouchEvent<HTMLLIElement>, _id: string) => {};
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  const handleTouchMove = onTouchMove ? (e: React.TouchEvent<HTMLLIElement>) => onTouchMove(e) : (_e: React.TouchEvent<HTMLLIElement>) => {};
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  const handleTouchEnd = onTouchEnd ? (e: React.TouchEvent<HTMLLIElement>) => onTouchEnd(e) : (_e: React.TouchEvent<HTMLLIElement>) => {};
 
   return (
     <Card 
@@ -121,6 +136,9 @@ const ContentCategory = memo(function ContentCategory({
                 onUpdateDeity={onUpdateDeity}
                 onToggleDeityEdit={onToggleDeityEdit}
                 setDropIndicator={setDropIndicator}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
               />
             ))}
           </ul>

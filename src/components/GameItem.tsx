@@ -1,13 +1,13 @@
-import React, { memo } from 'react';
-import { Game, CategoryID } from '../types';
 import { GripVertical, Pen, X } from 'lucide-react';
-import { getGenreIcon } from '../utils/helpers';
-import { GENRE_ICON_MAPPING } from '../data/genreIcons';
+import React, { memo } from 'react';
 import { CATEGORY_COLORS } from '../data/categories';
-import { DeityBadge, DeityPopup } from './DeityComponents';
-import { IconBtn } from './ui/Buttons';
+import { GENRE_ICON_MAPPING } from '../data/genreIcons';
+import { CategoryID, Game } from '../types';
 import { supportsDieties } from '../utils/contentHelpers';
 import { calculateDropPosition } from '../utils/dragHelpers';
+import { getGenreIcon } from '../utils/helpers';
+import { DeityBadge, DeityPopup } from './DeityComponents';
+import { IconBtn } from './ui/Buttons';
 
 interface GameItemProps {
   game: Game;
@@ -26,9 +26,13 @@ interface GameItemProps {
   onUpdateDeity: (gameId: string, deityId?: string) => void;
   onToggleDeityEdit: (gameId: string | null) => void;
   setDropIndicator: (indicator: { gameId: string; position: 'before' | 'after' } | null) => void;
+  // Touch event handlers for mobile
+  onTouchStart?: (e: React.TouchEvent<HTMLLIElement>, id: string) => void;
+  onTouchMove?: (e: React.TouchEvent<HTMLLIElement>) => void;
+  onTouchEnd?: (e: React.TouchEvent<HTMLLIElement>) => void;
 }
 
-const GameItem = memo(function GameItem({
+const GameItem = memo(function GameItem({ 
   game,
   isSharedView,
   isEditing,
@@ -44,7 +48,13 @@ const GameItem = memo(function GameItem({
   onDrop,
   onUpdateDeity,
   onToggleDeityEdit,
-  setDropIndicator
+  setDropIndicator,
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  onTouchStart = () => {},
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  onTouchMove = () => {},
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  onTouchEnd = () => {}
 }: GameItemProps) {
   const colors = CATEGORY_COLORS[game.category];
 
@@ -95,6 +105,9 @@ const GameItem = memo(function GameItem({
       onDragOver={!isSharedView ? handleDragOver : undefined}
       onDragLeave={!isSharedView ? handleDragLeave : undefined}
       onDrop={!isSharedView ? handleDrop : undefined}
+      onTouchStart={!isSharedView ? e => onTouchStart(e, game.id) : undefined}
+      onTouchMove={!isSharedView ? onTouchMove : undefined}
+      onTouchEnd={!isSharedView ? onTouchEnd : undefined}
     >
       {/* Drop indicator before this item */}
       {dropIndicator?.gameId === game.id && dropIndicator.position === 'before' && (
@@ -128,12 +141,12 @@ const GameItem = memo(function GameItem({
         <div className="flex justify-between items-center">
           <span className="text-gray-400 text-xs">{game.genre} · {game.year}</span>
           {!isSharedView && (
-            <div className="flex gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity duration-200">
+            <div className="flex gap-1 opacity-100 md:opacity-0 md:group-hover/item:opacity-100 transition-opacity duration-200">
               <IconBtn title="Edit" onClick={() => onEdit(game.id)}>
-                <Pen className="w-3 h-3" strokeWidth={1.5}/>
+                <Pen className="w-3 h-3 md:w-3 md:h-3" strokeWidth={1.5}/>
               </IconBtn>
               <IconBtn title="Delete" onClick={() => onDelete(game.id)}>
-                <X className="w-3 h-3" strokeWidth={1.5}/>
+                <X className="w-3 h-3 md:w-3 md:h-3" strokeWidth={1.5}/>
               </IconBtn>
             </div>
           )}
@@ -171,7 +184,7 @@ const GameItem = memo(function GameItem({
                   onToggleDeityEdit(game.id);
                 }
               }}
-              className="border border-dashed border-gray-500 rounded-full w-6 h-6 flex items-center justify-center text-gray-400 text-xs hover:bg-slate-700 hover:text-white transition-colors opacity-60 group-hover/item:opacity-100"
+              className="border border-dashed border-gray-500 rounded-full w-6 h-6 md:w-6 md:h-6 min-w-[32px] min-h-[32px] md:min-w-0 md:min-h-0 flex items-center justify-center text-gray-400 text-xs hover:bg-slate-700 hover:text-white transition-colors opacity-60 group-hover/item:opacity-100"
               title="Add mythological figure"
             >
               +

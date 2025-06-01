@@ -19,6 +19,15 @@ interface DropIndicator {
   position: 'before' | 'after';
 }
 
+interface TouchDragState {
+  isDragging: boolean;
+  draggedContentId: string | null;
+  startPosition: { x: number; y: number };
+  currentPosition: { x: number; y: number };
+  draggedElement: HTMLElement | null;
+  ghostElement: HTMLElement | null;
+}
+
 interface UseContentDragAndDropReturn {
   dropIndicator: DropIndicator | null;
   onDragStart: (e: React.DragEvent<HTMLLIElement>, id: string) => void;
@@ -28,6 +37,11 @@ interface UseContentDragAndDropReturn {
   allowDrop: (e: React.DragEvent<HTMLElement>, category: CategoryID) => void;
   removeDragHighlightHandler: (e: React.DragEvent<HTMLElement>) => void;
   setDropIndicator: (indicator: DropIndicator | null) => void;
+  // Touch event handlers for mobile
+  onTouchStart: (e: React.TouchEvent<HTMLLIElement>, id: string) => void;
+  onTouchMove: (e: React.TouchEvent<HTMLLIElement>) => void;
+  onTouchEnd: (e: React.TouchEvent<HTMLLIElement>) => void;
+  touchDragState: TouchDragState;
 }
 
 /**
@@ -45,6 +59,16 @@ export function useContentDragAndDrop(
 ): UseContentDragAndDropReturn {
   const [dropIndicator, setDropIndicator] = useState<DropIndicator | null>(null);
   const dragHighlightsRef = useRef<Set<HTMLElement>>(new Set());
+  
+  // Touch drag state for mobile
+  const [touchDragState, setTouchDragState] = useState<TouchDragState>({
+    isDragging: false,
+    draggedContentId: null,
+    startPosition: { x: 0, y: 0 },
+    currentPosition: { x: 0, y: 0 },
+    draggedElement: null,
+    ghostElement: null
+  });
 
   const cleanupDragHighlights = useCallback(() => {
     dragHighlightsRef.current.forEach(el => {
@@ -266,6 +290,145 @@ export function useContentDragAndDrop(
     });
   }, [setContent]);
 
+  // Touch event handlers for mobile drag and drop
+  const onTouchStart = useCallback((e: React.TouchEvent<HTMLLIElement>, id: string) => {
+    // Only handle single touch
+    if (e.touches.length !== 1) return;
+    
+    const touch = e.touches[0];
+    const element = e.currentTarget;
+    
+    setTouchDragState({
+      isDragging: true,
+      draggedContentId: id,
+      startPosition: { x: touch.clientX, y: touch.clientY },
+      currentPosition: { x: touch.clientX, y: touch.clientY },
+      draggedElement: element,
+      ghostElement: null
+    });
+    
+    // Prevent default to avoid scrolling
+    e.preventDefault();
+  }, []);
+
+  const onTouchMove = useCallback((e: React.TouchEvent<HTMLLIElement>) => {
+    if (!touchDragState.isDragging || e.touches.length !== 1) return;
+    
+    const touch = e.touches[0];
+    
+    setTouchDragState(prev => ({
+      ...prev,
+      currentPosition: { x: touch.clientX, y: touch.clientY }
+    }));
+    
+    // Create ghost element if it doesn't exist and we've moved enough
+    const deltaX = Math.abs(touch.clientX - touchDragState.startPosition.x);
+    const deltaY = Math.abs(touch.clientY - touchDragState.startPosition.y);
+    
+    if ((deltaX > 10 || deltaY > 10) && !touchDragState.ghostElement && touchDragState.draggedElement) {
+      const ghost = touchDragState.draggedElement.cloneNode(true) as HTMLElement;
+      ghost.style.position = 'fixed';
+      ghost.style.pointerEvents = 'none';
+      ghost.style.zIndex = '9999';
+      ghost.style.opacity = '0.8';
+      ghost.style.transform = 'rotate(5deg)';
+      ghost.style.width = touchDragState.draggedElement.offsetWidth + 'px';
+      ghost.style.left = touch.clientX - touchDragState.draggedElement.offsetWidth / 2 + 'px';
+      ghost.style.top = touch.clientY - 20 + 'px';
+      
+      document.body.appendChild(ghost);
+      
+      setTouchDragState(prev => ({
+        ...prev,
+        ghostElement: ghost
+      }));
+      
+      // Add visual feedback to original element
+      if (touchDragState.draggedElement) {
+        touchDragState.draggedElement.style.opacity = '0.5';
+      }
+    }
+    
+    // Update ghost position
+    if (touchDragState.ghostElement) {
+      touchDragState.ghostElement.style.left = touch.clientX - touchDragState.draggedElement!.offsetWidth / 2 + 'px';
+      touchDragState.ghostElement.style.top = touch.clientY - 20 + 'px';
+    }
+    
+    // Find drop target
+    const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (elementBelow) {
+      const dropTarget = elementBelow.closest('[data-category]') as HTMLElement;
+      if (dropTarget) {
+        const category = dropTarget.getAttribute('data-category') as CategoryID;
+        if (category) {
+          // Apply highlight
+          clearOtherDragHighlights(dropTarget);
+          applyDragHighlight(dropTarget, category);
+          dragHighlightsRef.current.add(dropTarget);
+        }
+      }
+    }
+    
+    e.preventDefault();
+  }, [touchDragState]);
+
+  const onTouchEnd = useCallback(async (e: React.TouchEvent<HTMLLIElement>) => {
+    if (!touchDragState.isDragging) return;
+    
+    const touch = e.changedTouches[0];
+    
+    // Find drop target
+    const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+    let dropTarget: HTMLElement | null = null;
+    let targetCategory: CategoryID | null = null;
+    
+    if (elementBelow) {
+      dropTarget = elementBelow.closest('[data-category]') as HTMLElement;
+      if (dropTarget) {
+        targetCategory = dropTarget.getAttribute('data-category') as CategoryID;
+      }
+    }
+    
+    // Cleanup visual elements
+    if (touchDragState.ghostElement) {
+      document.body.removeChild(touchDragState.ghostElement);
+    }
+    
+    if (touchDragState.draggedElement) {
+      touchDragState.draggedElement.style.opacity = '';
+    }
+    
+    cleanupDragHighlights();
+    
+    // Perform drop if we have a valid target
+    if (targetCategory && touchDragState.draggedContentId) {
+      setContent(prevContent => {
+        const updatedContent = prevContent.map(c => {
+          if (c.id === touchDragState.draggedContentId) {
+            return updateContentCategory(c, targetCategory!);
+          }
+          return c;
+        });
+        
+        const uniqueContent = Array.from(new Map(updatedContent.map(item => [item.id, item])).values());
+        return uniqueContent;
+      });
+    }
+    
+    // Reset touch drag state
+    setTouchDragState({
+      isDragging: false,
+      draggedContentId: null,
+      startPosition: { x: 0, y: 0 },
+      currentPosition: { x: 0, y: 0 },
+      draggedElement: null,
+      ghostElement: null
+    });
+    
+    setDropIndicator(null);
+  }, [touchDragState, cleanupDragHighlights, setContent]);
+
   return {
     dropIndicator,
     onDragStart,
@@ -274,6 +437,10 @@ export function useContentDragAndDrop(
     onDropOnContent,
     allowDrop,
     removeDragHighlightHandler,
-    setDropIndicator
+    setDropIndicator,
+    onTouchStart,
+    onTouchMove,
+    onTouchEnd,
+    touchDragState
   };
 } 

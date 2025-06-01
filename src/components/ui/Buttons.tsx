@@ -1,4 +1,3 @@
-
 // Regular button component
 export const Button = ({ children, onClick, className="" }: any) => (
   <button 
@@ -14,7 +13,7 @@ export const IconBtn = ({ children, onClick, title="" }: any) => (
   <button 
     onClick={onClick} 
     title={title} 
-    className="p-1.5 text-gray-400 hover:text-white transition-colors duration-200"
+    className="p-2 md:p-1.5 text-gray-400 hover:text-white transition-colors duration-200 min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 flex items-center justify-center"
   >
     {children}
   </button>

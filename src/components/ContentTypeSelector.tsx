@@ -110,7 +110,7 @@ export function ContentTypeSelector({
               currentContentType === contentType
                 ? 'bg-slate-700/70 text-white'
                 : 'text-gray-300 hover:bg-slate-700/30 hover:text-white'
-            } group flex w-full items-center px-4 py-3 text-left transition-colors duration-150 text-4xl font-serif font-bold tracking-wider`}
+            } group flex w-full items-center px-3 md:px-4 py-2 md:py-3 text-left transition-colors duration-150 text-2xl md:text-4xl font-serif font-bold tracking-wider`}
             role="menuitem"
           >
             <span className="flex-1">{CONTENT_TYPE_LABELS[contentType]}</span>
@@ -130,13 +130,13 @@ export function ContentTypeSelector({
         ref={buttonRef}
         onClick={handleClick}
         onKeyDown={handleKeyDown}
-        className="text-5xl font-serif font-bold tracking-wider text-white hover:text-gray-200 transition-colors duration-200 cursor-pointer inline-flex items-center"
+        className="text-3xl md:text-5xl font-serif font-bold tracking-wider text-white hover:text-gray-200 transition-colors duration-200 cursor-pointer inline-flex items-center"
         tabIndex={0}
         role="button"
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
-        <ChevronDown className={`mr-0 h-4 w-4 transition-all duration-200 opacity-70 hover:opacity-100 ${isOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
+        <ChevronDown className={`mr-0 h-3 w-3 md:h-4 md:w-4 transition-all duration-200 opacity-70 hover:opacity-100 ${isOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
         <span className="pr-1">{CONTENT_TYPE_LABELS[currentContentType]}</span>
       </span>
 
