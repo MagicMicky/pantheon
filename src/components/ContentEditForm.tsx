@@ -39,7 +39,12 @@ const ContentEditForm = memo(function ContentEditForm({
   const getPrimaryGenre = () => {
     if (content.contentType === 'games') {
       const gameGenres = (content as Game).genre;
-      return Array.isArray(gameGenres) ? gameGenres[0] || 'Unknown' : 'Unknown';
+      // Handle both string and array formats during migration
+      if (Array.isArray(gameGenres)) {
+        return gameGenres[0] || 'Unknown';
+      } else {
+        return gameGenres || 'Unknown';
+      }
     } else {
       const genres = (content as Movie | TVShow).genre;
       return Array.isArray(genres) ? genres[0] || 'Unknown' : 'Unknown';
@@ -54,7 +59,16 @@ const ContentEditForm = memo(function ContentEditForm({
           <div className="grid grid-cols-2 gap-2">
             <Input 
               placeholder="Genres (comma-separated)"
-              value={Array.isArray((draft as Partial<Game>).genre) ? (draft as Partial<Game>).genre!.join(', ') : ''} 
+              value={(() => {
+                const gameGenres = (draft as Partial<Game>).genre;
+                if (Array.isArray(gameGenres)) {
+                  return gameGenres.join(', ');
+                } else if (typeof gameGenres === 'string') {
+                  return gameGenres;
+                } else {
+                  return '';
+                }
+              })()} 
               onChange={e => {
                 const genres = e.target.value.split(',').map(g => g.trim()).filter(Boolean);
                 onDraftChange({ ...draft, genre: genres } as Partial<Content>);

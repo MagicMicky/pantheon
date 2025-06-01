@@ -63,7 +63,12 @@ const ContentItem = memo(function ContentItem({
     switch (content.contentType) {
       case 'games': {
         const gameGenres = (content as Game).genre;
-        return Array.isArray(gameGenres) ? gameGenres[0] || 'Unknown' : 'Unknown';
+        // Handle both string and array formats during migration
+        if (Array.isArray(gameGenres)) {
+          return gameGenres[0] || 'Unknown';
+        } else {
+          return gameGenres || 'Unknown';
+        }
       }
       case 'movies': {
         const movieGenres = (content as Movie).genre;

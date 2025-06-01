@@ -59,6 +59,32 @@ const migrateLegacyData = (): void => {
   }
 };
 
+// Migration function to convert string genres to arrays
+const migrateGenreFormat = (content: Content[]): Content[] => {
+  let migrationCount = 0;
+  
+  const migratedContent = content.map(item => {
+    if (item.contentType === 'games') {
+      const game = item as Game;
+      // Check if genre is a string instead of array
+      if (typeof game.genre === 'string') {
+        migrationCount++;
+        return {
+          ...game,
+          genre: [game.genre] // Convert string to array
+        };
+      }
+    }
+    return item;
+  });
+  
+  if (migrationCount > 0) {
+    console.log(`Migrated ${migrationCount} games from string to array genre format`);
+  }
+  
+  return migratedContent;
+};
+
 // Initialize migration on first import
 migrateLegacyData();
 
@@ -121,7 +147,19 @@ export const localStateManager = {
     try {
       const savedContent = localStorage.getItem(STORAGE_KEYS[contentType]);
       if (savedContent) {
-        return JSON.parse(savedContent);
+        let content = JSON.parse(savedContent);
+        
+        // Apply genre migration for games content
+        if (contentType === 'games') {
+          const migratedContent = migrateGenreFormat(content);
+          // If migration occurred, save the migrated data back to localStorage
+          if (migratedContent !== content) {
+            localStorage.setItem(STORAGE_KEYS[contentType], JSON.stringify(migratedContent));
+            content = migratedContent;
+          }
+        }
+        
+        return content;
       }
     } catch (e) {
       console.error(`Failed to load primary ${contentType} storage, trying backup`, e);
@@ -129,7 +167,13 @@ export const localStateManager = {
         const backupContent = localStorage.getItem(getBackupKey(contentType));
         if (backupContent) {
           // Restore from backup
-          const content = JSON.parse(backupContent);
+          let content = JSON.parse(backupContent);
+          
+          // Apply genre migration for games content even on backup
+          if (contentType === 'games') {
+            content = migrateGenreFormat(content);
+          }
+          
           localStorage.setItem(STORAGE_KEYS[contentType], JSON.stringify(content));
           return content;
         }
@@ -201,10 +245,16 @@ export const localStateManager = {
         item.contentType === contentType || !item.contentType // Allow items without contentType for legacy support
       );
       // Add contentType to items that don't have it
-      const normalizedContent = validContent.map((item: any) => ({
+      let normalizedContent = validContent.map((item: any) => ({
         ...item,
         contentType: item.contentType || contentType
       }));
+      
+      // Apply genre migration for games content
+      if (contentType === 'games') {
+        normalizedContent = migrateGenreFormat(normalizedContent);
+      }
+      
       return normalizedContent;
     } catch (e) {
       console.error(`Failed to import ${contentType} data`, e);
@@ -316,6 +366,52 @@ export const localStateManager = {
     }
     
     return cleanupCount;
+  },
+
+  // Utility to manually trigger genre migration for games
+  migrateGenres: (): number => {
+    try {
+      const savedContent = localStorage.getItem(STORAGE_KEYS.games);
+      if (savedContent) {
+        const content = JSON.parse(savedContent);
+        const migratedContent = migrateGenreFormat(content);
+        
+        // Check if any changes were made
+        const needsMigration = content.some((item: any) => 
+          item.contentType === 'games' && typeof item.genre === 'string'
+        );
+        
+        if (needsMigration) {
+          localStorage.setItem(STORAGE_KEYS.games, JSON.stringify(migratedContent));
+          const migrationCount = content.filter((item: any) => 
+            item.contentType === 'games' && typeof item.genre === 'string'
+          ).length;
+          console.log(`Successfully migrated ${migrationCount} games to new genre format`);
+          return migrationCount;
+        }
+      }
+      return 0;
+    } catch (e) {
+      console.error('Failed to migrate genres:', e);
+      return 0;
+    }
+  },
+
+  // Check if games need genre migration
+  needsGenreMigration: (): boolean => {
+    try {
+      const savedContent = localStorage.getItem(STORAGE_KEYS.games);
+      if (savedContent) {
+        const content = JSON.parse(savedContent);
+        return content.some((item: any) => 
+          item.contentType === 'games' && typeof item.genre === 'string'
+        );
+      }
+      return false;
+    } catch (e) {
+      console.error('Failed to check migration status:', e);
+      return false;
+    }
   },
 }; 
 

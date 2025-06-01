@@ -125,7 +125,7 @@ export function getStatusSuggestions(query: string): string[] {
 export function getExistingValueSuggestions(
   existingValues: string[], 
   query: string, 
-  maxSuggestions: number = 5
+  maxSuggestions = 5
 ): string[] {
   const normalizedQuery = query.toLowerCase().trim();
   

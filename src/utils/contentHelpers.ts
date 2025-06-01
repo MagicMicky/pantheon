@@ -189,8 +189,14 @@ export function getContentDisplayText(content: Content): string {
   const year = content.year;
   
   switch (content.contentType) {
-    case 'games':
-      return `${(content as Game).genre} • ${year}`;
+    case 'games': {
+      const gameGenres = (content as Game).genre;
+      // Handle both string and array formats during migration
+      const gameGenreText = Array.isArray(gameGenres) 
+        ? gameGenres.slice(0, 2).join(', ') 
+        : (gameGenres || 'Unknown');
+      return `${gameGenreText} • ${year}`;
+    }
     case 'movies': {
       const movie = content as Movie;
       const movieGenres = movie.genre;
