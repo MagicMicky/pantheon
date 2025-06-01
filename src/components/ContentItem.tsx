@@ -26,9 +26,13 @@ interface ContentItemProps {
   onUpdateDeity: (contentId: string, deityId?: string) => void;
   onToggleDeityEdit: (contentId: string | null) => void;
   setDropIndicator: (indicator: { contentId: string; position: 'before' | 'after' } | null) => void;
+  // Touch event handlers for mobile - make them non-optional and provide defaults
+  onTouchStart: (e: React.TouchEvent<HTMLLIElement>, id: string) => void;
+  onTouchMove: (e: React.TouchEvent<HTMLLIElement>) => void;
+  onTouchEnd: (e: React.TouchEvent<HTMLLIElement>) => void;
 }
 
-const ContentItem = memo(function ContentItem({
+const ContentItem = memo(function ContentItem({ 
   content,
   isSharedView,
   isEditing,
@@ -44,7 +48,13 @@ const ContentItem = memo(function ContentItem({
   onDrop,
   onUpdateDeity,
   onToggleDeityEdit,
-  setDropIndicator
+  setDropIndicator,
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  onTouchStart = (_e: React.TouchEvent<HTMLLIElement>, _id: string) => {},
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  onTouchMove = (_e: React.TouchEvent<HTMLLIElement>) => {},
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  onTouchEnd = (_e: React.TouchEvent<HTMLLIElement>) => {}
 }: ContentItemProps) {
   const colors = CATEGORY_COLORS[content.category];
 
@@ -113,6 +123,9 @@ const ContentItem = memo(function ContentItem({
       onDragOver={!isSharedView ? handleDragOver : undefined}
       onDragLeave={!isSharedView ? handleDragLeave : undefined}
       onDrop={!isSharedView ? handleDrop : undefined}
+      onTouchStart={!isSharedView ? e => onTouchStart(e, content.id) : undefined}
+      onTouchMove={!isSharedView ? onTouchMove : undefined}
+      onTouchEnd={!isSharedView ? onTouchEnd : undefined}
     >
       {/* Drop indicator before this item */}
       {dropIndicator?.contentId === content.id && dropIndicator.position === 'before' && (

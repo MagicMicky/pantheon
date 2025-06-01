@@ -26,9 +26,13 @@ interface GameItemProps {
   onUpdateDeity: (gameId: string, deityId?: string) => void;
   onToggleDeityEdit: (gameId: string | null) => void;
   setDropIndicator: (indicator: { gameId: string; position: 'before' | 'after' } | null) => void;
+  // Touch event handlers for mobile
+  onTouchStart?: (e: React.TouchEvent<HTMLLIElement>, id: string) => void;
+  onTouchMove?: (e: React.TouchEvent<HTMLLIElement>) => void;
+  onTouchEnd?: (e: React.TouchEvent<HTMLLIElement>) => void;
 }
 
-const GameItem = memo(function GameItem({
+const GameItem = memo(function GameItem({ 
   game,
   isSharedView,
   isEditing,
@@ -44,7 +48,13 @@ const GameItem = memo(function GameItem({
   onDrop,
   onUpdateDeity,
   onToggleDeityEdit,
-  setDropIndicator
+  setDropIndicator,
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  onTouchStart = () => {},
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  onTouchMove = () => {},
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  onTouchEnd = () => {}
 }: GameItemProps) {
   const colors = CATEGORY_COLORS[game.category];
 
@@ -95,6 +105,9 @@ const GameItem = memo(function GameItem({
       onDragOver={!isSharedView ? handleDragOver : undefined}
       onDragLeave={!isSharedView ? handleDragLeave : undefined}
       onDrop={!isSharedView ? handleDrop : undefined}
+      onTouchStart={!isSharedView ? e => onTouchStart(e, game.id) : undefined}
+      onTouchMove={!isSharedView ? onTouchMove : undefined}
+      onTouchEnd={!isSharedView ? onTouchEnd : undefined}
     >
       {/* Drop indicator before this item */}
       {dropIndicator?.gameId === game.id && dropIndicator.position === 'before' && (

@@ -87,7 +87,10 @@ export default function GamePantheon() {
     onDropOnContent,
     allowDrop,
     removeDragHighlightHandler,
-    setDropIndicator
+    setDropIndicator,
+    onTouchStart,
+    onTouchMove,
+    onTouchEnd
   } = useContentDragAndDrop(
     (newContent) => {
       if (currentContentType === 'games') {
@@ -508,15 +511,15 @@ export default function GamePantheon() {
   };
 
   // Convert dropIndicator for legacy compatibility
-  const legacyDropIndicator = dropIndicator ? {
-    gameId: dropIndicator.contentId,
+  const genericDropIndicator = dropIndicator ? {
+    contentId: dropIndicator.contentId,
     position: dropIndicator.position
   } : null;
 
   // Convert setDropIndicator for legacy compatibility
-  const setLegacyDropIndicator = (indicator: { gameId: string; position: 'before' | 'after' } | null) => {
+  const setGenericDropIndicator = (indicator: { contentId: string; position: 'before' | 'after' } | null) => {
     setDropIndicator(indicator ? {
-      contentId: indicator.gameId,
+      contentId: indicator.contentId,
       position: indicator.position
     } : null);
   };
@@ -645,7 +648,7 @@ export default function GamePantheon() {
             isSharedView={isSharedView}
             editing={editing}
             draft={draft}
-            dropIndicator={legacyDropIndicator}
+            dropIndicator={genericDropIndicator}
             inlineDeityEdit={inlineDeityEdit}
             onEdit={handleEdit}
             onDelete={requestRemove}
@@ -663,13 +666,16 @@ export default function GamePantheon() {
             }}
             onDrop={(e: React.DragEvent<HTMLDivElement>, target: CategoryID) => {
               removeDragHighlightHandler(e);
-                            setLegacyDropIndicator(null);
+              setGenericDropIndicator(null);
               onDrop(e, target);
             }}
-            onDropOnGame={onDropOnContent}
+            onDropOnContent={onDropOnContent}
             onUpdateDeity={updateDeity}
             onToggleDeityEdit={handleToggleDeityEdit}
-            setDropIndicator={setLegacyDropIndicator}
+            setDropIndicator={setGenericDropIndicator}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
           />
         ))}
       </div>

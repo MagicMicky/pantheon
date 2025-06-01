@@ -12,11 +12,11 @@ interface GameCategoryProps {
   isSharedView: boolean;
   editing: string | null;
   draft: Partial<Content>;
-  dropIndicator: { gameId: string; position: 'before' | 'after' } | null;
+  dropIndicator: { contentId: string; position: 'before' | 'after' } | null;
   inlineDeityEdit: string | null;
-  onEdit: (gameId: string) => void;
-  onDelete: (gameId: string) => void;
-  onSave: (gameId: string) => void;
+  onEdit: (contentId: string) => void;
+  onDelete: (contentId: string) => void;
+  onSave: (contentId: string) => void;
   onCancelEdit: () => void;
   onDraftChange: (updates: Partial<Content>) => void;
   onAutoFill: () => void;
@@ -26,10 +26,14 @@ interface GameCategoryProps {
   onDragLeave: (e: React.DragEvent<HTMLElement>) => void;
   onDragEnter: (e: React.DragEvent<HTMLDivElement>) => void;
   onDrop: (e: React.DragEvent<HTMLDivElement>, target: CategoryID) => void;
-  onDropOnGame: (e: React.DragEvent<HTMLLIElement>, targetGameId: string, targetCategory: CategoryID) => void;
-  onUpdateDeity: (gameId: string, deityId?: string) => void;
-  onToggleDeityEdit: (gameId: string | null) => void;
-  setDropIndicator: (indicator: { gameId: string; position: 'before' | 'after' } | null) => void;
+  onDropOnContent: (e: React.DragEvent<HTMLLIElement>, targetContentId: string, targetCategory: CategoryID) => void;
+  onUpdateDeity: (contentId: string, deityId?: string) => void;
+  onToggleDeityEdit: (contentId: string | null) => void;
+  setDropIndicator: (indicator: { contentId: string; position: 'before' | 'after' } | null) => void;
+  // Touch event handlers for mobile
+  onTouchStart?: (e: React.TouchEvent<HTMLLIElement>, id: string) => void;
+  onTouchMove?: (e: React.TouchEvent<HTMLLIElement>) => void;
+  onTouchEnd?: (e: React.TouchEvent<HTMLLIElement>) => void;
 }
 
 const GameCategory = memo(function GameCategory({
@@ -52,10 +56,13 @@ const GameCategory = memo(function GameCategory({
   onDragLeave,
   onDragEnter,
   onDrop,
-  onDropOnGame,
+  onDropOnContent,
   onUpdateDeity,
   onToggleDeityEdit,
-  setDropIndicator
+  setDropIndicator,
+  onTouchStart,
+  onTouchMove,
+  onTouchEnd
 }: GameCategoryProps) {
   const category = CATEGORIES[categoryId];
   const Icon = category.icon;
@@ -65,6 +72,14 @@ const GameCategory = memo(function GameCategory({
     games.filter(g => g.category === categoryId), 
     [games, categoryId]
   );
+
+  // Wrapper functions for touch handlers to ensure they are always defined when passed to ContentItem
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  const handleTouchStart = onTouchStart ? (e: React.TouchEvent<HTMLLIElement>, id: string) => onTouchStart(e, id) : (_e: React.TouchEvent<HTMLLIElement>, _id: string) => {};
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  const handleTouchMove = onTouchMove ? (e: React.TouchEvent<HTMLLIElement>) => onTouchMove(e) : (_e: React.TouchEvent<HTMLLIElement>) => {};
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  const handleTouchEnd = onTouchEnd ? (e: React.TouchEvent<HTMLLIElement>) => onTouchEnd(e) : (_e: React.TouchEvent<HTMLLIElement>) => {};
 
   return (
     <Card 
@@ -108,7 +123,7 @@ const GameCategory = memo(function GameCategory({
                 isSharedView={isSharedView}
                 isEditing={editing === content.id}
                 dropIndicator={dropIndicator ? {
-                  contentId: dropIndicator.gameId,
+                  contentId: dropIndicator.contentId,
                   position: dropIndicator.position
                 } : null}
                 inlineDeityEdit={inlineDeityEdit}
@@ -119,13 +134,16 @@ const GameCategory = memo(function GameCategory({
                 onDragEnd={onDragEnd}
                 onDragOver={() => { /* Handled in ContentItem */ }}
                 onDragLeave={() => { /* Handled in ContentItem */ }}
-                onDrop={onDropOnGame}
+                onDrop={onDropOnContent}
                 onUpdateDeity={onUpdateDeity}
                 onToggleDeityEdit={onToggleDeityEdit}
                 setDropIndicator={(indicator) => setDropIndicator(indicator ? {
-                  gameId: indicator.contentId,
+                  contentId: indicator.contentId,
                   position: indicator.position
                 } : null)}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
               />
             ))}
           </ul>
