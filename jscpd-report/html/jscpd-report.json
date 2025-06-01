@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-06-01T17:04:11.711Z",
+    "detectionDate": "2025-06-01T17:15:32.569Z",
     "formats": {
       "typescript": {
         "sources": {
@@ -64,18 +64,6 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
-          "/home/magicmicky/Development/pantheon/src/utils/validation.ts": {
-            "lines": 237,
-            "tokens": 2462,
-            "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
           "/home/magicmicky/Development/pantheon/src/utils/urlHelpers.ts": {
             "lines": 48,
             "tokens": 433,
@@ -91,18 +79,6 @@
           "/home/magicmicky/Development/pantheon/src/utils/steamHelpers.ts": {
             "lines": 79,
             "tokens": 680,
-            "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
-          "/home/magicmicky/Development/pantheon/src/utils/performance.ts": {
-            "lines": 81,
-            "tokens": 795,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -172,18 +148,6 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
-          "/home/magicmicky/Development/pantheon/src/types/enhanced.ts": {
-            "lines": 287,
-            "tokens": 2032,
-            "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
           "/home/magicmicky/Development/pantheon/src/hooks/useShareFeature.ts": {
             "lines": 79,
             "tokens": 727,
@@ -217,18 +181,6 @@
             "duplicatedTokens": 0,
             "percentage": 0,
             "percentageTokens": 0,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
-          "/home/magicmicky/Development/pantheon/src/hooks/useDragAndDrop.ts": {
-            "lines": 239,
-            "tokens": 2383,
-            "sources": 1,
-            "clones": 2,
-            "duplicatedLines": 50,
-            "duplicatedTokens": 504,
-            "percentage": 20.92,
-            "percentageTokens": 21.15,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -282,14 +234,14 @@
           }
         },
         "total": {
-          "lines": 3439,
-          "tokens": 29648,
-          "sources": 23,
-          "clones": 1,
-          "duplicatedLines": 25,
-          "duplicatedTokens": 252,
-          "percentage": 0.73,
-          "percentageTokens": 0.85,
+          "lines": 2595,
+          "tokens": 21976,
+          "sources": 19,
+          "clones": 0,
+          "duplicatedLines": 0,
+          "duplicatedTokens": 0,
+          "percentage": 0,
+          "percentageTokens": 0,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -428,18 +380,6 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
-          "/home/magicmicky/Development/pantheon/src/contexts/GameContext.tsx": {
-            "lines": 0,
-            "tokens": 3,
-            "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
           "/home/magicmicky/Development/pantheon/src/components/Tooltip.tsx": {
             "lines": 27,
             "tokens": 245,
@@ -455,18 +395,6 @@
           "/home/magicmicky/Development/pantheon/src/components/SteamGamesImport.tsx": {
             "lines": 107,
             "tokens": 871,
-            "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
-          "/home/magicmicky/Development/pantheon/src/components/ErrorBoundary.tsx": {
-            "lines": 6,
-            "tokens": 62,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -562,7 +490,7 @@
           },
           "/home/magicmicky/Development/pantheon/src/GamePantheon.tsx": {
             "lines": 156,
-            "tokens": 1021,
+            "tokens": 1018,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -574,9 +502,9 @@
           }
         },
         "total": {
-          "lines": 1265,
-          "tokens": 11250,
-          "sources": 23,
+          "lines": 1259,
+          "tokens": 11182,
+          "sources": 21,
           "clones": 0,
           "duplicatedLines": 0,
           "duplicatedTokens": 0,
@@ -720,18 +648,6 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
-          "/home/magicmicky/Development/pantheon/src/contexts/GameContext.tsx": {
-            "lines": 212,
-            "tokens": 1904,
-            "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
           "/home/magicmicky/Development/pantheon/src/components/Tooltip.tsx": {
             "lines": 84,
             "tokens": 722,
@@ -747,18 +663,6 @@
           "/home/magicmicky/Development/pantheon/src/components/SteamGamesImport.tsx": {
             "lines": 365,
             "tokens": 3173,
-            "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
-          "/home/magicmicky/Development/pantheon/src/components/ErrorBoundary.tsx": {
-            "lines": 108,
-            "tokens": 847,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -865,82 +769,46 @@
             "newClones": 0
           },
           "/home/magicmicky/Development/pantheon/src/GamePantheon.tsx": {
-            "lines": 705,
-            "tokens": 5401,
+            "lines": 691,
+            "tokens": 5277,
             "sources": 1,
             "clones": 2,
             "duplicatedLines": 16,
             "duplicatedTokens": 252,
-            "percentage": 2.27,
-            "percentageTokens": 4.67,
+            "percentage": 2.32,
+            "percentageTokens": 4.78,
             "newDuplicatedLines": 0,
             "newClones": 0
           }
         },
         "total": {
-          "lines": 3706,
-          "tokens": 32642,
-          "sources": 24,
+          "lines": 3372,
+          "tokens": 29767,
+          "sources": 22,
           "clones": 3,
           "duplicatedLines": 45,
           "duplicatedTokens": 486,
-          "percentage": 1.21,
-          "percentageTokens": 1.49,
+          "percentage": 1.33,
+          "percentageTokens": 1.63,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
       }
     },
     "total": {
-      "lines": 8410,
-      "tokens": 73540,
-      "sources": 70,
-      "clones": 4,
-      "duplicatedLines": 70,
-      "duplicatedTokens": 738,
-      "percentage": 0.83,
-      "percentageTokens": 1,
+      "lines": 7226,
+      "tokens": 62925,
+      "sources": 62,
+      "clones": 3,
+      "duplicatedLines": 45,
+      "duplicatedTokens": 486,
+      "percentage": 0.62,
+      "percentageTokens": 0.77,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
   },
   "duplicates": [
-    {
-      "format": "typescript",
-      "lines": 26,
-      "fragment": ");\n      \n      // Try to fetch additional details in the background\n      try {\n        if (newGame.title) {\n          const additionalInfo = await wikipediaInfo(newGame.title);\n          \n          if (additionalInfo) {\n            setGames(prevGames => prevGames.map(g => {\n              if (g.id === newGame.id) {\n                return {\n                  ...g,\n                  genre: g.genre === \"Unknown\" && additionalInfo.genre ? \n                    (Array.isArray(additionalInfo.genre) ? additionalInfo.genre[0] : additionalInfo.genre) : g.genre,\n                  year: (!g.year || g.year === new Date().getFullYear()) && additionalInfo.year ? additionalInfo.year : g.year\n                };\n              }\n              return g;\n            }));\n          }\n        }\n      } catch (error) {\n        console.error(\"Failed to fetch additional game info:\", error);\n      }\n      \n      // Remove all drag highlights",
-      "tokens": 0,
-      "firstFile": {
-        "name": "/home/magicmicky/Development/pantheon/src/hooks/useDragAndDrop.ts",
-        "start": 145,
-        "end": 170,
-        "startLoc": {
-          "line": 145,
-          "column": 9,
-          "position": 1500
-        },
-        "endLoc": {
-          "line": 170,
-          "column": 30,
-          "position": 1752
-        }
-      },
-      "secondFile": {
-        "name": "/home/magicmicky/Development/pantheon/src/hooks/useDragAndDrop.ts",
-        "start": 87,
-        "end": 111,
-        "startLoc": {
-          "line": 87,
-          "column": 2,
-          "position": 945
-        },
-        "endLoc": {
-          "line": 111,
-          "column": 2,
-          "position": 1195
-        }
-      }
-    },
     {
       "format": "tsx",
       "lines": 23,
@@ -1025,12 +893,12 @@
         "startLoc": {
           "line": 456,
           "column": 6,
-          "position": 3546
+          "position": 3549
         },
         "endLoc": {
           "line": 464,
           "column": 9,
-          "position": 3672
+          "position": 3675
         }
       },
       "secondFile": {
@@ -1040,12 +908,12 @@
         "startLoc": {
           "line": 443,
           "column": 11,
-          "position": 3353
+          "position": 3356
         },
         "endLoc": {
           "line": 451,
           "column": 14,
-          "position": 3479
+          "position": 3482
         }
       }
     }
